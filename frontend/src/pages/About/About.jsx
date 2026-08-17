@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Leaf, Users, ShieldCheck, Award, ArrowRight, MapPin } from 'lucide-react';
 import Navbar from '../../components/Navbar/Navbar';
+import pepperImage from '../../assets/pepper.png';
 import './About.css';
 
 /**
@@ -78,9 +79,7 @@ function About() {
             </Link>
           </div>
           <div className="about-hero-visual">
-            <div className="about-hero-image-placeholder">
-              <Leaf size={80} color="rgba(255,255,255,0.2)" />
-            </div>
+            <img src={pepperImage} alt="Fresh KainaFresh Pepper" className="about-hero-image" />
             <div className="about-stat-card stat-card-1">
               <strong>350+</strong>
               <span>Happy Customers</span>
