@@ -1,20 +1,28 @@
 import React, { useState } from 'react';
+import Navbar from '../../components/Navbar/Navbar';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, User, Mail, Lock, Phone, ArrowRight, ArrowLeft } from 'lucide-react';
 import { apiPost, setToken } from '../../api/client';
+import tractorImg from '../../assets/tractor.png';
 import './Auth.css';
 
 /**
- * Signup Page
- * Calls POST /api/register.
- * On success: stores token and redirects to home.
+ * Signup Page — Progressive Multi-Step Form
+ * Step 1: Name & Username
+ * Step 2: Email & Phone
+ * Step 3: Password
+ * Backend: POST /api/auth/register requires: username, email, password, phone_number, full_name
  */
+
 function Signup() {
   const navigate = useNavigate();
-
+  const [step, setStep] = useState(1);
+  const [direction, setDirection] = useState('forward'); // for animation
   const [form, setForm] = useState({
-    fullName: '',
+    full_name: '',
+    username: '',
     email: '',
+    phone_number: '',
     password: '',
     confirmPassword: '',
   });
@@ -24,7 +32,7 @@ function Signup() {
   const [serverError, setServerError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Password strength: 0-4
+  // Password strength
   const getPasswordStrength = (pw) => {
     if (!pw) return 0;
     let score = 0;
@@ -34,7 +42,6 @@ function Signup() {
     if (/[^A-Za-z0-9]/.test(pw)) score++;
     return score;
   };
-
   const strengthLabel = ['', 'Weak', 'Fair', 'Good', 'Strong'];
   const strengthClass = ['', 'strength-weak', 'strength-fair', 'strength-good', 'strength-strong'];
   const pwStrength = getPasswordStrength(form.password);
@@ -45,40 +52,66 @@ function Signup() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const validate = () => {
+  // Per-step validation
+  const validateStep = () => {
     const errors = {};
-    if (!form.fullName.trim()) errors.fullName = 'Full name is required.';
-    if (!form.email.trim()) errors.email = 'Email is required.';
-    else if (!/\S+@\S+\.\S+/.test(form.email)) errors.email = 'Enter a valid email address.';
-    if (!form.password) errors.password = 'Password is required.';
-    else if (form.password.length < 8) errors.password = 'Password must be at least 8 characters.';
-    if (!form.confirmPassword) errors.confirmPassword = 'Please confirm your password.';
-    else if (form.password !== form.confirmPassword) errors.confirmPassword = 'Passwords do not match.';
+    if (step === 1) {
+      if (!form.full_name.trim()) errors.full_name = 'Full name is required.';
+      if (!form.username.trim()) errors.username = 'Username is required.';
+      else if (form.username.includes(' ')) errors.username = 'No spaces allowed.';
+    }
+    if (step === 2) {
+      if (!form.email.trim()) errors.email = 'Email is required.';
+      else if (!/\S+@\S+\.\S+/.test(form.email)) errors.email = 'Enter a valid email address.';
+      if (!form.phone_number.trim()) errors.phone_number = 'Phone number is required.';
+    }
+    if (step === 3) {
+      if (!form.password) errors.password = 'Password is required.';
+      else if (form.password.length < 8) errors.password = 'At least 8 characters required.';
+      if (!form.confirmPassword) errors.confirmPassword = 'Please confirm your password.';
+      else if (form.password !== form.confirmPassword) errors.confirmPassword = 'Passwords do not match.';
+    }
     return errors;
+  };
+
+  const goNext = () => {
+    const errors = validateStep();
+    if (Object.keys(errors).length > 0) return setFieldErrors(errors);
+    setDirection('forward');
+    setStep((s) => s + 1);
+  };
+
+  const goBack = () => {
+    setFieldErrors({});
+    setServerError('');
+    setDirection('back');
+    setStep((s) => s - 1);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const errors = validate();
+    const errors = validateStep();
     if (Object.keys(errors).length > 0) return setFieldErrors(errors);
 
     setIsLoading(true);
     setServerError('');
 
     try {
-      // Register the user
-      await apiPost('/api/register', {
+      await apiPost('/api/auth/register', {
+        full_name: form.full_name.trim(),
+        username: form.username.trim(),
+        email: form.email.trim(),
+        phone_number: form.phone_number.trim(),
+        password: form.password,
+      });
+
+      const loginData = await apiPost('/api/auth/login', {
         email: form.email.trim(),
         password: form.password,
       });
 
-      // Auto-login after successful registration
-      const loginData = await apiPost('/api/login', {
-        email: form.email.trim(),
-        password: form.password,
-      });
-
-      setToken(loginData.token);
+      const { token } = loginData.data;
+      setToken(token);
       navigate('/');
     } catch (err) {
       setServerError(err.message || 'Registration failed. Please try again.');
@@ -88,182 +121,249 @@ function Signup() {
   };
 
   return (
-    <div className="auth-page">
-      {/* Left brand panel */}
-      <div className="auth-brand-panel">
-        <div className="auth-brand-content">
-          <Link to="/" className="auth-logo">
-            Kaina<span>Fresh</span>
-          </Link>
-          <h2 className="auth-brand-heading">
-            Your farm-fresh journey starts here.
-          </h2>
-          <p className="auth-brand-sub">
-            Create a free account and start ordering the freshest produce directly from KainaFresh farm.
-          </p>
-          <div className="auth-brand-stats">
-            <div className="auth-stat">
-              <strong>350+</strong>
-              <span>Happy customers</span>
-            </div>
-            <div className="auth-stat">
-              <strong>100%</strong>
-              <span>Organic produce</span>
-            </div>
-          </div>
-        </div>
-        <div className="auth-shape auth-shape-1" />
-        <div className="auth-shape auth-shape-2" />
-      </div>
+    <>
+      <Navbar />
+      <div className="auth-page">
+        <div className="auth-noise" aria-hidden="true" />
 
-      {/* Right form panel */}
-      <div className="auth-form-panel">
-        <div className="auth-form-container">
-          <div className="auth-form-header">
-            <h1>Create your account</h1>
-            <p>Join KainaFresh — it's free</p>
-          </div>
+        <div className="auth-card">
 
-          <form className="auth-form" onSubmit={handleSubmit} noValidate>
-            {/* Server error */}
-            {serverError && (
-              <div className="auth-error-banner" role="alert">
-                <span className="auth-error-icon">⚠</span>
-                {serverError}
+          {/* Left: Progressive Form Panel */}
+          <div className="auth-form-panel">
+            <div className="auth-form-container">
+
+              {/* Tabs */}
+              <div className="auth-tabs">
+                <Link to="/login" className="auth-tab">Login</Link>
+                <Link to="/signup" className="auth-tab active">Sign up</Link>
               </div>
-            )}
 
-            {/* Full Name */}
-            <div className="form-group">
-              <label htmlFor="signup-name">Full name</label>
-              <input
-                id="signup-name"
-                type="text"
-                name="fullName"
-                value={form.fullName}
-                onChange={handleChange}
-                placeholder="Jane Doe"
-                autoComplete="name"
-                className={fieldErrors.fullName ? 'input-error' : ''}
-              />
-              {fieldErrors.fullName && (
-                <span className="field-error">{fieldErrors.fullName}</span>
-              )}
-            </div>
-
-            {/* Email */}
-            <div className="form-group">
-              <label htmlFor="signup-email">Email address</label>
-              <input
-                id="signup-email"
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="you@example.com"
-                autoComplete="email"
-                className={fieldErrors.email ? 'input-error' : ''}
-              />
-              {fieldErrors.email && (
-                <span className="field-error">{fieldErrors.email}</span>
-              )}
-            </div>
-
-            {/* Password + strength */}
-            <div className="form-group">
-              <label htmlFor="signup-password">Password</label>
-              <div className="input-with-icon">
-                <input
-                  id="signup-password"
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="Min. 8 characters"
-                  autoComplete="new-password"
-                  className={fieldErrors.password ? 'input-error' : ''}
-                />
-                <button
-                  type="button"
-                  className="toggle-password"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-              {form.password && (
-                <div className="password-strength">
-                  <div className={`strength-bar ${strengthClass[pwStrength]}`}>
-                    {[1, 2, 3, 4].map((i) => (
-                      <div
-                        key={i}
-                        className={`strength-segment ${i <= pwStrength ? 'filled' : ''}`}
-                      />
-                    ))}
+              {/* Progress Bar & Headers based on Step */}
+              {step === 1 && (
+                <>
+                  <div className="signup-progress">
+                    <div className="signup-progress-track">
+                      <div className="signup-progress-fill" style={{ width: '20%' }} />
+                    </div>
+                    <span className="signup-progress-label">20% complete</span>
                   </div>
-                  <span className={`strength-label ${strengthClass[pwStrength]}`}>
-                    {strengthLabel[pwStrength]}
-                  </span>
+                  <div className="signup-step-header">
+                    <h2 className="signup-step-title">Let's get started!</h2>
+                    <p className="signup-step-subtitle">Fresh produce is waiting for you — tell us your name.</p>
+                  </div>
+                </>
+              )}
+
+              {step === 2 && (
+                <>
+                  <div className="signup-progress">
+                    <div className="signup-progress-track">
+                      <div className="signup-progress-fill" style={{ width: '60%' }} />
+                    </div>
+                    <span className="signup-progress-label">60% complete</span>
+                  </div>
+                  <div className="signup-step-header">
+                    <h2 className="signup-step-title">Almost there!</h2>
+                    <p className="signup-step-subtitle">Great choice! Where should we send your order updates?</p>
+                  </div>
+                </>
+              )}
+
+              {step === 3 && (
+                <>
+                  <div className="signup-progress">
+                    <div className="signup-progress-track">
+                      <div className="signup-progress-fill" style={{ width: '90%' }} />
+                    </div>
+                    <span className="signup-progress-label">90% complete</span>
+                  </div>
+                  <div className="signup-step-header">
+                    <h2 className="signup-step-title">One last step!</h2>
+                    <p className="signup-step-subtitle">Your first farm-fresh delivery is just around the corner!</p>
+                  </div>
+                </>
+              )}
+
+              {/* Server error */}
+              {serverError && (
+                <div className="auth-error-banner" role="alert">
+                  {serverError}
                 </div>
               )}
-              {fieldErrors.password && (
-                <span className="field-error">{fieldErrors.password}</span>
+
+              {/* ── Step 1: Name & Username ── */}
+              {step === 1 && (
+                <div className="signup-step-fields">
+                  <div className="form-group">
+                    <div className="input-with-icon">
+                      <input
+                        id="signup-name"
+                        type="text"
+                        name="full_name"
+                        value={form.full_name}
+                        onChange={handleChange}
+                        placeholder="Your full name"
+                        autoComplete="name"
+                        autoFocus
+                        className={fieldErrors.full_name ? 'input-error' : ''}
+                      />
+                    </div>
+                    {fieldErrors.full_name && <span className="field-error">{fieldErrors.full_name}</span>}
+                  </div>
+
+                  <div className="form-group">
+                    <div className="input-with-icon">
+                      <input
+                        id="signup-username"
+                        type="text"
+                        name="username"
+                        value={form.username}
+                        onChange={handleChange}
+                        placeholder="Choose a username"
+                        autoComplete="username"
+                        className={fieldErrors.username ? 'input-error' : ''}
+                      />
+                    </div>
+                    {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
+                  </div>
+
+                  <div className="signup-step-nav">
+                    <span />
+                    <button type="button" className="auth-submit-btn" onClick={goNext}>
+                      Continue <ArrowRight size={16} />
+                    </button>
+                  </div>
+                </div>
               )}
+
+              {/* ── Step 2: Email & Phone ── */}
+              {step === 2 && (
+                <div className="signup-step-fields">
+                  <div className="form-group">
+                    <div className="input-with-icon">
+                      <input
+                        id="signup-email"
+                        type="email"
+                        name="email"
+                        value={form.email}
+                        onChange={handleChange}
+                        placeholder="Email address"
+                        autoComplete="email"
+                        autoFocus
+                        className={fieldErrors.email ? 'input-error' : ''}
+                      />
+                    </div>
+                    {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
+                  </div>
+
+                  <div className="form-group">
+                    <div className="input-with-icon">
+                      <input
+                        id="signup-phone"
+                        type="tel"
+                        name="phone_number"
+                        value={form.phone_number}
+                        onChange={handleChange}
+                        placeholder="Phone number"
+                        autoComplete="tel"
+                        className={fieldErrors.phone_number ? 'input-error' : ''}
+                      />
+                    </div>
+                    {fieldErrors.phone_number && <span className="field-error">{fieldErrors.phone_number}</span>}
+                  </div>
+
+                  <div className="signup-step-nav">
+                    <button type="button" className="signup-back-btn" onClick={goBack}>
+                      <ArrowLeft size={16} /> Back
+                    </button>
+                    <button type="button" className="auth-submit-btn" onClick={goNext}>
+                      Continue <ArrowRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Step 3: Password ── */}
+              {step === 3 && (
+                <form className="signup-step-fields" onSubmit={handleSubmit} noValidate>
+                  <div className="form-group">
+                    <div className="input-with-icon">
+                      <input
+                        id="signup-password"
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        value={form.password}
+                        onChange={handleChange}
+                        placeholder="Create a password"
+                        autoComplete="new-password"
+                        autoFocus
+                        className={fieldErrors.password ? 'input-error' : ''}
+                      />
+                      <button type="button" className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                    {form.password && (
+                      <div className="password-strength">
+                        <div className={`strength-bar ${strengthClass[pwStrength]}`}>
+                          {[1, 2, 3, 4].map((i) => (
+                            <div key={i} className={`strength-segment ${i <= pwStrength ? 'filled' : ''}`} />
+                          ))}
+                        </div>
+                        <span className={`strength-label ${strengthClass[pwStrength]}`}>
+                          {strengthLabel[pwStrength]}
+                        </span>
+                      </div>
+                    )}
+                    {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
+                  </div>
+
+                  <div className="form-group">
+                    <div className="input-with-icon">
+                      <input
+                        id="signup-confirm"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        name="confirmPassword"
+                        value={form.confirmPassword}
+                        onChange={handleChange}
+                        placeholder="Confirm your password"
+                        autoComplete="new-password"
+                        className={fieldErrors.confirmPassword ? 'input-error' : ''}
+                      />
+                      <button type="button" className="toggle-password" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                    {fieldErrors.confirmPassword && <span className="field-error">{fieldErrors.confirmPassword}</span>}
+                  </div>
+
+                  <div className="signup-step-nav">
+                    <button type="button" className="signup-back-btn" onClick={goBack}>
+                      <ArrowLeft size={16} /> Back
+                    </button>
+                    <button type="submit" className="auth-submit-btn" disabled={isLoading}>
+                      {isLoading ? <div className="spinner" /> : 'Join KainaFresh'}
+                    </button>
+                  </div>
+                </form>
+              )}
+
             </div>
+          </div>
 
-            {/* Confirm Password */}
-            <div className="form-group">
-              <label htmlFor="signup-confirm">Confirm password</label>
-              <div className="input-with-icon">
-                <input
-                  id="signup-confirm"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  name="confirmPassword"
-                  value={form.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Re-enter your password"
-                  autoComplete="new-password"
-                  className={fieldErrors.confirmPassword ? 'input-error' : ''}
-                />
-                <button
-                  type="button"
-                  className="toggle-password"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-              {fieldErrors.confirmPassword && (
-                <span className="field-error">{fieldErrors.confirmPassword}</span>
-              )}
-            </div>
+          {/* Right: Visual Panel */}
+          <div className="auth-visual-panel">
+            <div className="auth-visual-blob" />
+            <img
+              src={tractorImg}
+              alt="KainaFresh Delivery Tractor"
+              className="auth-visual-image"
+            />
+          </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              className={`btn btn-primary auth-submit-btn ${isLoading ? 'loading' : ''}`}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <span className="spinner" />
-                  Creating account…
-                </>
-              ) : (
-                'Create Account'
-              )}
-            </button>
-          </form>
-
-          <p className="auth-switch">
-            Already have an account?{' '}
-            <Link to="/login">Sign in</Link>
-          </p>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

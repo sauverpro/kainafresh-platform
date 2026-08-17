@@ -10,8 +10,20 @@ import './Navbar.css';
  */
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
   const loggedIn = isAuthenticated();
+
+  // Scroll listener for transparent-to-solid effect
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    // Trigger immediately on mount in case the user loads half-way down the page
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogout = () => {
     removeToken();
@@ -21,7 +33,7 @@ function Navbar() {
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <header className="navbar">
+    <header className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
       {/* Logo */}
       <NavLink to="/" className="navbar-logo" onClick={closeMenu}>
         Kaina<span className="logo-accent">Fresh</span>

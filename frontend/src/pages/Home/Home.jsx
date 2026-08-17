@@ -116,51 +116,43 @@ function Home() {
         <section className="hero">
           {/* Noise background */}
           <div className="hero-noise"></div>
-          
-          {/* Giant background text */}
-          <div className="hero-bg-text">K A I N A</div>
-          
-          {/* Background Graphic Elements */}
-          <div className="hero-graphic hero-graphic-1">
-             <Leaf size={48} strokeWidth={1.5} color="var(--color-primary)" opacity={0.15} />
-          </div>
-          <div className="hero-graphic hero-graphic-2">
-             <Leaf size={64} strokeWidth={1} color="var(--color-primary)" opacity={0.1} />
-          </div>
-          <div className="hero-graphic hero-graphic-3">
-             <Leaf size={40} strokeWidth={2} color="var(--color-secondary)" opacity={0.2} />
-          </div>
-          {/* Main Title Container (Perfectly Centered) */}
-          <div className="hero-title-container">
-            <span className="hero-badge">{HERO.badge}</span>
-            <h1>
-              {HERO.heading} <span className="hero-accent">{HERO.headingAccent}</span>
-            </h1>
-          </div>
 
-          {/* Center Image */}
-          <div className="hero-center-content">
-            <img
-              src={heroFarmers}
-              alt="KainaFresh farmers holding fresh produce"
-              className="hero-image"
-            />
-            {/* Buttons Floating Over Image */}
-            <div className="hero-ctas">
-              <Link to={HERO.primaryCta.to} className="btn btn-primary hero-cta-primary">
-                {HERO.primaryCta.label} <ArrowRight size={16} />
-              </Link>
-              <Link to={HERO.secondaryCta.to} className="btn btn-outline-green">
-                {HERO.secondaryCta.label}
-              </Link>
+          {/* Graphic elements (floating dots/leaves like the reference) */}
+          <div className="hero-graphic hero-graphic-1"></div>
+          <div className="hero-graphic hero-graphic-2"></div>
+          <div className="hero-graphic hero-graphic-3"></div>
+
+          <div className="hero-grid">
+            {/* Left Column: Text & CTAs */}
+            <div className="hero-text-content">
+              <span className="hero-badge">{HERO.badge}</span>
+              <h1>
+                Elevate Your Health with Our Proven <span className="hero-accent">Organic</span> <span className="hero-accent-secondary">Farming!</span>
+              </h1>
+              <p>
+                Our expert team crafts tailored strategies, executes effective farming, and drives sustainable growth for your family's nutrition.
+              </p>
+              
+              <div className="hero-ctas">
+                <Link to={HERO.primaryCta.to} className="btn btn-primary hero-cta-primary">
+                  {HERO.primaryCta.label} <ArrowRight size={16} />
+                </Link>
+                <Link to={HERO.secondaryCta.to} className="btn btn-outline-green hero-cta-secondary">
+                  <span className="play-icon">▶</span> {HERO.secondaryCta.label}
+                </Link>
+              </div>
+            </div>
+
+            {/* Right Column: Image */}
+            <div className="hero-image-content">
+              <div className="hero-image-backdrop"></div>
+              <img
+                src={heroFarmers}
+                alt="KainaFresh farmers holding fresh produce"
+                className="hero-image"
+              />
             </div>
           </div>
-
-          {/* Left side is now empty since the title is centered */}
-          <div className="hero-floating-left"></div>
-
-          {/* Right side is now empty since CTAs moved to center overlay */}
-          <div className="hero-floating-right"></div>
         </section>
 
         {/* ── Value Propositions ── */}

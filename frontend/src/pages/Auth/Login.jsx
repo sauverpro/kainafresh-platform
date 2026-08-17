@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import Navbar from '../../components/Navbar/Navbar';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { apiPost, setToken } from '../../api/client';
+import tractorImg from '../../assets/tractor.png';
 import './Auth.css';
 
 /**
@@ -38,15 +40,16 @@ function Login() {
     setError('');
 
     try {
-      const data = await apiPost('/api/login', {
+      const data = await apiPost('/api/auth/login', {
         email: form.email.trim(),
         password: form.password,
       });
 
-      setToken(data.token);
+      // Backend wraps response in data.data
+      const { token, user } = data.data;
+      setToken(token);
 
-      // Redirect based on role
-      if (data.user?.role === 'admin') {
+      if (user?.role === 'admin') {
         navigate('/admin');
       } else {
         navigate('/');
@@ -59,120 +62,106 @@ function Login() {
   };
 
   return (
-    <div className="auth-page">
-      {/* Left brand panel */}
-      <div className="auth-brand-panel">
-        <div className="auth-brand-content">
-          <Link to="/" className="auth-logo">
-            Kaina<span>Fresh</span>
-          </Link>
-          <h2 className="auth-brand-heading">
-            Fresh from the farm,<br />straight to you.
-          </h2>
-          <p className="auth-brand-sub">
-            Join thousands of customers who trust KainaFresh for fresh, locally-sourced produce delivered to their door.
-          </p>
-          <div className="auth-brand-stats">
-            <div className="auth-stat">
-              <strong>350+</strong>
-              <span>Happy customers</span>
-            </div>
-            <div className="auth-stat">
-              <strong>100%</strong>
-              <span>Organic produce</span>
+    <>
+      <Navbar />
+      <div className="auth-page">
+        {/* Noise overlay — same as the rest of the platform */}
+        <div className="auth-noise" aria-hidden="true" />
+
+        {/* ── Centered Card ── */}
+        <div className="auth-card">
+
+          {/* Left: Form Panel */}
+          <div className="auth-form-panel">
+            <div className="auth-form-container">
+
+              <div className="auth-tabs">
+                <Link to="/login" className="auth-tab active">Login</Link>
+                <Link to="/signup" className="auth-tab">Sign up</Link>
+              </div>
+
+              <form className="auth-form" onSubmit={handleSubmit} noValidate>
+                {error && (
+                  <div className="auth-error-banner" role="alert">
+                    <span className="auth-error-icon">⚠</span>
+                    {error}
+                  </div>
+                )}
+
+                {/* Email */}
+                <div className="form-group">
+                  <label htmlFor="login-email">Email address</label>
+                  <div className="input-with-icon">
+                    <Mail className="input-icon-left" size={18} />
+                    <input
+                      id="login-email"
+                      type="email"
+                      name="email"
+                      value={form.email}
+                      onChange={handleChange}
+                      placeholder="Email address"
+                      autoComplete="email"
+                      className={error && !form.email ? 'input-error' : ''}
+                    />
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div className="form-group">
+                  <label htmlFor="login-password">Password</label>
+                  <div className="input-with-icon">
+                    <Lock className="input-icon-left" size={18} />
+                    <input
+                      id="login-password"
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={form.password}
+                      onChange={handleChange}
+                      placeholder="Password"
+                      autoComplete="current-password"
+                    />
+                    <button
+                      type="button"
+                      className="toggle-password"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Actions Row */}
+                <div className="auth-actions-row">
+                  <Link to="/forgot-password" className="forgot-link">
+                    Forgot your password?
+                  </Link>
+                  <button
+                    type="submit"
+                    className="auth-submit-btn"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? <div className="spinner" /> : 'Login'}
+                  </button>
+                </div>
+              </form>
+
             </div>
           </div>
-        </div>
-        {/* Decorative shapes */}
-        <div className="auth-shape auth-shape-1" />
-        <div className="auth-shape auth-shape-2" />
-      </div>
 
-      {/* Right form panel */}
-      <div className="auth-form-panel">
-        <div className="auth-form-container">
-          <div className="auth-form-header">
-            <h1>Welcome back</h1>
-            <p>Sign in to your KainaFresh account</p>
+          {/* Right: Visual Panel */}
+          <div className="auth-visual-panel">
+            <div className="auth-visual-blob" />
+            <img
+              src={tractorImg}
+              alt="KainaFresh Delivery Tractor"
+              className="auth-visual-image"
+            />
           </div>
 
-          <form className="auth-form" onSubmit={handleSubmit} noValidate>
-            {/* Global error */}
-            {error && (
-              <div className="auth-error-banner" role="alert">
-                <span className="auth-error-icon">⚠</span>
-                {error}
-              </div>
-            )}
-
-            {/* Email */}
-            <div className="form-group">
-              <label htmlFor="login-email">Email address</label>
-              <input
-                id="login-email"
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="you@example.com"
-                autoComplete="email"
-                className={error && !form.email ? 'input-error' : ''}
-              />
-            </div>
-
-            {/* Password */}
-            <div className="form-group">
-              <div className="form-label-row">
-                <label htmlFor="login-password">Password</label>
-                <Link to="/forgot-password" className="forgot-link">
-                  Forgot password?
-                </Link>
-              </div>
-              <div className="input-with-icon">
-                <input
-                  id="login-password"
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  className="toggle-password"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              className={`btn btn-primary auth-submit-btn ${isLoading ? 'loading' : ''}`}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <span className="spinner" />
-                  Signing in…
-                </>
-              ) : (
-                'Sign In'
-              )}
-            </button>
-          </form>
-
-          <p className="auth-switch">
-            Don't have an account?{' '}
-            <Link to="/signup">Create one for free</Link>
-          </p>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
