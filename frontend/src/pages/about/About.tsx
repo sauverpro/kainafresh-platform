@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Leaf, Users, ShieldCheck, Award, ArrowRight, MapPin } from 'lucide-react';
-import Navbar from '../../components/navbar/Navbar';
+import Navbar from '../../components/Navbar/Navbar';
 import pepperImage from '../../assets/images/pepper.png';
 import './About.css';
 

@@ -22,6 +22,13 @@ export default function SidebarNavItem({ item }: Props) {
   );
 
   useEffect(() => {
+    if (isChildActive && openSubmenu !== item.id) {
+      setOpenSubmenu(item.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
+  useEffect(() => {
     if (isOpen && contentRef.current) {
       setMaxHeight(`${contentRef.current.scrollHeight}px`);
     } else {
@@ -120,6 +127,7 @@ export default function SidebarNavItem({ item }: Props) {
   return (
     <li>
       <NavLink
+        end
         to={item.path ?? "#"}
         className={({ isActive }) =>
           [

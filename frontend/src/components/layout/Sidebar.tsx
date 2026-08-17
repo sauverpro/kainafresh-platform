@@ -21,7 +21,7 @@ export default function Sidebar() {
     >
       <div className="flex h-[72px] shrink-0 items-center gap-2.5 px-6">
         <Link
-          to="/dashboard"
+          to="/"
           className="flex items-center gap-2.5 overflow-hidden"
         >
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-white">

@@ -11,10 +11,10 @@ import {
   ArrowRight,
   Package,
 } from "lucide-react";
-import Navbar from "../../components/navbar/Navbar";
 import heroFarmers from "../../assets/images/hero-farmers.png";
 import productPlaceholder from "../../assets/images/placeholder.png";
 import "./Home.css";
+import Navbar from "../../components/Navbar/Navbar";
 
 /**
  * Home Page
