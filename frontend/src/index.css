@@ -113,4 +113,42 @@ a {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Brand color — replaces the default admin-template blue */
+  --color-brand-25: #f4faf7;
+  --color-brand-50: #e9f6ef;
+  --color-brand-100: #cfeadd;
+  --color-brand-200: #9ed4ba;
+  --color-brand-300: #6bbd98;
+  --color-brand-400: #3f9f77;
+  --color-brand-500: #1d7255;
+  --color-brand-600: #185f47;
+  --color-brand-700: #144d3a;
+  --color-brand-800: #103c2d;
+  --color-brand-900: #0b2a1f;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-gray-50 text-gray-800 font-sans;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
