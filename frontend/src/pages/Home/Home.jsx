@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../../components/Navbar/Navbar';
 import heroFarmers from '../../assets/hero-farmers.png';
+import productPlaceholder from '../../assets/placeholder.png';
 import './Home.css';
 
 /**
@@ -63,12 +64,12 @@ const VALUE_PROPS = [
 ];
 
 const FEATURED_PRODUCTS = [
-  { id: 1, name: 'Fresh Green Beans', category: 'Vegetables', price: 1200, unit: 'kg', currency: 'RWF', badge: 'Best Seller', inStock: true, emoji: '🫘' },
-  { id: 2, name: 'Organic Avocados', category: 'Fruits', price: 800, unit: 'piece', currency: 'RWF', badge: 'New', inStock: true, emoji: '🥑' },
-  { id: 3, name: 'Farm Tomatoes', category: 'Vegetables', price: 1500, unit: 'kg', currency: 'RWF', badge: null, inStock: true, emoji: '🍅' },
-  { id: 4, name: 'Sweet Potatoes', category: 'Root Crops', price: 900, unit: 'kg', currency: 'RWF', badge: 'Seasonal', inStock: true, emoji: '🍠' },
-  { id: 5, name: 'Fresh Spinach', category: 'Leafy Greens', price: 600, unit: 'bunch', currency: 'RWF', badge: null, inStock: false, emoji: '🌿' },
-  { id: 6, name: 'Passion Fruit', category: 'Fruits', price: 400, unit: 'piece', currency: 'RWF', badge: 'Popular', inStock: true, emoji: '🍈' },
+  { id: 1, name: 'Fresh Green Beans', category: 'Vegetables', price: 1200, unit: 'kg', currency: 'RWF', badge: 'Best Seller', inStock: true, image: productPlaceholder },
+  { id: 2, name: 'Organic Avocados', category: 'Fruits', price: 800, unit: 'piece', currency: 'RWF', badge: 'New', inStock: true, image: productPlaceholder },
+  { id: 3, name: 'Farm Tomatoes', category: 'Vegetables', price: 1500, unit: 'kg', currency: 'RWF', badge: null, inStock: true, image: productPlaceholder },
+  { id: 4, name: 'Sweet Potatoes', category: 'Root Crops', price: 900, unit: 'kg', currency: 'RWF', badge: 'Seasonal', inStock: true, image: productPlaceholder },
+  { id: 5, name: 'Fresh Spinach', category: 'Leafy Greens', price: 600, unit: 'bunch', currency: 'RWF', badge: null, inStock: false, image: productPlaceholder },
+  { id: 6, name: 'Passion Fruit', category: 'Fruits', price: 400, unit: 'piece', currency: 'RWF', badge: 'Popular', inStock: true, image: productPlaceholder },
 ];
 
 const FAQS = [
@@ -191,7 +192,7 @@ function Home() {
             {FEATURED_PRODUCTS.map((product) => (
               <div key={product.id} className="product-card card">
                 <div className="product-img-wrap">
-                  <span className="product-emoji">{product.emoji}</span>
+                  <img src={product.image} alt={product.name} className="product-image" />
                   {product.badge && (
                     <span className="product-badge">{product.badge}</span>
                   )}
