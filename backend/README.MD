@@ -398,7 +398,10 @@ Successful response:
 "slug": "about-us-2",
 "status": "draft"
 }
-} 15. Example: Create a Page Section
+}
+
+## 1Example: Create a Page Section
+
 POST /api/pages/2/sections
 Content-Type: application/json
 
@@ -446,7 +449,7 @@ The backend verifies that the submitted sections belong to the requested page be
 
 The operation is performed inside a database transaction so that a failed update can be rolled back.
 
-17. Migration System
+## Migration System
 
 The project includes a lightweight migration system.
 
@@ -477,98 +480,9 @@ public function up()
         // rollback
     }
 
-} 18. Migration Commands
+}
 
-Create a migration:
-
-php migrations/MigrationRunner.php make create_example_table
-
-Run pending migrations:
-
-php migrations/MigrationRunner.php migrate
-
-Rollback the latest migration batch:
-
-php migrations/MigrationRunner.php rollback
-
-Rollback multiple batches:
-
-php migrations/MigrationRunner.php rollback 2
-
-Check migration status:
-
-php migrations/MigrationRunner.php status 19. Important Migration Convention
-
-The existing migration system expects column definitions in this structure:
-
-[
-[
-'name' => 'title',
-'type' => 'VARCHAR',
-'length' => 255
-]
-]
-
-For example:
-
-$this->createTable('pages', [
-[
-'name' => 'title',
-'type' => 'VARCHAR',
-'length' => 255
-],
-
-    [
-        'name' => 'slug',
-        'type' => 'VARCHAR',
-        'length' => 255,
-        'unique' => true
-    ]
-
-]);
-
-Do not mix this format with raw string column definitions unless the migration system is deliberately changed.
-
-This convention prevents errors such as:
-
-Cannot access offset of type string on string 20. Running the Development Server
-
-From the backend directory:
-
-php -S 127.0.0.1:8000
-
-The API is then available at:
-
-http://127.0.0.1:8000
-
-Example:
-
-http://127.0.0.1:8000/api/health 21. Frontend Integration
-
-The intended architecture is:
-
-                    KAINA FRESH
-                         │
-          ┌──────────────┴──────────────┐
-          │                             │
-    Public Website                 Admin Panel
-          │                             │
-          │                             │
-          ▼                             ▼
-    Public API                    Admin API
-          │                             │
-          └──────────────┬──────────────┘
-                         │
-                    PHP Backend
-                         │
-                         ▼
-                    MySQL/MariaDB
-
-The frontend should not directly access the database.
-
-It communicates with the backend through HTTP/JSON APIs.
-
-22. Dynamic Page Rendering
+## Dynamic Page Rendering
 
 The frontend can render sections based on their type.
 
@@ -595,196 +509,3 @@ type = partners
 Partners component
 
 This allows the backend to control page structure while the frontend controls visual presentation.
-
-23. Global Website Components
-
-Not everything should be a page_section.
-
-Global components such as:
-
-Header
-Navigation
-Cart
-Footer
-Contact information
-
-should remain separate from page-specific sections.
-
-Conceptually:
-
-Website
-│
-├── Global Header
-├── Global Navigation
-│
-├── Page
-│ ├── Hero
-│ ├── Story
-│ ├── Vision
-│ ├── Mission
-│ └── Partners
-│
-└── Global Footer
-
-This prevents duplication across every page.
-
-24. Planned CMS Expansion
-
-The current page/section architecture is designed to support future modules such as:
-
-Products
-Categories
-Product Images
-Media Library
-Team Members
-Partners
-Testimonials
-Orders
-Customers
-Contact Messages
-
-For example:
-
-pages
-│
-└── page_sections
-│
-├── products
-├── team_members
-├── partners
-└── media
-
-These should be introduced as proper relational resources where appropriate rather than putting all application data into JSON.
-
-25. Security Considerations
-
-Before production deployment:
-
-Set a strong JWT_SECRET.
-Use secure database credentials.
-Never commit .env.
-Disable PHP error display in production.
-Use HTTPS.
-Validate and sanitize request data.
-Protect administrative endpoints with authentication/authorization.
-Restrict CORS to trusted frontend domains instead of \*.
-Validate uploaded files when media management is added.
-Use database transactions for multi-record operations.
-Never expose database credentials through API responses. 26. Development Workflow
-
-A typical workflow is:
-
-1. Create migration
-   ↓
-2. Run migration
-   ↓
-3. Create/update Model
-   ↓
-4. Create/update Controller
-   ↓
-5. Register API route
-   ↓
-6. Test endpoint
-   ↓
-7. Connect frontend
-
-For example:
-
-php migrations/MigrationRunner.php make create_products_table
-
-Then:
-
-php migrations/MigrationRunner.php migrate 27. Current Development Status
-Completed
-PHP backend foundation
-Environment configuration
-MySQL/MariaDB connection
-Base model
-Router
-Request handling
-JWT authentication foundation
-User model
-Authentication endpoints
-Migration system
-Users migration
-Authentication tokens migration
-Pages migration
-Page sections migration
-Page model
-Page controller
-Page sections model/controller
-Page CRUD
-Page sections CRUD
-Page + sections retrieval
-Section ordering/reordering
-Draft/published page status
-SEO fields
-Next planned work
-Public published-page API
-Media/file management
-Team members
-Partners
-Products
-Product categories
-Admin authorization/roles
-Frontend CMS integration
-Production deployment configuration 28. Project Principle
-
-The backend should remain simple, modular, and predictable.
-
-The goal is not to build a large framework. Instead, the application uses a small set of reusable components:
-
-Router
-↓
-Controller
-↓
-Model
-↓
-Database
-
-while migrations provide controlled database evolution.
-
-The page-builder system adds flexibility without forcing every website feature into a single JSON structure.
-
-Quick Start
-cd backend
-
-Configure .env:
-
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_NAME=kainafresh
-DB_USER=root
-DB_PASSWORD=
-
-JWT_SECRET=your_secret
-
-Run migrations:
-
-php migrations/MigrationRunner.php migrate
-
-Check migration status:
-
-php migrations/MigrationRunner.php status
-
-Start the development server:
-
-php -S 127.0.0.1:8000
-
-Then test:
-
-GET /api/health
-GET /api/pages
-GET /api/pages/{id}
-GET /api/pages/slug/{slug}
-Recommended next milestone
-
-Now that pages + page sections + reordering are already working, I would keep the backend exactly as it is and move to the next layer:
-
-public page API → media → real Kaina Fresh About Us content → frontend rendering.
-
-That way we're building the actual Kaina Fresh CMS rather than adding duplicate infrastructure.
-
-Get smarter responses, upload files and images, and more.
-Log in
-Sign up for free
