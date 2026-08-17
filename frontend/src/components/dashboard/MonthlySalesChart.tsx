@@ -8,7 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { monthlySales } from "../../data/dashboardData";
+import { monthlySales } from "../../assets/data/dashboardData";
 
 export default function MonthlySalesChart() {
   return (
@@ -37,7 +37,11 @@ export default function MonthlySalesChart() {
               tick={{ fill: "#98a2b3", fontSize: 12 }}
               dy={8}
             />
-            <YAxis axisLine={false} tickLine={false} tick={{ fill: "#98a2b3", fontSize: 12 }} />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#98a2b3", fontSize: 12 }}
+            />
             <Tooltip
               cursor={{ fill: "#1d7255", fillOpacity: 0.06 }}
               contentStyle={{
@@ -46,7 +50,12 @@ export default function MonthlySalesChart() {
                 fontSize: 12,
               }}
             />
-            <Bar dataKey="sales" fill="#1d7255" radius={[5, 5, 5, 5]} maxBarSize={22} />
+            <Bar
+              dataKey="sales"
+              fill="#1d7255"
+              radius={[5, 5, 5, 5]}
+              maxBarSize={22}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>

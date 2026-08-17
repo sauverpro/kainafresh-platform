@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { weeklyStatistics } from "../../data/dashboardData";
+import { weeklyStatistics } from "../../assets/data/dashboardData";
 
 const PERIODS = ["Monthly", "Quarterly", "Annually"] as const;
 type Period = (typeof PERIODS)[number];
@@ -24,7 +24,9 @@ export default function StatisticsChart() {
           <h3 className="text-base font-semibold text-gray-800 dark:text-white">
             Statistics
           </h3>
-          <p className="mt-1 text-sm text-gray-400">Target you've set for each month</p>
+          <p className="mt-1 text-sm text-gray-400">
+            Target you've set for each month
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -77,9 +79,17 @@ export default function StatisticsChart() {
               tick={{ fill: "#98a2b3", fontSize: 12 }}
               dy={8}
             />
-            <YAxis axisLine={false} tickLine={false} tick={{ fill: "#98a2b3", fontSize: 12 }} />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#98a2b3", fontSize: 12 }}
+            />
             <Tooltip
-              contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12 }}
+              contentStyle={{
+                borderRadius: 8,
+                border: "1px solid #e5e7eb",
+                fontSize: 12,
+              }}
             />
             <Area
               type="monotone"

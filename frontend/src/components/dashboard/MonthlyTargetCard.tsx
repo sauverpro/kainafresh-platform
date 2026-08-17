@@ -1,9 +1,16 @@
 import { MoreVertical, ArrowUp, ArrowDown } from "lucide-react";
-import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from "recharts";
-import { monthlyTarget } from "../../data/dashboardData";
+import {
+  RadialBarChart,
+  RadialBar,
+  PolarAngleAxis,
+  ResponsiveContainer,
+} from "recharts";
+import { monthlyTarget } from "../../assets/data/dashboardData";
 
 export default function MonthlyTargetCard() {
-  const data = [{ name: "target", value: monthlyTarget.percent, fill: "#1d7255" }];
+  const data = [
+    { name: "target", value: monthlyTarget.percent, fill: "#1d7255" },
+  ];
 
   return (
     <div className="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900">
@@ -12,7 +19,9 @@ export default function MonthlyTargetCard() {
           <h3 className="text-base font-semibold text-gray-800 dark:text-white">
             Monthly Target
           </h3>
-          <p className="mt-1 text-sm text-gray-400">Target you've set for each month</p>
+          <p className="mt-1 text-sm text-gray-400">
+            Target you've set for each month
+          </p>
         </div>
         <button
           type="button"
@@ -35,7 +44,11 @@ export default function MonthlyTargetCard() {
             endAngle={-40}
           >
             <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-            <RadialBar dataKey="value" cornerRadius={20} background={{ fill: "#eef2f0" }} />
+            <RadialBar
+              dataKey="value"
+              cornerRadius={20}
+              background={{ fill: "#eef2f0" }}
+            />
           </RadialBarChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">

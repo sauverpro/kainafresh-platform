@@ -2,7 +2,7 @@ import StatCard from "../../components/dashboard/StatCard";
 import MonthlyTargetCard from "../../components/dashboard/MonthlyTargetCard";
 import MonthlySalesChart from "../../components/dashboard/MonthlySalesChart";
 import StatisticsChart from "../../components/dashboard/StatisticsChart";
-import { overviewStats } from "../../data/dashboardData";
+import { overviewStats } from "../../assets/data/dashboardData";
 
 export default function EcommerceDashboard() {
   return (

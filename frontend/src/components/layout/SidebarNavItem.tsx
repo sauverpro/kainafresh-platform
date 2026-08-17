@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
-import type { NavItem } from "../../data/sideNavData.types";
+import type { NavItem } from "../../assets/data/sideNavData.types";
 import { useSidebar } from "../../context/SidebarContext";
 
 interface Props {
@@ -9,14 +9,17 @@ interface Props {
 }
 
 export default function SidebarNavItem({ item }: Props) {
-  const { isRailExpanded, openSubmenu, setOpenSubmenu, setIsHovered } = useSidebar();
+  const { isRailExpanded, openSubmenu, setOpenSubmenu, setIsHovered } =
+    useSidebar();
   const location = useLocation();
   const contentRef = useRef<HTMLDivElement>(null);
   const [maxHeight, setMaxHeight] = useState("0px");
 
   const isOpen = openSubmenu === item.id;
   const hasSubItems = Boolean(item.subItems?.length);
-  const isChildActive = item.subItems?.some((s) => s.path === location.pathname);
+  const isChildActive = item.subItems?.some(
+    (s) => s.path === location.pathname,
+  );
 
   useEffect(() => {
     if (isOpen && contentRef.current) {
@@ -55,13 +58,17 @@ export default function SidebarNavItem({ item }: Props) {
             <Icon
               className={[
                 "h-5 w-5 shrink-0",
-                isOpen || isChildActive ? "text-brand-500" : "text-gray-500 dark:text-gray-400",
+                isOpen || isChildActive
+                  ? "text-brand-500"
+                  : "text-gray-500 dark:text-gray-400",
               ].join(" ")}
             />
             <span
               className={[
                 "overflow-hidden whitespace-nowrap transition-all duration-200",
-                isRailExpanded ? "max-w-[160px] opacity-100" : "max-w-0 opacity-0",
+                isRailExpanded
+                  ? "max-w-[160px] opacity-100"
+                  : "max-w-0 opacity-0",
               ].join(" ")}
             >
               {item.label}
@@ -129,13 +136,17 @@ export default function SidebarNavItem({ item }: Props) {
             <Icon
               className={[
                 "h-5 w-5 shrink-0",
-                isActive ? "text-brand-500" : "text-gray-500 dark:text-gray-400",
+                isActive
+                  ? "text-brand-500"
+                  : "text-gray-500 dark:text-gray-400",
               ].join(" ")}
             />
             <span
               className={[
                 "overflow-hidden whitespace-nowrap transition-all duration-200",
-                isRailExpanded ? "max-w-[160px] opacity-100" : "max-w-0 opacity-0",
+                isRailExpanded
+                  ? "max-w-[160px] opacity-100"
+                  : "max-w-0 opacity-0",
               ].join(" ")}
             >
               {item.label}

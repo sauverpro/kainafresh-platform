@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
 import { LayoutGrid } from "lucide-react";
 import { useSidebar } from "../../context/SidebarContext";
-import { sideNavData } from "../../data/sideNavData";
+import { sideNavData } from "../../assets/data/sideNavData";
 import SidebarNavItem from "./SidebarNavItem";
 
 export default function Sidebar() {
-  const { isExpanded, isMobileOpen, isRailExpanded, setIsHovered } = useSidebar();
+  const { isExpanded, isMobileOpen, isRailExpanded, setIsHovered } =
+    useSidebar();
 
   return (
     <aside
@@ -19,14 +20,19 @@ export default function Sidebar() {
       ].join(" ")}
     >
       <div className="flex h-[72px] shrink-0 items-center gap-2.5 px-6">
-        <Link to="/dashboard" className="flex items-center gap-2.5 overflow-hidden">
+        <Link
+          to="/dashboard"
+          className="flex items-center gap-2.5 overflow-hidden"
+        >
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-white">
             <LayoutGrid className="h-5 w-5" />
           </span>
           <span
             className={[
               "whitespace-nowrap text-lg font-semibold text-gray-900 transition-all duration-200 dark:text-white",
-              isRailExpanded ? "max-w-[160px] opacity-100" : "max-w-0 opacity-0",
+              isRailExpanded
+                ? "max-w-[160px] opacity-100"
+                : "max-w-0 opacity-0",
             ].join(" ")}
           >
             Kaina Fresh LTD
