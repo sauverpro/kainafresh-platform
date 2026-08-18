@@ -3,7 +3,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, User, Mail, Lock, Phone, ArrowRight, ArrowLeft } from 'lucide-react';
 import { apiPost, setToken } from '../../api/client';
-import tractorImg from '../../assets/tractor.png';
+import tractorImg from '../../assets/images/tractor.png';
 import './Auth.css';
 
 /**
@@ -13,12 +13,34 @@ import './Auth.css';
  * Step 3: Password
  * Backend: POST /api/auth/register requires: username, email, password, phone_number, full_name
  */
+interface FormState {
+  full_name: string;
+  username: string;
+  email: string;
+  phone_number: string;
+  password: string;
+  confirmPassword: string;
+}
 
+interface FieldErrors {
+  full_name?: string;
+  username?: string;
+  email?: string;
+  phone_number?: string;
+  password?: string;
+  confirmPassword?: string;
+}
+
+interface LoginResponse {
+  data: {
+    token: string;
+  };
+}
 function Signup() {
-  const navigate = useNavigate();
-  const [step, setStep] = useState(1);
-  const [direction, setDirection] = useState('forward'); // for animation
-  const [form, setForm] = useState({
+ const navigate = useNavigate();
+  const [step, setStep] = useState<number>(1);
+  const [direction, setDirection] = useState<'forward' | 'back'>('forward'); // typed explicitly for animations
+  const [form, setForm] = useState<FormState>({
     full_name: '',
     username: '',
     email: '',
@@ -26,14 +48,14 @@ function Signup() {
     password: '',
     confirmPassword: '',
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [serverError, setServerError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [serverError, setServerError] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Password strength
-  const getPasswordStrength = (pw) => {
+  // Password strength checking engine
+  const getPasswordStrength = (pw: string): number => {
     if (!pw) return 0;
     let score = 0;
     if (pw.length >= 8) score++;
@@ -42,19 +64,21 @@ function Signup() {
     if (/[^A-Za-z0-9]/.test(pw)) score++;
     return score;
   };
+
   const strengthLabel = ['', 'Weak', 'Fair', 'Good', 'Strong'];
   const strengthClass = ['', 'strength-weak', 'strength-fair', 'strength-good', 'strength-strong'];
   const pwStrength = getPasswordStrength(form.password);
 
-  const handleChange = (e) => {
-    setFieldErrors((prev) => ({ ...prev, [e.target.name]: '' }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFieldErrors((prev) => ({ ...prev, [name]: '' }));
     setServerError('');
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Per-step validation
-  const validateStep = () => {
-    const errors = {};
+  // Per-step structural verification
+  const validateStep = (): FieldErrors => {
+    const errors: FieldErrors = {};
     if (step === 1) {
       if (!form.full_name.trim()) errors.full_name = 'Full name is required.';
       if (!form.username.trim()) errors.username = 'Username is required.';
@@ -88,7 +112,7 @@ function Signup() {
     setStep((s) => s - 1);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const errors = validateStep();
     if (Object.keys(errors).length > 0) return setFieldErrors(errors);
@@ -97,6 +121,7 @@ function Signup() {
     setServerError('');
 
     try {
+      // 1. Submit Registration
       await apiPost('/api/auth/register', {
         full_name: form.full_name.trim(),
         username: form.username.trim(),
@@ -105,7 +130,8 @@ function Signup() {
         password: form.password,
       });
 
-      const loginData = await apiPost('/api/auth/login', {
+      // 2. Perform Automatic Authentication Link
+      const loginData = await apiPost<LoginResponse>('/api/auth/login', {
         email: form.email.trim(),
         password: form.password,
       });
@@ -113,7 +139,7 @@ function Signup() {
       const { token } = loginData.data;
       setToken(token);
       navigate('/');
-    } catch (err) {
+    } catch (err: any) {
       setServerError(err.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);

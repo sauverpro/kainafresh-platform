@@ -3,7 +3,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { apiPost, setToken } from '../../api/client';
-import tractorImg from '../../assets/tractor.png';
+import tractorImg from '../../assets/images/tractor.png';
 import './Auth.css';
 
 /**
@@ -19,7 +19,7 @@ function Login() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e) => {
+  const handleChange = (e:any) => {
     setError('');
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -31,7 +31,7 @@ function Login() {
     return null;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e:any) => {
     e.preventDefault();
     const validationError = validate();
     if (validationError) return setError(validationError);
@@ -54,7 +54,7 @@ function Login() {
       } else {
         navigate('/');
       }
-    } catch (err) {
+    } catch (err:any) {
       setError(err.message || 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
