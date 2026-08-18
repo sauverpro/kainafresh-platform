@@ -4,13 +4,13 @@ import AppLayout from "./components/layout/AppLayout";
 import Placeholder from "./pages/Placeholder";
 import { isAuthenticated } from "./api/client";
 import { sideNavData } from "./assets/data/sideNavData";
-import Home from "./pages/Home/Home";
-import Login from "./pages/Auth/Login";
-import Signup from "./pages/Auth/Signup";
-import About from "./pages/About/About";
-import Contact from "./pages/Contact/Contact";
-import Wholesale from "./pages/Wholesale/Wholesale";
-import EcommerceDashboard from "./pages/Dashboard/EcommerceDashboard";
+import Home from "./pages/home/Home";
+import Login from "./pages/auth/Login";
+import Signup from "./pages/auth/Signup";
+import About from "./pages/about/About";
+import Contact from "./pages/contact/Contact";
+import Wholesale from "./pages/wholesale/Wholesale";
+import EcommerceDashboard from "./pages/dashboard/EcommerceDashboard";
 import type { NavItem } from "./assets/data/sideNavData.types";
 
 interface ProtectedRouteProps {
@@ -57,9 +57,9 @@ function App() {
           {/* Authenticated Dashboard*/}
           <Route 
             element={
-              // <ProtectedRoute>
+              <ProtectedRoute>
                 <AppLayout />
-              // </ProtectedRoute>
+              </ProtectedRoute>
             }
           >
             <Route path="/dashboard" element={<EcommerceDashboard />} />
