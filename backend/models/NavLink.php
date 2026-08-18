@@ -23,6 +23,17 @@ class NavLink extends Model{
      return $this->delete($id);
     }
 
+    // get nav links
+    public function getNavs(){
+        $sql = "SELECT * FROM `{$this->table}` WHERE `link_type` = ?";
+        $stmt = $this->db->prepare($sql);
+        $linkType = "nav";
+        $stmt->bind_param("s", $linkType);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $this->fetchAll($result);
+    }
+
 
 
 }

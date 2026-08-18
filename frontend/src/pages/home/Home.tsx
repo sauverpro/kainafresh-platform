@@ -14,7 +14,7 @@ import {
 import heroFarmers from "../../assets/images/hero-farmers.png";
 import productPlaceholder from "../../assets/images/placeholder.png";
 import "./Home.css";
-import Navbar from "../../components/Navbar/Navbar";
+import Navbar from "../../components/navbar/Navbar";
 
 /**
  * Home Page

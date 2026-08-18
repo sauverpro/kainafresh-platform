@@ -90,4 +90,12 @@ class NavLinkController extends BaseController {
                 ],500);
         }
     }
+    // function to get only navigation links
+    public function navs(){
+        $nav_links = $this->nav_link_model->getNavs();
+        $this->jsonResponse([
+            'success'=> true,
+            'data'=> $nav_links
+        ],201);
+    }
 }

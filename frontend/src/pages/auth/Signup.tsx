@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Navbar from '../../components/Navbar/Navbar';
+import Navbar from '../../components/navbar/Navbar';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, User, Mail, Lock, Phone, ArrowRight, ArrowLeft } from 'lucide-react';
 import { apiPost, setToken } from '../../api/client';
