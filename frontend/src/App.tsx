@@ -57,9 +57,9 @@ function App() {
           {/* Authenticated Dashboard*/}
           <Route 
             element={
-              // <ProtectedRoute>
+              <ProtectedRoute>
                 <AppLayout />
-              // </ProtectedRoute>
+              </ProtectedRoute>
             }
           >
             <Route path="/dashboard" element={<EcommerceDashboard />} />
