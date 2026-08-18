@@ -15,7 +15,6 @@ import heroFarmers from "../../assets/images/hero-farmers.png";
 import productPlaceholder from "../../assets/images/placeholder.png";
 import "./Home.css";
 import Navbar from "../../components/Navbar/Navbar";
-import Footer from "../../components/Footer/Footer";
 
 /**
  * Home Page
@@ -365,7 +364,6 @@ function Home() {
           </div>
         </section>
       </main>
-      <Footer />
     </>
   );
 }
