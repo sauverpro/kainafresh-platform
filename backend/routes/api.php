@@ -88,6 +88,7 @@ $router->addRoute(
 );
 $router->addRoute('GET','/api/settings','SettingController@index');
 $router->addRoute('GET','/api/navlinks','NavLinkController@index');
+$router->addRoute('GET','/api/navlinks/nav','NavLinkController@navs');
 // middleware protected routes
 $router->addRoute('POST','/api/settings/create','SettingController@store','auth');
 
