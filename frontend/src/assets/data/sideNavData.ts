@@ -29,7 +29,15 @@ export const sideNavData: NavSection[] = [
           { label: "Logistics", path: "/logistics" },
         ],
       },
-      { id: "crm", label: "CRM", icon: Users2, path: "/crm-standalone" },
+      {
+        id: "crm",
+        label: "CRM",
+        icon: Users2,
+        subItems: [
+          { label: "Pages", otherSub: [] },
+          { label: "Settings", path: "/crm/settings" },
+        ],
+      },
       { id: "stocks", label: "Stocks", icon: LineChart, path: "/stocks-standalone" },
       {
         id: "sales",

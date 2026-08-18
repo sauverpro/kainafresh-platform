@@ -11,6 +11,7 @@ import About from "./pages/about/About";
 import Contact from "./pages/contact/Contact";
 import Wholesale from "./pages/wholesale/Wholesale";
 import EcommerceDashboard from "./pages/dashboard/EcommerceDashboard";
+import CrmPage from "./pages/crm/CrmPage";
 import type { NavItem } from "./assets/data/sideNavData.types";
 
 interface ProtectedRouteProps {
@@ -27,7 +28,17 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
 function collectRoutes(items: NavItem[]): { path: string; label: string }[] {
   return items.flatMap((item) => {
     if (item.subItems?.length) {
-      return item.subItems.map((sub) => ({ path: sub.path, label: sub.label }));
+      return item.subItems.flatMap((sub) => {
+        if (sub.otherSub?.length) {
+          return sub.otherSub
+            .filter((child): child is { label: string; path: string } => Boolean(child.path))
+            .map((child) => ({ path: child.path, label: child.label }));
+        }
+        if (sub.path) {
+          return [{ path: sub.path, label: sub.label }];
+        }
+        return [];
+      });
     }
     if (item.path) {
       return [{ path: item.path, label: item.label }];
@@ -57,12 +68,14 @@ function App() {
           {/* Authenticated Dashboard*/}
           <Route 
             element={
-              <ProtectedRoute>
+              // <ProtectedRoute>
                 <AppLayout />
-              </ProtectedRoute>
+              // {/* </ProtectedRoute> */}
             }
           >
             <Route path="/dashboard" element={<EcommerceDashboard />} />
+            <Route path="/crm/settings" element={<Placeholder title="Settings" />} />
+            <Route path="/crm/:id" element={<CrmPage />} />
             {routes.map((route) => (
               <Route
                 key={route.path}

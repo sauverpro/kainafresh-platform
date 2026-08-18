@@ -1,12 +1,42 @@
+import { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { LayoutGrid } from "lucide-react";
 import { useSidebar } from "../../context/SidebarContext";
 import { sideNavData } from "../../assets/data/sideNavData";
 import SidebarNavItem from "./SidebarNavItem";
+import { usePageStore } from "../../store/usePageStore";
+import type { NavSection } from "../../assets/data/sideNavData.types";
 
 export default function Sidebar() {
   const { isExpanded, isMobileOpen, isRailExpanded, setIsHovered } =
     useSidebar();
+  const { pages, fetchPages } = usePageStore();
+
+  useEffect(() => {
+    fetchPages();
+  }, [fetchPages]);
+
+  const navData: NavSection[] = useMemo(() => {
+    return sideNavData.map((section) => ({
+      ...section,
+      items: section.items.map((item) => {
+        if (item.id !== "crm") return item;
+        return {
+          ...item,
+          subItems: item.subItems?.map((sub) => {
+            if (sub.label !== "Pages") return sub;
+            return {
+              ...sub,
+              otherSub: pages.map((p) => ({
+                label: p.title,
+                path: `/crm/${p.id}`,
+              })),
+            };
+          }),
+        };
+      }),
+    }));
+  }, [pages]);
 
   return (
     <aside
@@ -42,7 +72,7 @@ export default function Sidebar() {
 
       {/* Nav items */}
       <nav className="no-scrollbar flex-1 overflow-y-auto px-4 pb-6">
-        {sideNavData.map((section) => (
+        {navData.map((section) => (
           <div key={section.id} className="mb-6">
             <h3
               className={[

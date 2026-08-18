@@ -4,8 +4,9 @@ export type IconType = ComponentType<SVGProps<SVGSVGElement>>;
 
 export interface NavSubItem {
   label: string;
-  path: string;
+  path?: string;
   badge?: string;
+  otherSub?: NavSubItem[];
 }
 
 export interface NavItem {
