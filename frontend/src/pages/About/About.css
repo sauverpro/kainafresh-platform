@@ -3,7 +3,7 @@
 ────────────────────────────────────────────── */
 
 .about-page {
-  padding-top: 80px; /* Navbar offset */
+  font-family: 'Inter', sans-serif;
   overflow-x: hidden;
 }
 

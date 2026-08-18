@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Leaf, Users, ShieldCheck, Award, ArrowRight, MapPin } from 'lucide-react';
 import Navbar from '../../components/Navbar/Navbar';
+import Footer from '../../components/Footer/Footer';
 import pepperImage from '../../assets/pepper.png';
 import './About.css';
 
@@ -183,6 +184,7 @@ function About() {
         </section>
 
       </main>
+      <Footer />
     </>
   );
 }

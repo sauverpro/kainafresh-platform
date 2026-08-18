@@ -1,5 +1,6 @@
 import React from 'react';
 import Navbar from '../../components/Navbar/Navbar';
+import Footer from '../../components/Footer/Footer';
 
 /**
  * Contact Us Page
@@ -17,6 +18,7 @@ function Contact() {
         <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#076935' }}>Contact Us</h1>
         <p>This page is a placeholder. Contact info and form coming soon.</p>
       </main>
+      <Footer />
     </>
   );
 }

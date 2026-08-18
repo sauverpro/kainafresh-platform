@@ -11,8 +11,13 @@ import {
   Phone,
   Mail,
   ChevronDown,
+  ShieldCheck,
+  CheckCircle2,
+  Clock,
+  Send
 } from 'lucide-react';
 import Navbar from '../../components/Navbar/Navbar';
+import Footer from '../../components/Footer/Footer';
 import './Wholesale.css';
 
 /**
@@ -335,6 +340,7 @@ function Wholesale() {
         </section>
 
       </main>
+      <Footer />
     </>
   );
 }

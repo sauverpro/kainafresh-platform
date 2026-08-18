@@ -3,7 +3,6 @@
 ────────────────────────────────────────────── */
 
 .home-page {
-  padding-top: 80px;
   overflow-x: hidden;
 }
 
@@ -52,7 +51,7 @@
   align-items: center;
   min-height: 100vh;
   /* Light fader soft gradient (beige to light green to white) */
-  background: linear-gradient(120deg, rgba(243, 153, 39, 0.08) 0%, rgba(7, 105, 53, 0.05) 50%, rgba(255, 255, 255, 1) 100%);
+  background: linear-gradient(120deg, rgba(243, 153, 39, 0.25) 0%, rgba(7, 105, 53, 0.15) 55%, rgba(255, 255, 255, 1) 100%);
   overflow: hidden;
   padding: 0 5%;
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { isAuthenticated } from './api/client';
 
@@ -29,6 +29,24 @@ function ProtectedRoute({ children }) {
  * All layout, styling, and logic lives in the individual page components.
  */
 function App() {
+  // Global scroll listener for auto-hiding scrollbar
+  useEffect(() => {
+    let scrollTimeout;
+    const handleScroll = () => {
+      document.body.classList.add('is-scrolling');
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        document.body.classList.remove('is-scrolling');
+      }, 500); // 0.5s delay
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll, { capture: true });
+      clearTimeout(scrollTimeout);
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>

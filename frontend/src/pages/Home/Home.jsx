@@ -5,13 +5,13 @@ import {
   ShoppingCart,
   Truck,
   ShieldCheck,
-  Star,
   ChevronDown,
   ChevronUp,
   ArrowRight,
   Package,
 } from 'lucide-react';
 import Navbar from '../../components/Navbar/Navbar';
+import Footer from '../../components/Footer/Footer';
 import heroFarmers from '../../assets/hero-farmers.png';
 import productPlaceholder from '../../assets/placeholder.png';
 import './Home.css';
@@ -25,20 +25,7 @@ import './Home.css';
 
 // --- Dummy Data ---
 
-const HERO = {
-  badge: '100% Organic · Farm to Table',
-  heading: 'Farm Fresh Produce,',
-  headingAccent: 'Delivered Direct to You.',
-  subheading:
-    'We grow it. We pack it. We deliver it — fresh, certified, and straight from our fields to your table. Experience the taste of real agriculture.',
-  primaryCta: { label: 'Shop Now', to: '/products' },
-  secondaryCta: { label: 'Wholesale & Exports', to: '/wholesale' },
-  stats: [
-    { value: '350+', label: 'Happy Customers' },
-    { value: '20+', label: 'Produce Varieties' },
-    { value: '100%', label: 'Organic Certified' },
-  ],
-};
+
 
 const VALUE_PROPS = [
   {
@@ -113,33 +100,24 @@ function Home() {
       <main className="home-page">
 
         {/* ── Hero ── */}
-        {/* ── Hero ── */}
         <section className="hero">
-          {/* Noise background */}
-          <div className="hero-noise"></div>
-
-          {/* Graphic elements (floating dots/leaves like the reference) */}
-          <div className="hero-graphic hero-graphic-1"></div>
-          <div className="hero-graphic hero-graphic-2"></div>
-          <div className="hero-graphic hero-graphic-3"></div>
-
           <div className="hero-grid">
             {/* Left Column: Text & CTAs */}
             <div className="hero-text-content">
-              <span className="hero-badge">{HERO.badge}</span>
+              <span className="hero-badge">100% Organic · Farm to Table</span>
               <h1>
                 Elevate Your Health with Our Proven <span className="hero-accent">Organic</span> <span className="hero-accent-secondary">Farming!</span>
               </h1>
               <p>
                 Our expert team crafts tailored strategies, executes effective farming, and drives sustainable growth for your family's nutrition.
               </p>
-              
+
               <div className="hero-ctas">
-                <Link to={HERO.primaryCta.to} className="btn btn-primary hero-cta-primary">
-                  {HERO.primaryCta.label} <ArrowRight size={16} />
+                <Link to="/products" className="btn btn-primary hero-cta-primary">
+                  Shop Now <ArrowRight size={16} />
                 </Link>
-                <Link to={HERO.secondaryCta.to} className="btn btn-outline-green hero-cta-secondary">
-                  <span className="play-icon">▶</span> {HERO.secondaryCta.label}
+                <Link to="/wholesale" className="btn btn-outline-green hero-cta-secondary">
+                  <span className="play-icon">▶</span> Watch videos
                 </Link>
               </div>
             </div>
@@ -269,6 +247,8 @@ function Home() {
         </section>
 
       </main>
+
+      <Footer />
     </>
   );
 }
