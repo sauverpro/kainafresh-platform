@@ -95,6 +95,12 @@
   color: inherit;
 }
 
+.site-title{
+  color: #FF6B00;
+  text-transform: capitalize;
+  font-size: 15px;
+}
+
 /* Action buttons inside the nav */
 .navbar-actions {
   margin-left: auto;

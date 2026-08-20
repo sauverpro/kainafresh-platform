@@ -13,7 +13,7 @@ public function __construct(){
 
 public function index(){
     $data = $this->settingModel->getSettings();
-    $this->jsonResponse(["settings", $data]);
+    $this->jsonResponse(["data", $data]);
 }
 // function to create global settings for the site
 

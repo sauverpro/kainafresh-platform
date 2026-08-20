@@ -101,3 +101,12 @@ export const apiPut = (endpoint, body) =>
  * @param {string} endpoint
  */
 export const apiDelete = (endpoint) => request(endpoint, { method: 'DELETE' });
+
+
+//  endpoints for settings and nav links
+
+
+export const getSettings = () => apiGet('/api/settings');
+
+
+export const getNavLinks = () => apiGet('/api/navlinks/nav');

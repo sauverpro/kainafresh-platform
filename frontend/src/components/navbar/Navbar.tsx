@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React,{ useState } from 'react'; 
 import { NavLink, useNavigate } from 'react-router-dom';
-import { isAuthenticated, removeToken } from '../../api/client';
+import { isAuthenticated, removeToken, apiGet } from '../../api/client';
 import './Navbar.css';
+// import api
 
 /**
  * Navbar
@@ -11,6 +12,9 @@ import './Navbar.css';
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [logoSrc, setLogoSrc] = useState<string | null>(null);
+  const [siteTitle, setSiteTitle] = useState<string | null>(null);
+  const [navLinks, setNavLinks] = useState<Array<any>>([]);
   const navigate = useNavigate();
   const loggedIn = isAuthenticated();
 
@@ -25,6 +29,53 @@ function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Fetch site settings and navlinks from API on mount
+  React.useEffect(() => {
+    let cancelled = false;
+
+    async function loadData() {
+      try {
+        const settingsResp = await apiGet<any>('/api/settings');
+        
+        let settingsData: any = null;
+        if (settingsResp && settingsResp.data) {
+          settingsData = settingsResp.data;
+        } else if (Array.isArray(settingsResp) && settingsResp.length > 1) {
+          settingsData = settingsResp[1];
+        }
+
+        if (!cancelled && settingsData) {
+          const API_BASE = import.meta.env.VITE_API_BASE_URL || window.location.origin;
+          // set site title if present
+          if (settingsData.site_title) setSiteTitle(settingsData.site_title);
+          if (settingsData.site_logo) {
+          const raw = settingsData.site_logo;
+          const src = /^https?:\/\//.test(raw)
+            ? raw
+            : `${API_BASE}${raw.startsWith('/') ? raw : '/' + raw}`;
+          setLogoSrc(src);
+          }
+        }
+      } catch (err) {
+        console.debug('Failed loading settings', err);
+      }
+
+      try {
+        const navsResp = await apiGet<any>('/api/navlinks/nav');
+        
+        const navsData = navsResp?.data ?? [];
+        if (!cancelled && Array.isArray(navsData)) {
+          setNavLinks(navsData);
+        }
+      } catch (err) {
+        console.debug('Failed loading navlinks', err);
+      }
+    }
+
+    loadData();
+    return () => { cancelled = true; };
+  }, []);
+
   const handleLogout = () => {
     removeToken();
     navigate('/login');
@@ -36,7 +87,21 @@ function Navbar() {
     <header className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
       {/* Logo */}
       <NavLink to="/" className="navbar-logo" onClick={closeMenu}>
-        Kaina<span className="logo-accent">Fresh</span>
+        {logoSrc ? (
+          <div className="brand-row" style={{display: 'flex', alignItems: 'center', gap: 8}}>
+            <img src={logoSrc} alt={siteTitle ?? 'Kaina Fresh'} className="site-logo" style={{height:53, width:53}} />
+            {siteTitle ? (
+              <span className="site-title">{siteTitle}</span>
+            ) : (
+              <span className="logo-accent">Fresh</span>
+            )}
+          </div>
+        ) : (
+          <>
+          {/*  */}
+          <p>{siteTitle}</p>
+          </>
+        )}
       </NavLink>
 
       {/* Hamburger toggle */}
@@ -53,11 +118,20 @@ function Navbar() {
       {/* Nav links */}
       <nav className={`navbar-links ${isMenuOpen ? 'active' : ''}`}>
         <div className="nav-center">
-          <NavLink to="/" end onClick={closeMenu}>Home</NavLink>
-          <NavLink to="/about" onClick={closeMenu}>Our Farm</NavLink>
-          <NavLink to="/wholesale" onClick={closeMenu}>Wholesale & Exports</NavLink>
-          <NavLink to="/contact" onClick={closeMenu}>Contact</NavLink>
-          {loggedIn && (
+          {/* Render navlinks from API if available, otherwise fall back to static links */}
+          {navLinks.length > 0 ? (
+            navLinks.map((link: any) => (
+              <NavLink key={link.id ?? link.link} to={link.link} onClick={closeMenu}>
+                {link.link_name}
+              </NavLink>
+            ))
+          ) : (
+            <>
+              
+            </>
+          )}
+          {/* Ensure admin link is present when logged in and not provided by API */}
+          {loggedIn && !navLinks.find((n: any) => n.link === '/admin') && (
             <NavLink to="/admin" onClick={closeMenu}>Admin</NavLink>
           )}
         </div>
