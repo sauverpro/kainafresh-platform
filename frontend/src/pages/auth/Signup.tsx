@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import Navbar from '../../components/navbar/Navbar';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, User, Mail, Lock, Phone, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
 import { apiPost, setToken } from '../../api/client';
 import tractorImg from '../../assets/images/tractor.png';
 import './Auth.css';
@@ -40,7 +40,7 @@ interface LoginResponse {
 function Signup() {
  const navigate = useNavigate();
   const [step, setStep] = useState<number>(1);
-  const [direction, setDirection] = useState<'forward' | 'back'>('forward'); // typed explicitly for animations
+
   const [form, setForm] = useState<FormState>({
     full_name: '',
     username: '',
@@ -102,14 +102,12 @@ function Signup() {
   const goNext = () => {
     const errors = validateStep();
     if (Object.keys(errors).length > 0) return setFieldErrors(errors);
-    setDirection('forward');
     setStep((s) => s + 1);
   };
 
   const goBack = () => {
     setFieldErrors({});
     setServerError('');
-    setDirection('back');
     setStep((s) => s - 1);
   };
 
