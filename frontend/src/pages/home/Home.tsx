@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { apiGet } from "../../api/client";
+
 import { Link } from "react-router-dom";
 import {
   Leaf,
@@ -24,21 +26,6 @@ import Navbar from "../../components/navbar/Navbar";
  */
 
 // --- Dummy Data ---
-
-const HERO = {
-  badge: "100% Organic · Farm to Table",
-  heading: "Farm Fresh Produce,",
-  headingAccent: "Delivered Direct to You.",
-  subheading:
-    "We grow it. We pack it. We deliver it — fresh, certified, and straight from our fields to your table. Experience the taste of real agriculture.",
-  primaryCta: { label: "Shop Now", to: "/products" },
-  secondaryCta: { label: "Wholesale & Exports", to: "/wholesale" },
-  stats: [
-    { value: "350+", label: "Happy Customers" },
-    { value: "20+", label: "Produce Varieties" },
-    { value: "100%", label: "Organic Certified" },
-  ],
-};
 
 const VALUE_PROPS = [
   {
@@ -172,9 +159,25 @@ const FAQS = [
 // --- Component ---
 
 function Home() {
-  const [openFaq, setOpenFaq] = useState(null);
+  const [hero, setHero] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  useEffect(() => {
+    apiGet("/api/pages/slug/home")
+      .then((res) => {
+        const heroSection = res.data.sections.find(
+          (s: any) => s.type === "hero",
+        );
+        setHero(heroSection?.content ?? null);
+      })
+      .catch((err) => console.error("Failed to load hero:", err))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const toggleFaq = (id:any) => setOpenFaq(openFaq === id ? null : id);
+  const toggleFaq = (id: any) => setOpenFaq(openFaq === id ? null : id);
+
+  if (loading) return <div className="home-loading">Loading…</div>;
+  if (!hero) return <div className="home-loading">Hero content not found.</div>;
 
   return (
     <>
@@ -194,30 +197,28 @@ function Home() {
           <div className="hero-grid">
             {/* Left Column: Text & CTAs */}
             <div className="hero-text-content">
-              <span className="hero-badge">{HERO.badge}</span>
+              <span className="hero-badge">{hero.badge}</span>
               <h1>
-                Elevate Your Health with Our Proven{" "}
-                <span className="hero-accent">Organic</span>{" "}
-                <span className="hero-accent-secondary">Farming!</span>
+                {hero.heading}
+                <span className="hero-accent">{hero.headingAccent}</span>{" "}
+                <span className="hero-accent-secondary">
+                  {hero.headingAccentSecondary}
+                </span>
               </h1>
-              <p>
-                Our expert team crafts tailored strategies, executes effective
-                farming, and drives sustainable growth for your family's
-                nutrition.
-              </p>
+              <p>{hero.subheading}</p>
 
               <div className="hero-ctas">
                 <Link
-                  to={HERO.primaryCta.to}
+                  to={hero.primaryCta.to}
                   className="btn btn-primary hero-cta-primary"
                 >
-                  {HERO.primaryCta.label} <ArrowRight size={16} />
+                  {hero.primaryCta.label} <ArrowRight size={16} />
                 </Link>
                 <Link
-                  to={HERO.secondaryCta.to}
+                  to={hero.secondaryCta.to}
                   className="btn btn-outline-green hero-cta-secondary"
                 >
-                  <span className="play-icon">▶</span> {HERO.secondaryCta.label}
+                  <span className="play-icon">▶</span> {hero.secondaryCta.label}
                 </Link>
               </div>
             </div>
