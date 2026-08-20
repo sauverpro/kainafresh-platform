@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import {
   Package,
   Truck,
@@ -13,14 +13,24 @@ import {
   ChevronDown,
 } from "lucide-react";
 import Navbar from "../../components/navbar/Navbar";
+import { apiGet } from "../../api/client";
 import "./Wholesale.css";
 
 /**
  * Wholesale & Exports Page
- * Content is structured to be CMS-driven.
- * TODO: Replace hardcoded data with API calls when backend endpoints are ready.
- * See API_CONTRACT.md for the expected response shape.
+ * Hero section driven by: GET /api/pages/slug/wholesale (CMS section type: "hero")
+ * Remaining content uses hardcoded defaults (benefits, products, process, form).
+ * Contact form submission: POST /api/wholesale/inquiry — NOT YET IMPLEMENTED (mock).
  */
+
+interface WholesaleHero {
+  badge?: string;
+  heading?: string;
+  headingAccent?: string;
+  description?: string;
+  primaryCta?: { label: string; to: string };
+  secondaryCta?: { label: string; to: string };
+}
 
 const BENEFITS = [
   {
@@ -137,6 +147,7 @@ const PROCESS_STEPS = [
 ];
 
 function Wholesale() {
+  const [cmsHero, setCmsHero] = useState<WholesaleHero | null>(null);
   const [form, setForm] = useState({
     companyName: "",
     contactName: "",
@@ -150,11 +161,33 @@ function Wholesale() {
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e:any) => {
+  useEffect(() => {
+    apiGet<{ success: boolean; data: { sections: { type: string; content: WholesaleHero }[] } }>('/api/pages/slug/wholesale')
+      .then((res) => {
+        if (!res.success || !res.data?.sections) return;
+        const heroSection = res.data.sections.find((s) => s.type === 'hero');
+        if (heroSection) setCmsHero(heroSection.content);
+      })
+      .catch(() => { /* silently use defaults */ });
+  }, []);
+
+  // Merge CMS with defaults
+  const hero: WholesaleHero = {
+    badge: cmsHero?.badge ?? 'Wholesale & Exports',
+    heading: cmsHero?.heading ?? 'Fresh Produce at Scale.',
+    headingAccent: cmsHero?.headingAccent ?? 'Direct from Our Farm.',
+    description: cmsHero?.description ?? 'Supplying restaurants, supermarkets, distributors, and exporters across East Africa and beyond.',
+    primaryCta: cmsHero?.primaryCta ?? { label: 'Submit an Inquiry', to: '#inquiry-form' },
+    secondaryCta: cmsHero?.secondaryCta ?? { label: 'How It Works', to: '#how-it-works' },
+  };
+
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = async (e:any) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     // TODO: Replace with apiPost('/api/wholesale/inquiry', form) when endpoint is ready
@@ -172,24 +205,20 @@ function Wholesale() {
         <section className="wholesale-hero">
           <div className="wholesale-hero-inner">
             <span className="ws-tag">
-              <Globe size={14} /> Wholesale & Exports
+              <Globe size={14} /> {hero.badge}
             </span>
             <h1>
-              Fresh Produce at Scale.
+              {hero.heading}
               <br />
-              <span className="highlight-orange">Direct from Our Farm.</span>
+              <span className="highlight-orange">{hero.headingAccent}</span>
             </h1>
-            <p>
-              Supplying restaurants, supermarkets, distributors, and exporters
-              across East Africa and beyond. We grow it, we pack it, we deliver
-              it — fresh, certified, and on time.
-            </p>
+            <p>{hero.description}</p>
             <div className="ws-hero-actions">
-              <a href="#inquiry-form" className="btn btn-secondary">
-                Submit an Inquiry
+              <a href={hero.primaryCta?.to ?? '#inquiry-form'} className="btn btn-secondary">
+                {hero.primaryCta?.label ?? 'Submit an Inquiry'}
               </a>
-              <a href="#how-it-works" className="btn btn-outline-white">
-                How It Works
+              <a href={hero.secondaryCta?.to ?? '#how-it-works'} className="btn btn-outline-white">
+                {hero.secondaryCta?.label ?? 'How It Works'}
               </a>
             </div>
             <div className="ws-hero-stats">

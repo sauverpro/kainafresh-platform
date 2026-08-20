@@ -1,4 +1,4 @@
-import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 
 /**
  * Admin Panel
@@ -14,7 +14,16 @@ function Admin() {
       <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#076935' }}>
         Admin Panel
       </h1>
-      <p>This is a protected placeholder. Admin dashboard coming soon.</p>
+      <p>This is a protected placeholder. The new TSX admin dashboard is currently under construction.</p>
+      <Routes>
+        <Route path="/" element={<div>Dashboard Overview Placeholder</div>} />
+        <Route path="/content/:slug" element={<div>CMS Editor Placeholder</div>} />
+        <Route path="/products" element={<div>Products Placeholder</div>} />
+        <Route path="/inventory" element={<div>Inventory Placeholder</div>} />
+        <Route path="/orders" element={<div>Orders Placeholder</div>} />
+        <Route path="/customers" element={<div>Customers Placeholder</div>} />
+        <Route path="/reports" element={<div>Reports Placeholder</div>} />
+      </Routes>
     </div>
   );
 }

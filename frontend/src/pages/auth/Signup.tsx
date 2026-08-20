@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import Navbar from '../../components/navbar/Navbar';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, User, Mail, Lock, Phone, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
 import { apiPost, setToken } from '../../api/client';
 import tractorImg from '../../assets/images/tractor.png';
 import './Auth.css';
@@ -39,7 +40,7 @@ interface LoginResponse {
 function Signup() {
  const navigate = useNavigate();
   const [step, setStep] = useState<number>(1);
-  const [direction, setDirection] = useState<'forward' | 'back'>('forward'); // typed explicitly for animations
+
   const [form, setForm] = useState<FormState>({
     full_name: '',
     username: '',
@@ -69,7 +70,7 @@ function Signup() {
   const strengthClass = ['', 'strength-weak', 'strength-fair', 'strength-good', 'strength-strong'];
   const pwStrength = getPasswordStrength(form.password);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFieldErrors((prev) => ({ ...prev, [name]: '' }));
     setServerError('');
@@ -101,18 +102,16 @@ function Signup() {
   const goNext = () => {
     const errors = validateStep();
     if (Object.keys(errors).length > 0) return setFieldErrors(errors);
-    setDirection('forward');
     setStep((s) => s + 1);
   };
 
   const goBack = () => {
     setFieldErrors({});
     setServerError('');
-    setDirection('back');
     setStep((s) => s - 1);
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const errors = validateStep();
     if (Object.keys(errors).length > 0) return setFieldErrors(errors);
@@ -139,8 +138,8 @@ function Signup() {
       const { token } = loginData.data;
       setToken(token);
       navigate('/');
-    } catch (err: any) {
-      setServerError(err.message || 'Registration failed. Please try again.');
+    } catch (err: unknown) {
+      setServerError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

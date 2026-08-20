@@ -1,13 +1,10 @@
-import  { useState, useEffect } from "react";
-import { apiGet } from "../../api/client";
-
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Leaf,
   ShoppingCart,
   Truck,
   ShieldCheck,
-  Star,
   ChevronDown,
   ChevronUp,
   ArrowRight,
@@ -17,13 +14,34 @@ import heroFarmers from "../../assets/images/hero-farmers.png";
 import productPlaceholder from "../../assets/images/placeholder.png";
 import "./Home.css";
 import Navbar from "../../components/navbar/Navbar";
+import { apiGet } from "../../api/client";
 
 /**
  * Home Page
- * All data below is placeholder dummy data structured to match the API response shape.
- * TODO: Replace each data block with the corresponding API call when the backend is ready.
- * Reference: GET /api/content/home → API_CONTRACT.md
+ * CMS data: GET /api/pages/slug/home → sections of type hero, value_props, faqs
+ * Featured products: GET /api/products?featured=true (NOT YET IMPLEMENTED — uses dummy data)
+ * Falls back gracefully to hardcoded defaults when CMS page is not seeded.
  */
+
+// ── TypeScript interfaces for CMS section content ──
+const ICON_MAP: Record<string, React.FC<{ size?: number; strokeWidth?: number; color?: string }>> = {
+  Leaf, Truck, ShieldCheck, Package,
+};
+
+interface HeroContent {
+  badge?: string; heading?: string; headingAccent?: string; headingAccentSecondary?: string;
+  subheading?: string;
+  primaryCta?: { label: string; to: string };
+  secondaryCta?: { label: string; to: string };
+}
+
+interface ValuePropItem { iconName: string; title: string; description: string }
+interface ValuePropsContent { tag?: string; heading?: string; items?: ValuePropItem[] }
+
+interface FaqItem { question: string; answer: string }
+interface FaqsContent { tag?: string; heading?: string; subheading?: string; items?: FaqItem[] }
+
+interface CmsSection { type: string; content: HeroContent & ValuePropsContent & FaqsContent }
 
 // --- Dummy Data ---
 
@@ -156,28 +174,50 @@ const FAQS = [
   },
 ];
 
-// --- Component ---
+// ── Component ──
 
 function Home() {
-  const [hero, setHero] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [cmsHero, setCmsHero] = useState<HeroContent | null>(null);
+  const [cmsValueProps, setCmsValueProps] = useState<ValuePropsContent | null>(null);
+  const [cmsFaqs, setCmsFaqs] = useState<FaqsContent | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
   useEffect(() => {
-    apiGet("/api/pages/slug/home")
+    apiGet<{ success: boolean; data: { sections: CmsSection[] } }>('/api/pages/slug/home')
       .then((res) => {
-        const heroSection = res.data.sections.find(
-          (s: any) => s.type === "hero",
-        );
-        setHero(heroSection?.content ?? null);
+        if (!res.success || !res.data?.sections) return;
+        const sections = res.data.sections;
+        const find = <T,>(type: string): T | null => {
+          const s = sections.find((sec) => sec.type === type);
+          return s ? (s.content as T) : null;
+        };
+        setCmsHero(find<HeroContent>('hero'));
+        setCmsValueProps(find<ValuePropsContent>('value_props'));
+        setCmsFaqs(find<FaqsContent>('faqs'));
       })
-      .catch((err) => console.error("Failed to load hero:", err))
-      .finally(() => setLoading(false));
+      .catch(() => { /* silently fall back to hardcoded defaults */ });
   }, []);
 
-  const toggleFaq = (id: any) => setOpenFaq(openFaq === id ? null : id);
+  const toggleFaq = (id: number) => setOpenFaq(openFaq === id ? null : id);
 
-  if (loading) return <div className="home-loading">Loading…</div>;
-  if (!hero) return <div className="home-loading">Hero content not found.</div>;
+  // Merge CMS data with fallback defaults
+  const hero: HeroContent = {
+    badge: cmsHero?.badge ?? 'Farm-fresh, direct to you',
+    heading: cmsHero?.heading ?? 'Farm Fresh Produce,',
+    headingAccent: cmsHero?.headingAccent ?? 'Delivered Direct',
+    headingAccentSecondary: cmsHero?.headingAccentSecondary ?? 'to You.',
+    subheading: cmsHero?.subheading ?? 'We grow it. We pack it. We deliver it — fresh, certified, and straight from our fields to your table.',
+    primaryCta: cmsHero?.primaryCta ?? { label: 'Our Products', to: '/products' },
+    secondaryCta: cmsHero?.secondaryCta ?? { label: 'Wholesale & Exports', to: '/wholesale' },
+  };
+
+  const valueProps = cmsValueProps?.items
+    ? cmsValueProps.items.map((v) => ({ icon: ICON_MAP[v.iconName] ?? Leaf, title: v.title, description: v.description }))
+    : VALUE_PROPS;
+
+  const faqs = cmsFaqs?.items
+    ? cmsFaqs.items.map((f, i) => ({ id: i + 1, question: f.question, answer: f.answer }))
+    : FAQS;
 
   return (
     <>
@@ -218,7 +258,7 @@ function Home() {
                   to={hero.secondaryCta.to}
                   className="btn btn-outline-green hero-cta-secondary"
                 >
-                  <span className="play-icon">▶</span> {hero.secondaryCta.label}
+                  {hero.secondaryCta.label}
                 </Link>
               </div>
             </div>
@@ -238,11 +278,11 @@ function Home() {
         {/* ── Value Propositions ── */}
         <section className="value-props">
           <div className="vp-header">
-            <span className="home-tag">Why KainaFresh</span>
-            <h2>Fresh Food, Done Right</h2>
+            <span className="home-tag">{cmsValueProps?.tag ?? 'Why KainaFresh'}</span>
+            <h2>{cmsValueProps?.heading ?? 'Fresh Food, Done Right'}</h2>
           </div>
           <div className="vp-grid">
-            {VALUE_PROPS.map(({ icon: Icon, title, description }) => (
+            {valueProps.map(({ icon: Icon, title, description }) => (
               <div key={title} className="vp-card card">
                 <div className="vp-icon">
                   <Icon
@@ -315,12 +355,12 @@ function Home() {
         <section className="faqs">
           <div className="faq-inner">
             <div className="faq-header">
-              <span className="home-tag">Got Questions?</span>
-              <h2>Frequently Asked Questions</h2>
-              <p>Everything you need to know about ordering from KainaFresh.</p>
+              <span className="home-tag">{cmsFaqs?.tag ?? 'Got Questions?'}</span>
+              <h2>{cmsFaqs?.heading ?? 'Frequently Asked Questions'}</h2>
+              <p>{cmsFaqs?.subheading ?? 'Everything you need to know about ordering from KainaFresh.'}</p>
             </div>
             <div className="faq-list">
-              {FAQS.map((faq) => (
+              {faqs.map((faq) => (
                 <div
                   key={faq.id}
                   className={`faq-item ${openFaq === faq.id ? "open" : ""}`}
@@ -356,10 +396,10 @@ function Home() {
             </p>
             <div className="home-cta-buttons">
               <Link to="/products" className="btn btn-primary">
-                Start Shopping
+                Our Products
               </Link>
               <Link to="/wholesale" className="btn btn-secondary">
-                Wholesale Inquiries
+                Wholesale & Exports
               </Link>
             </div>
           </div>
