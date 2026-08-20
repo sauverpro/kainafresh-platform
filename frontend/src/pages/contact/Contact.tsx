@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Phone, Mail, Globe, Facebook, Instagram, Send, CheckCircle, Clock } from 'lucide-react';
+import { MapPin, Phone, Mail, Globe, Send, CheckCircle, Clock } from 'lucide-react';
 import Navbar from '../../components/navbar/Navbar';
 import { apiGet } from '../../api/client';
 import './Contact.css';
@@ -81,9 +81,11 @@ function Contact() {
   };
 
   const socialLinks = [
-    { icon: Facebook, label: 'Facebook', url: settings.facebook },
-    { icon: Instagram, label: 'Instagram', url: settings.instagram },
-    { icon: Globe, label: 'TikTok', url: settings.tiktok },
+    { label: 'Facebook', url: settings.facebook },
+    { label: 'Instagram', url: settings.instagram },
+    { label: 'TikTok', url: settings.tiktok },
+    { label: 'LinkedIn', url: settings.linkedin },
+    { label: 'YouTube', url: settings.youtube },
   ].filter((s) => s.url);
 
   return (
@@ -173,9 +175,9 @@ function Contact() {
                 <div className="contact-socials">
                   <span className="contact-info-label">Follow Us</span>
                   <div className="contact-social-links">
-                    {socialLinks.map(({ icon: Icon, label, url }) => (
+                    {socialLinks.map(({ label, url }) => (
                       <a key={label} href={url} target="_blank" rel="noopener noreferrer" className="contact-social-btn" aria-label={label}>
-                        <Icon size={18} />
+                        <Globe size={18} />
                       </a>
                     ))}
                   </div>
