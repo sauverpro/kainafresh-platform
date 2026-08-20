@@ -207,7 +207,7 @@ function Home() {
     headingAccent: cmsHero?.headingAccent ?? 'Delivered Direct',
     headingAccentSecondary: cmsHero?.headingAccentSecondary ?? 'to You.',
     subheading: cmsHero?.subheading ?? 'We grow it. We pack it. We deliver it — fresh, certified, and straight from our fields to your table.',
-    primaryCta: cmsHero?.primaryCta ?? { label: 'Shop Now', to: '/products' },
+    primaryCta: cmsHero?.primaryCta ?? { label: 'Our Products', to: '/products' },
     secondaryCta: cmsHero?.secondaryCta ?? { label: 'Wholesale & Exports', to: '/wholesale' },
   };
 
@@ -258,7 +258,7 @@ function Home() {
                   to={hero.secondaryCta.to}
                   className="btn btn-outline-green hero-cta-secondary"
                 >
-                  <span className="play-icon">▶</span> {hero.secondaryCta.label}
+                  {hero.secondaryCta.label}
                 </Link>
               </div>
             </div>
@@ -396,10 +396,10 @@ function Home() {
             </p>
             <div className="home-cta-buttons">
               <Link to="/products" className="btn btn-primary">
-                Start Shopping
+                Our Products
               </Link>
               <Link to="/wholesale" className="btn btn-secondary">
-                Wholesale Inquiries
+                Wholesale & Exports
               </Link>
             </div>
           </div>
