@@ -96,7 +96,7 @@ function About() {
               {hero?.description ?? 'KainaFresh is a Rwanda-based farm dedicated to producing premium, organic agricultural produce — from our fields directly to your table.'}
             </p>
             <Link to={hero?.cta?.to ?? '/contact'} className="btn btn-primary">
-              {hero?.cta?.label ?? 'Get in Touch'} <ArrowRight size={16} style={{ marginLeft: '6px' }} />
+              {hero?.cta?.label ?? 'Get in Touch'} <ArrowRight size={16} />
             </Link>
           </div>
           <div className="about-hero-visual">
