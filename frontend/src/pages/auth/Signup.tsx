@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, ChangeEvent, FormEvent } from 'react';
 import Navbar from '../../components/navbar/Navbar';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, User, Mail, Lock, Phone, ArrowRight, ArrowLeft } from 'lucide-react';
@@ -69,7 +69,7 @@ function Signup() {
   const strengthClass = ['', 'strength-weak', 'strength-fair', 'strength-good', 'strength-strong'];
   const pwStrength = getPasswordStrength(form.password);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFieldErrors((prev) => ({ ...prev, [name]: '' }));
     setServerError('');
@@ -112,7 +112,7 @@ function Signup() {
     setStep((s) => s - 1);
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const errors = validateStep();
     if (Object.keys(errors).length > 0) return setFieldErrors(errors);
@@ -139,8 +139,8 @@ function Signup() {
       const { token } = loginData.data;
       setToken(token);
       navigate('/');
-    } catch (err: any) {
-      setServerError(err.message || 'Registration failed. Please try again.');
+    } catch (err: unknown) {
+      setServerError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
