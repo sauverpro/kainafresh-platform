@@ -130,23 +130,25 @@ function Navbar() {
       {/* Nav links */}
       <nav className={`navbar-links ${isMenuOpen ? 'active' : ''}`}>
         <div className="nav-center">
-          {/* Render navlinks from API if available, otherwise fall back to static links */}
-          {navLinks.length > 0 ? (
-            navLinks.map((link: NavLinkItem) => (
-              <NavLink key={link.id ?? link.link} to={link.link} onClick={closeMenu}>
-                {link.link_name}
-              </NavLink>
-            ))
-          ) : (
-            <>
-              <NavLink to="/" onClick={closeMenu}>Home</NavLink>
-              <NavLink to="/about" onClick={closeMenu}>Our Farm</NavLink>
-              <NavLink to="/wholesale" onClick={closeMenu}>Wholesale</NavLink>
-              <NavLink to="/contact" onClick={closeMenu}>Contact</NavLink>
-            </>
+          {/* Default Core Links */}
+          <NavLink to="/" onClick={closeMenu}>Home</NavLink>
+          <NavLink to="/about" onClick={closeMenu}>Our Farm</NavLink>
+          <NavLink to="/wholesale" onClick={closeMenu}>Wholesale</NavLink>
+          <NavLink to="/contact" onClick={closeMenu}>Contact</NavLink>
+
+          {/* Render extra dynamic navlinks from API if present */}
+          {navLinks.length > 0 && (
+            navLinks
+              .filter(link => !['/', '/about', '/wholesale', '/contact'].includes(link.link))
+              .map((link: NavLinkItem) => (
+                <NavLink key={link.id ?? link.link} to={link.link} onClick={closeMenu}>
+                  {link.link_name}
+                </NavLink>
+              ))
           )}
-          {/* Ensure admin link is present when logged in and not provided by API */}
-          {loggedIn && !navLinks.find((n: NavLinkItem) => n.link === '/admin') && (
+
+          {/* Ensure admin link is present when logged in */}
+          {loggedIn && (
             <NavLink to="/admin" onClick={closeMenu}>Admin</NavLink>
           )}
         </div>

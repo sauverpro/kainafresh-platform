@@ -3,7 +3,7 @@ import {
   Globe, Image as ImageIcon, Phone, Share2, 
   Save, Upload, CheckCircle2, AlertCircle, RefreshCw 
 } from 'lucide-react';
-import { apiGet, apiPost, apiPostFormData } from '../../../api/client';
+import { apiGet, apiPost, apiPostFormData, apiDelete } from '../../../api/client';
 import './GlobalSettings.css';
 
 function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
@@ -21,11 +21,16 @@ function Toast({ message, type, onClose }: { message: string; type: 'success' | 
 }
 
 export default function GlobalSettings() {
-  const [activeTab, setActiveTab] = useState<'general' | 'contact' | 'social'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'contact' | 'social' | 'navlinks'>('general');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Dynamic Navigation Links state
+  const [navItems, setNavItems] = useState<Array<{ id: number; link_name: string; link: string; link_type: string }>>([]);
+  const [newNavLink, setNewNavLink] = useState({ link_name: '', link: '', link_type: 'nav' });
+  const [addingNav, setAddingNav] = useState(false);
 
   const [form, setForm] = useState({
     site_title: 'KainaFresh Organic Platform',
@@ -44,7 +49,18 @@ export default function GlobalSettings() {
     youtube: 'https://youtube.com/@kainafresh'
   });
 
-  // Fetch current global settings on mount
+  const fetchNavLinks = async () => {
+    try {
+      const res = await apiGet('/api/navlinks/nav');
+      if (res.success && Array.isArray(res.data)) {
+        setNavItems(res.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch navlinks:', err);
+    }
+  };
+
+  // Fetch current global settings and navlinks on mount
   useEffect(() => {
     const fetchSettings = async () => {
       setLoading(true);
@@ -63,7 +79,31 @@ export default function GlobalSettings() {
       }
     };
     fetchSettings();
+    fetchNavLinks();
   }, []);
+
+  const handleAddNavLink = async () => {
+    if (!newNavLink.link_name || !newNavLink.link) {
+      setToast({ type: 'error', message: 'Please provide both link name and URL path.' });
+      return;
+    }
+    setAddingNav(true);
+    try {
+      const res = await apiPost('/api/navlinks/create', newNavLink);
+      if (res.success) {
+        setToast({ type: 'success', message: 'Navigation link added successfully!' });
+        setNewNavLink({ link_name: '', link: '', link_type: 'nav' });
+        fetchNavLinks();
+      } else {
+        setToast({ type: 'error', message: res.message || 'Failed to add link.' });
+      }
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Error adding nav link.';
+      setToast({ type: 'error', message: errorMsg });
+    } finally {
+      setAddingNav(false);
+    }
+  };
 
   const handleChange = (field: string, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -158,6 +198,13 @@ export default function GlobalSettings() {
           onClick={() => setActiveTab('social')}
         >
           <Share2 size={16} /> Social Media Links
+        </button>
+
+        <button 
+          className={`tab-btn ${activeTab === 'navlinks' ? 'active' : ''}`}
+          onClick={() => setActiveTab('navlinks')}
+        >
+          <Globe size={16} /> Header Navigation Links
         </button>
       </div>
 
@@ -333,6 +380,96 @@ export default function GlobalSettings() {
               />
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Tab Content 4: Header Navigation Links */}
+      {activeTab === 'navlinks' && (
+        <div className="settings-card">
+          <div className="settings-card-header">
+            <h3>Header Navigation Links Manager</h3>
+            <p>Add and manage custom links displayed across the main site navigation bar.</p>
+          </div>
+
+          {/* Add New Link Box */}
+          <div className="settings-grid-2" style={{ background: '#F9FAFB', padding: '1rem', borderRadius: '10px', marginBottom: '1.5rem' }}>
+            <div className="settings-field">
+              <label className="settings-label">Link Label / Title</label>
+              <input 
+                type="text" 
+                className="settings-input" 
+                placeholder="e.g. Bulk Catalog"
+                value={newNavLink.link_name}
+                onChange={e => setNewNavLink(prev => ({ ...prev, link_name: e.target.value }))}
+              />
+            </div>
+
+            <div className="settings-field">
+              <label className="settings-label">URL Path</label>
+              <input 
+                type="text" 
+                className="settings-input" 
+                placeholder="e.g. /wholesale"
+                value={newNavLink.link}
+                onChange={e => setNewNavLink(prev => ({ ...prev, link: e.target.value }))}
+              />
+            </div>
+
+            <div className="settings-field full-width" style={{ marginTop: '0.5rem' }}>
+              <button 
+                className="btn-upload" 
+                onClick={handleAddNavLink}
+                disabled={addingNav}
+                style={{ width: 'fit-content' }}
+              >
+                + {addingNav ? 'Adding Link...' : 'Add Navigation Link'}
+              </button>
+            </div>
+          </div>
+
+          {/* NavLinks List */}
+          <h4 style={{ margin: '1rem 0 0.5rem 0', fontSize: '0.9rem' }}>Active Navigation Items</h4>
+          {navItems.length > 0 ? (
+            <table className="navlinks-table">
+              <thead>
+                <tr>
+                  <th>LINK TITLE</th>
+                  <th>URL PATH</th>
+                  <th>TYPE</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {navItems.map(item => (
+                  <tr key={item.id}>
+                    <td style={{ fontWeight: 600 }}>{item.link_name}</td>
+                    <td style={{ color: '#6B7280' }}>{item.link}</td>
+                    <td><span style={{ fontSize: '0.75rem', background: '#E0F2FE', color: '#0284C7', padding: '0.15rem 0.5rem', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 600 }}>{item.link_type}</span></td>
+                    <td style={{ textAlign: 'right' }}>
+                      <button 
+                        className="btn-icon btn-danger" 
+                        onClick={async () => {
+                          try {
+                            const res = await apiDelete(`/api/navlinks/delete/${item.id}`);
+                            if (res.success) {
+                              setToast({ type: 'success', message: 'Navigation link removed.' });
+                              fetchNavLinks();
+                            }
+                          } catch (err) {
+                            console.error(err);
+                          }
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p style={{ color: '#6B7280', fontSize: '0.85rem', fontStyle: 'italic' }}>No custom navigation links added yet. Default site routes are active.</p>
+          )}
         </div>
       )}
 

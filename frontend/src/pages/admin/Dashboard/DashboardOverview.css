@@ -100,7 +100,9 @@
 }
 
 .date-pill-btn:hover {
-  background: #F9FAFB;
+  background: #FFFBEB;
+  border-color: var(--color-secondary);
+  color: #B45309;
 }
 
 /* ── Bento Main Grid Layout ── */

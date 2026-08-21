@@ -131,7 +131,7 @@ function DashboardOverview() {
                   <defs>
                     <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#076935" />
-                      <stop offset="100%" stopColor="#22C55E" />
+                      <stop offset="100%" stopColor="#F39927" />
                     </linearGradient>
                   </defs>
                 </svg>
