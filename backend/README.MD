@@ -509,3 +509,6 @@ type = partners
 Partners component
 
 This allows the backend to control page structure while the frontend controls visual presentation.
+
+## update database
+use the provided sql file from folder name db and drop all tables from your local db you already have and import the newly provided sql file.
