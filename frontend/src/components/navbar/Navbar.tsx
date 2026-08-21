@@ -3,6 +3,19 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 // import api
 import { isAuthenticated, removeToken, apiGet } from '../../api/client';
+
+interface NavLinkItem {
+  id?: number | string;
+  link: string;
+  link_name: string;
+}
+
+interface SiteSettings {
+  site_title?: string;
+  site_logo?: string;
+  [key: string]: unknown;
+}
+
 /**
  * Navbar
  * Global navigation bar for all public pages.
@@ -13,7 +26,7 @@ function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [logoSrc, setLogoSrc] = useState<string | null>(null);
   const [siteTitle, setSiteTitle] = useState<string | null>(null);
-  const [navLinks, setNavLinks] = useState<Array<any>>([]);
+  const [navLinks, setNavLinks] = useState<NavLinkItem[]>([]);
   const navigate = useNavigate();
   const loggedIn = isAuthenticated();
 
@@ -34,14 +47,13 @@ function Navbar() {
 
     async function loadData() {
       try {
-        const settingsResp = await apiGet<any>('/api/settings');
+        const settingsResp = await apiGet<unknown>('/api/settings');
         
-        let settingsData: any = null;
-        if (settingsResp && settingsResp.data) {
-          settingsData = settingsResp.data;
+        let settingsData: SiteSettings | null = null;
+        if (settingsResp && typeof settingsResp === 'object' && 'data' in settingsResp) {
+          settingsData = (settingsResp as { data: SiteSettings }).data;
         } else if (Array.isArray(settingsResp) && settingsResp.length > 1) {
-         
-          settingsData = settingsResp[1];
+          settingsData = settingsResp[1] as SiteSettings;
         }
 
         if (!cancelled && settingsData) {
@@ -61,7 +73,7 @@ function Navbar() {
       }
 
       try {
-        const navsResp = await apiGet<any>('/api/navlinks/nav');
+        const navsResp = await apiGet<{ data?: NavLinkItem[] }>('/api/navlinks/nav');
         
         const navsData = navsResp?.data ?? [];
         if (!cancelled && Array.isArray(navsData)) {
@@ -120,7 +132,7 @@ function Navbar() {
         <div className="nav-center">
           {/* Render navlinks from API if available, otherwise fall back to static links */}
           {navLinks.length > 0 ? (
-            navLinks.map((link: any) => (
+            navLinks.map((link: NavLinkItem) => (
               <NavLink key={link.id ?? link.link} to={link.link} onClick={closeMenu}>
                 {link.link_name}
               </NavLink>
@@ -134,7 +146,7 @@ function Navbar() {
             </>
           )}
           {/* Ensure admin link is present when logged in and not provided by API */}
-          {loggedIn && !navLinks.find((n: any) => n.link === '/admin') && (
+          {loggedIn && !navLinks.find((n: NavLinkItem) => n.link === '/admin') && (
             <NavLink to="/admin" onClick={closeMenu}>Admin</NavLink>
           )}
         </div>
