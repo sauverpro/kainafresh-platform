@@ -127,7 +127,10 @@ function Navbar() {
             ))
           ) : (
             <>
-              
+              <NavLink to="/" onClick={closeMenu}>Home</NavLink>
+              <NavLink to="/about" onClick={closeMenu}>Our Farm</NavLink>
+              <NavLink to="/wholesale" onClick={closeMenu}>Wholesale</NavLink>
+              <NavLink to="/contact" onClick={closeMenu}>Contact</NavLink>
             </>
           )}
           {/* Ensure admin link is present when logged in and not provided by API */}
