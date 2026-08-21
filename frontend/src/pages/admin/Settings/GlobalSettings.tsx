@@ -6,12 +6,37 @@ import {
 import { apiGet, apiPost, apiPostFormData, apiDelete } from '../../../api/client';
 import './GlobalSettings.css';
 
-interface ApiResponse<T = any> {
+interface NavItem {
+  id: number;
+  link_name: string;
+  link: string;
+  link_type: string;
+}
+
+interface SiteSettingsData {
+  site_title?: string;
+  site_logo?: string;
+  primary_email?: string;
+  secondary_email?: string;
+  other_email?: string;
+  primary_number?: string;
+  secondary_number?: string;
+  other_numbers?: string;
+  address?: string;
+  facebook?: string;
+  instagram?: string;
+  tiktok?: string;
+  linkedin?: string;
+  youtube?: string;
+}
+
+interface ApiResponse<T = unknown> {
   success?: boolean;
   message?: string;
   data?: T;
+  navlinks?: T;
   site_logo?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
@@ -59,9 +84,10 @@ export default function GlobalSettings() {
 
   const fetchNavLinks = async () => {
     try {
-      const res = await apiGet<ApiResponse<any[]>>('/api/navlinks/nav');
-      if (res.success && Array.isArray(res.data)) {
-        setNavItems(res.data as any);
+      const res = await apiGet<ApiResponse<NavItem[]>>('/api/navlinks');
+      const items = res?.data || res?.navlinks || [];
+      if (Array.isArray(items)) {
+        setNavItems(items as NavItem[]);
       }
     } catch (err) {
       console.error('Failed to fetch navlinks:', err);
@@ -75,8 +101,8 @@ export default function GlobalSettings() {
       setLoading(true);
       try {
         const [settingsRes, navsRes] = await Promise.all([
-          apiGet<ApiResponse<any>>('/api/settings'),
-          apiGet<ApiResponse<any[]>>('/api/navlinks/nav')
+          apiGet<ApiResponse<SiteSettingsData>>('/api/settings'),
+          apiGet<ApiResponse<NavItem[]>>('/api/navlinks/nav')
         ]);
         if (isMounted) {
           if (settingsRes?.success && settingsRes.data) {
@@ -86,7 +112,7 @@ export default function GlobalSettings() {
             }));
           }
           if (navsRes?.success && Array.isArray(navsRes.data)) {
-            setNavItems(navsRes.data as any);
+            setNavItems(navsRes.data as NavItem[]);
           }
         }
       } catch (err) {
@@ -153,9 +179,9 @@ export default function GlobalSettings() {
     formData.append('site_logo', file);
 
     try {
-      const res = await apiPostFormData<ApiResponse>('/api/settings/uploadlogo', formData);
+      const res = await apiPostFormData<ApiResponse<SiteSettingsData>>('/api/settings/uploadlogo', formData);
       if (res.success && res.data) {
-        const logoPath = typeof res.data === 'string' ? res.data : (res.data as any).site_logo || res.data;
+        const logoPath = typeof res.data === 'string' ? res.data : (res.data as SiteSettingsData).site_logo || '';
         setForm(prev => ({ ...prev, site_logo: logoPath }));
         setToast({ type: 'success', message: 'Site logo updated successfully!' });
       } else {

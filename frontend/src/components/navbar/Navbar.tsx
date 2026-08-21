@@ -1,7 +1,7 @@
-import React,{ useState } from 'react'; 
+import React, { useState, useEffect } from 'react'; 
 import { NavLink, useNavigate } from 'react-router-dom';
+import { Home, Sprout, Package, Mail, Shield, LogOut, LogIn, UserPlus } from 'lucide-react';
 import './Navbar.css';
-// import api
 import { isAuthenticated, removeToken, apiGet } from '../../api/client';
 
 interface NavLinkItem {
@@ -19,7 +19,6 @@ interface SiteSettings {
 /**
  * Navbar
  * Global navigation bar for all public pages.
- * Shows/hides admin link based on auth state.
  */
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,18 +30,17 @@ function Navbar() {
   const loggedIn = isAuthenticated();
 
   // Scroll listener for transparent-to-solid effect
-  React.useEffect(() => {
+  useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener('scroll', handleScroll);
-    // Trigger immediately on mount in case the user loads half-way down the page
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Fetch site settings and navlinks from API on mount
-  React.useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
 
     async function loadData() {
@@ -58,14 +56,13 @@ function Navbar() {
 
         if (!cancelled && settingsData) {
           const API_BASE = import.meta.env.VITE_API_BASE_URL || window.location.origin;
-          // set site title if present
           if (settingsData.site_title) setSiteTitle(settingsData.site_title);
           if (settingsData.site_logo) {
-          const raw = settingsData.site_logo;
-          const src = /^https?:\/\//.test(raw)
-            ? raw
-            : `${API_BASE}${raw.startsWith('/') ? raw : '/' + raw}`;
-          setLogoSrc(src);
+            const raw = settingsData.site_logo;
+            const src = /^https?:\/\//.test(raw)
+              ? raw
+              : `${API_BASE}${raw.startsWith('/') ? raw : '/' + raw}`;
+            setLogoSrc(src);
           }
         }
       } catch (err) {
@@ -74,7 +71,6 @@ function Navbar() {
 
       try {
         const navsResp = await apiGet<{ data?: NavLinkItem[] }>('/api/navlinks/nav');
-        
         const navsData = navsResp?.data ?? [];
         if (!cancelled && Array.isArray(navsData)) {
           setNavLinks(navsData);
@@ -95,24 +91,31 @@ function Navbar() {
 
   const closeMenu = () => setIsMenuOpen(false);
 
+  // Helper to deduplicate dynamic API links against static defaults
+  const isDuplicateLink = (item: NavLinkItem) => {
+    const linkPath = (item.link || '').toLowerCase().trim();
+    const linkName = (item.link_name || '').toLowerCase().trim();
+    
+    return (
+      linkName === 'home' || linkPath === '/' || linkPath === '/home' || linkPath === 'home' || linkPath === '' ||
+      linkName === 'our farm' || linkName === 'about' || linkPath === '/about' || linkPath === '/farm' ||
+      linkName === 'wholesale' || linkPath === '/wholesale' ||
+      linkName === 'contact' || linkPath === '/contact' ||
+      linkName === 'admin' || linkPath === '/admin'
+    );
+  };
+
   return (
     <header className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
       {/* Logo */}
       <NavLink to="/" className="navbar-logo" onClick={closeMenu}>
         {logoSrc ? (
-          <div className="brand-row" style={{display: 'flex', alignItems: 'center', gap: 8}}>
-            <img src={logoSrc} alt={siteTitle ?? 'Kaina Fresh'} className="site-logo" style={{height:53, width:53}} />
-            {siteTitle ? (
-              <span className="site-title">{siteTitle}</span>
-            ) : (
-              <span className="logo-accent">Fresh</span>
-            )}
+          <div className="brand-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <img src={logoSrc} alt={siteTitle ?? 'Kaina Fresh'} className="site-logo" style={{ height: 42, width: 42, objectFit: 'contain' }} />
+            <span className="site-title">{siteTitle ?? 'KainaFresh'}</span>
           </div>
         ) : (
-          <>
-          {/*  */}
-          <p>{siteTitle}</p>
-          </>
+          <span>Kaina<span className="logo-accent">Fresh</span></span>
         )}
       </NavLink>
 
@@ -130,41 +133,50 @@ function Navbar() {
       {/* Nav links */}
       <nav className={`navbar-links ${isMenuOpen ? 'active' : ''}`}>
         <div className="nav-center">
-          {/* Default Core Links */}
-          <NavLink to="/" onClick={closeMenu}>Home</NavLink>
-          <NavLink to="/about" onClick={closeMenu}>Our Farm</NavLink>
-          <NavLink to="/wholesale" onClick={closeMenu}>Wholesale</NavLink>
-          <NavLink to="/contact" onClick={closeMenu}>Contact</NavLink>
+          {/* Core Default Nav Links with Lucide Vector Icons */}
+          <NavLink to="/" onClick={closeMenu} className="nav-icon-link">
+            <Home size={16} /> <span>Home</span>
+          </NavLink>
+          <NavLink to="/about" onClick={closeMenu} className="nav-icon-link">
+            <Sprout size={16} /> <span>Our Farm</span>
+          </NavLink>
+          <NavLink to="/wholesale" onClick={closeMenu} className="nav-icon-link">
+            <Package size={16} /> <span>Wholesale</span>
+          </NavLink>
+          <NavLink to="/contact" onClick={closeMenu} className="nav-icon-link">
+            <Mail size={16} /> <span>Contact</span>
+          </NavLink>
 
-          {/* Render extra dynamic navlinks from API if present */}
-          {navLinks.length > 0 && (
-            navLinks
-              .filter(link => !['/', '/about', '/wholesale', '/contact'].includes(link.link))
-              .map((link: NavLinkItem) => (
-                <NavLink key={link.id ?? link.link} to={link.link} onClick={closeMenu}>
-                  {link.link_name}
-                </NavLink>
-              ))
-          )}
+          {/* Dynamic Nav Links from API (Strictly Deduplicated) */}
+          {navLinks
+            .filter(link => !isDuplicateLink(link))
+            .map((link: NavLinkItem) => (
+              <NavLink key={link.id ?? link.link} to={link.link} onClick={closeMenu} className="nav-icon-link">
+                <span>{link.link_name}</span>
+              </NavLink>
+            ))}
 
-          {/* Ensure admin link is present when logged in */}
+          {/* Admin Link if Authenticated */}
           {loggedIn && (
-            <NavLink to="/admin" onClick={closeMenu}>Admin</NavLink>
+            <NavLink to="/admin" onClick={closeMenu} className="nav-icon-link">
+              <Shield size={16} /> <span>Admin</span>
+            </NavLink>
           )}
         </div>
 
+        {/* Action Buttons */}
         <div className="navbar-actions">
           {loggedIn ? (
-            <button className="btn btn-secondary" onClick={handleLogout}>
-              Logout
+            <button className="btn btn-logout" onClick={handleLogout}>
+              <LogOut size={16} /> <span>Logout</span>
             </button>
           ) : (
             <>
               <NavLink to="/login" className="btn btn-outline" onClick={closeMenu}>
-                Login
+                <LogIn size={16} /> <span>Login</span>
               </NavLink>
               <NavLink to="/signup" className="btn btn-primary" onClick={closeMenu}>
-                Sign Up
+                <UserPlus size={16} /> <span>Sign Up</span>
               </NavLink>
             </>
           )}

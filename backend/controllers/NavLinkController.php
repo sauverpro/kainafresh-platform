@@ -10,8 +10,8 @@ class NavLinkController extends BaseController {
         $this->user_model = new User();
     }
     public function index() {
-        $data = $this->nav_link_model->getNavLinks();
-        $this->jsonResponse(['navlinks'=>$data]);
+        $data = $this->nav_link_model->getNavlinks();
+        $this->jsonResponse(['success' => true, 'data' => $data, 'navlinks' => $data]);
     }
     // function to create new nav link
     public function store(){

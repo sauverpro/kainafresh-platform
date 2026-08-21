@@ -109,26 +109,45 @@
   gap: 0.75rem;
 }
 
-/* Outline button variant for the Navbar */
-.btn-outline {
-  display: inline-block;
-  padding: 0.6rem 1.25rem;
+.nav-icon-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.nav-icon-link svg {
+  opacity: 0.75;
+  transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease;
+}
+
+.nav-icon-link:hover svg,
+.nav-icon-link.active svg {
+  opacity: 1;
+  transform: translateY(-1px);
+  color: var(--color-secondary);
+}
+
+.btn-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.2rem;
   border-radius: 50px;
   font-family: var(--font-heading);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   cursor: pointer;
-  border: 2px solid var(--color-primary);
-  color: var(--color-primary);
-  background: transparent;
-  text-decoration: none;
+  border: 1px solid rgba(243, 153, 39, 0.4);
+  background: var(--color-secondary);
+  color: #111827;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(243, 153, 39, 0.25);
 }
 
-.btn-outline:hover {
-  background-color: var(--color-secondary);
-  border-color: var(--color-secondary);
-  color: white;
+.btn-logout:hover {
+  background: #E08712;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(243, 153, 39, 0.35);
 }
 
 /* Signup (btn-primary) inside navbar: orange hover, not dark green */
