@@ -6,6 +6,14 @@ import {
 import { apiGet, apiPost, apiPostFormData, apiDelete } from '../../../api/client';
 import './GlobalSettings.css';
 
+interface ApiResponse<T = any> {
+  success?: boolean;
+  message?: string;
+  data?: T;
+  site_logo?: string;
+  [key: string]: any;
+}
+
 function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
   useEffect(() => {
     const timer = setTimeout(onClose, 3000);
@@ -51,9 +59,9 @@ export default function GlobalSettings() {
 
   const fetchNavLinks = async () => {
     try {
-      const res = await apiGet('/api/navlinks/nav');
+      const res = await apiGet<ApiResponse<any[]>>('/api/navlinks/nav');
       if (res.success && Array.isArray(res.data)) {
-        setNavItems(res.data);
+        setNavItems(res.data as any);
       }
     } catch (err) {
       console.error('Failed to fetch navlinks:', err);
@@ -62,24 +70,33 @@ export default function GlobalSettings() {
 
   // Fetch current global settings and navlinks on mount
   useEffect(() => {
-    const fetchSettings = async () => {
+    let isMounted = true;
+    const loadInitialData = async () => {
       setLoading(true);
       try {
-        const res = await apiGet('/api/settings');
-        if (res.success && res.data) {
-          setForm(prev => ({
-            ...prev,
-            ...res.data
-          }));
+        const [settingsRes, navsRes] = await Promise.all([
+          apiGet<ApiResponse<any>>('/api/settings'),
+          apiGet<ApiResponse<any[]>>('/api/navlinks/nav')
+        ]);
+        if (isMounted) {
+          if (settingsRes?.success && settingsRes.data) {
+            setForm(prev => ({
+              ...prev,
+              ...settingsRes.data
+            }));
+          }
+          if (navsRes?.success && Array.isArray(navsRes.data)) {
+            setNavItems(navsRes.data as any);
+          }
         }
       } catch (err) {
-        console.error('Failed to fetch settings:', err);
+        console.error('Failed to fetch initial settings data:', err);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
-    fetchSettings();
-    fetchNavLinks();
+    loadInitialData();
+    return () => { isMounted = false; };
   }, []);
 
   const handleAddNavLink = async () => {
@@ -89,7 +106,7 @@ export default function GlobalSettings() {
     }
     setAddingNav(true);
     try {
-      const res = await apiPost('/api/navlinks/create', newNavLink);
+      const res = await apiPost<ApiResponse>('/api/navlinks/create', newNavLink);
       if (res.success) {
         setToast({ type: 'success', message: 'Navigation link added successfully!' });
         setNewNavLink({ link_name: '', link: '', link_type: 'nav' });
@@ -112,7 +129,7 @@ export default function GlobalSettings() {
   const handleSaveSettings = async () => {
     setSaving(true);
     try {
-      const res = await apiPost('/api/settings/create', form);
+      const res = await apiPost<ApiResponse>('/api/settings/create', form);
       if (res.success) {
         setToast({ type: 'success', message: 'Global system settings saved successfully!' });
       } else {
@@ -136,9 +153,9 @@ export default function GlobalSettings() {
     formData.append('site_logo', file);
 
     try {
-      const res = await apiPostFormData('/api/settings/uploadlogo', formData);
+      const res = await apiPostFormData<ApiResponse>('/api/settings/uploadlogo', formData);
       if (res.success && res.data) {
-        const logoPath = typeof res.data === 'string' ? res.data : res.data.site_logo;
+        const logoPath = typeof res.data === 'string' ? res.data : (res.data as any).site_logo || res.data;
         setForm(prev => ({ ...prev, site_logo: logoPath }));
         setToast({ type: 'success', message: 'Site logo updated successfully!' });
       } else {
@@ -450,7 +467,7 @@ export default function GlobalSettings() {
                         className="btn-icon btn-danger" 
                         onClick={async () => {
                           try {
-                            const res = await apiDelete(`/api/navlinks/delete/${item.id}`);
+                            const res = await apiDelete<ApiResponse>(`/api/navlinks/delete/${item.id}`);
                             if (res.success) {
                               setToast({ type: 'success', message: 'Navigation link removed.' });
                               fetchNavLinks();
