@@ -1,0 +1,222 @@
+/* ==========================================================================
+   Product Slide-out Panel Styles
+   ========================================================================== */
+
+.product-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.product-panel {
+  width: 480px;
+  height: 100vh;
+  background: white;
+  box-shadow: -10px 0 40px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+/* ── Header ── */
+.panel-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #E5E7EB;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #FCFCFC;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  color: var(--color-text-dark);
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  color: var(--color-text-light);
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-close:hover {
+  background: #F3F4F6;
+  color: var(--color-text-dark);
+}
+
+/* ── Body ── */
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.panel-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.panel-input {
+  padding: 0.8rem 1rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--color-text-dark);
+  transition: all 0.2s;
+  background: #FDFDFD;
+}
+
+.panel-input:focus {
+  outline: none;
+  border-color: #27272A;
+  box-shadow: 0 0 0 3px rgba(39, 39, 42, 0.1);
+  background: white;
+}
+
+.panel-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Image Upload Box */
+.image-upload-box {
+  border: 2px dashed #D1D5DB;
+  border-radius: 16px;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F9FAFB;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.image-upload-box:hover {
+  border-color: #9CA3AF;
+  background: #F3F4F6;
+}
+
+.upload-placeholder {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upload-placeholder p {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-text-dark);
+}
+
+.upload-placeholder span {
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+}
+
+/* ── Footer ── */
+.panel-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid #E5E7EB;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  background: white;
+}
+
+.btn-outline-dark {
+  background: white;
+  border: 1px solid #D1D5DB;
+  padding: 0.8rem 1.5rem;
+  border-radius: 20px;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-outline-dark:hover {
+  background: #F3F4F6;
+  border-color: #9CA3AF;
+}
+
+/* ==========================================================================
+   Mobile Responsiveness (Product Panel)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .product-panel {
+    width: 100vw;
+  }
+  
+  .panel-header {
+    padding: 1.5rem;
+  }
+
+  .panel-body {
+    padding: 1.5rem;
+  }
+
+  .panel-footer {
+    padding: 1rem 1.5rem;
+    justify-content: stretch;
+  }
+  
+  .panel-footer button {
+    flex: 1;
+  }
+}

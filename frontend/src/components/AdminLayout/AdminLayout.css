@@ -1,0 +1,442 @@
+/* ──────────────────────────────────────────────
+   Admin Dashboard Layout Styles
+   Features the seamless overlapping sidebar tab
+────────────────────────────────────────────── */
+
+.admin-wrapper {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--color-primary); /* Dark Green background */
+  overflow: hidden;
+  font-family: var(--font-body);
+}
+
+/* ── Sidebar ── */
+.admin-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 2.5rem 0 2.5rem 1.5rem; /* Padding left, NO padding right so active tabs touch the edge */
+}
+
+.admin-logo {
+  padding-left: 1rem;
+  margin-bottom: 3rem;
+}
+
+.admin-logo a {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-decoration: none;
+}
+
+.admin-logo h2 {
+  font-family: var(--font-heading);
+  color: white;
+  font-size: 1.8rem;
+  margin: 0;
+  line-height: 1;
+}
+
+.logo-accent {
+  color: var(--color-secondary);
+}
+
+.admin-badge {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.7);
+  font-weight: 700;
+  margin-top: 0.2rem;
+}
+
+.admin-nav {
+  flex: 1;
+  margin-top: 2.5rem; /* Push down significantly to clear the 40px border-radius of the white main box */
+}
+
+.admin-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-nav-header {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.admin-nav-item {
+  position: relative;
+  border-radius: 30px 0 0 30px; /* Only round left side */
+  transition: background-color 0.2s ease;
+}
+
+.admin-nav-item:hover:not(.active):not(.expanded) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 10;
+}
+
+.admin-nav-item:hover:not(.active):not(.expanded) > .admin-nav-link {
+  color: white;
+}
+
+/* The active state logic targets `.active` items AND `.expanded` dropdown parents */
+.admin-nav-item.active,
+.admin-nav-item.expanded {
+  background-color: var(--color-background); /* White */
+  border-radius: 30px 0 0 30px; /* Flat on the right */
+  margin-right: 0; /* Touching the main area! */
+}
+
+.admin-nav-item.active > .admin-nav-link,
+.admin-nav-item.expanded > .admin-nav-link {
+  color: var(--color-primary); /* Green text on white bg */
+}
+
+/* The curved connectors using box-shadow magic */
+.admin-nav-item.active::before,
+.admin-nav-item.active::after,
+.admin-nav-item.expanded::before,
+.admin-nav-item.expanded::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  background-color: transparent;
+  pointer-events: none; /* Let clicks pass through */
+}
+
+/* Top Curve */
+.admin-nav-item.active::before,
+.admin-nav-item.expanded::before {
+  top: -30px;
+  border-bottom-right-radius: 30px;
+  box-shadow: 15px 15px 0 15px var(--color-background);
+}
+
+/* Bottom Curve */
+.admin-nav-item.active::after,
+.admin-nav-item.expanded::after {
+  bottom: -30px;
+  border-top-right-radius: 30px;
+  box-shadow: 15px -15px 0 15px var(--color-background);
+}
+
+/* ── Dropdown Specific Styles ── */
+.admin-dropdown-menu {
+  list-style: none;
+  padding: 0 0 0.5rem 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-nav-item.sub-item {
+  border-radius: 0; /* Removing radius as it sits inside the parent pill */
+  background: transparent !important; /* Disable its own background */
+}
+
+/* Disable the magic bridge on sub-items because the parent .expanded already has it! */
+.admin-nav-item.sub-item.active::before,
+.admin-nav-item.sub-item.active::after {
+  display: none !important;
+}
+
+.admin-nav-item.sub-item .admin-nav-link {
+  padding: 0.6rem 1.5rem 0.6rem 3.5rem; /* Indent sub items */
+  font-size: 0.9rem;
+  color: var(--color-text-light); /* Dark grey text inside the white block */
+}
+
+.admin-nav-item.sub-item:hover:not(.active) {
+  background-color: transparent;
+}
+
+.admin-nav-item.sub-item:hover:not(.active) .admin-nav-link {
+  color: var(--color-primary);
+  background: rgba(0,0,0,0.03); /* Slight hover inside the white block */
+}
+
+.admin-nav-item.sub-item.active .admin-nav-link {
+  color: var(--color-primary);
+  font-weight: 700;
+  background: rgba(7, 105, 53, 0.05); /* Very slight green highlight */
+  border-right: 3px solid var(--color-primary); /* A line to indicate active child */
+}
+
+.admin-logout {
+  padding-left: 1.5rem;
+  margin-top: auto;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.logout-btn:hover {
+  color: white;
+}
+
+/* ── Content Wrapper ── */
+.admin-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Main Content Area (White Box) ── */
+.admin-main {
+  flex: 1;
+  background-color: var(--color-background);
+  border-radius: 40px;
+  margin: 0.5rem 1rem 1rem 0; /* Gap on right and bottom, slight gap on top from topbar */
+  overflow-y: auto;
+  position: relative;
+}
+
+
+
+/* ── Desktop Topbar (Pill Header) ── */
+.admin-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  margin: 1rem 1rem 0 0; /* Aligned with sidebar and right margin */
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+}
+
+.topbar-search {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: #F3F4F6;
+  padding: 0.6rem 1.2rem;
+  border-radius: 30px;
+  width: 300px;
+  transition: all 0.2s ease;
+}
+
+.topbar-search:focus-within {
+  background: white;
+  box-shadow: 0 0 0 2px rgba(39, 39, 42, 0.1);
+}
+
+.topbar-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.9rem;
+  width: 100%;
+  color: var(--color-text-dark);
+}
+
+.topbar-search .search-icon {
+  color: var(--color-text-light);
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-light);
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.icon-btn:hover {
+  color: var(--color-text-dark);
+}
+
+.icon-btn .badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #EF4444;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: bold;
+  height: 16px;
+  min-width: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.user-profile-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+  padding: 0.4rem 0.6rem;
+  border-radius: 30px;
+  transition: background 0.2s;
+}
+
+.user-profile-pill:hover {
+  background: #F3F4F6;
+}
+
+.user-avatar {
+  background: var(--color-primary);
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-dark);
+}
+
+.user-profile-pill .chevron {
+  color: var(--color-text-light);
+}
+
+.admin-main-inner {
+  padding: 3rem 4rem;
+  max-width: 1400px;
+}
+
+/* ==========================================================================
+   Mobile Responsiveness (AdminLayout)
+   ========================================================================== */
+
+.admin-mobile-header {
+  display: none;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: white;
+  border-bottom: 1px solid #E5E7EB;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+
+.admin-mobile-header h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  color: var(--color-primary);
+}
+
+.mobile-menu-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-dark);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.mobile-close-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.admin-mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 99;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@media (max-width: 1024px) {
+  .admin-mobile-header {
+    display: flex;
+  }
+
+  .admin-topbar {
+    display: none;
+  }
+
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px; /* Hidden by default */
+    height: 100vh;
+    z-index: 100;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .admin-sidebar.mobile-open {
+    transform: translateX(280px);
+  }
+
+  .mobile-close-btn {
+    display: block;
+  }
+
+  .admin-main-inner {
+    padding: 1.5rem 1rem;
+  }
+}

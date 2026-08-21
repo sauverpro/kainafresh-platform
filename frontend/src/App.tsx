@@ -1,18 +1,22 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router"; // Use unified v7 routing package
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "./context/SidebarContext";
-import AppLayout from "./components/layout/AppLayout";
+import AdminLayout from "./components/AdminLayout/AdminLayout";
 import Placeholder from "./pages/Placeholder";
 import { isAuthenticated } from "./api/client";
-import { sideNavData } from "./assets/data/sideNavData";
+
+// Public Pages
 import Home from "./pages/home/Home";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import About from "./pages/about/About";
 import Contact from "./pages/contact/Contact";
 import Wholesale from "./pages/wholesale/Wholesale";
-import EcommerceDashboard from "./pages/dashboard/EcommerceDashboard";
-import CrmPage from "./pages/crm/CrmPage";
-import type { NavItem } from "./assets/data/sideNavData.types";
+
+// Admin Dashboard Pages (Cherry-picked)
+import DashboardOverview from "./pages/admin/Dashboard/DashboardOverview";
+import PageEditor from "./pages/admin/CMS/PageEditor";
+import ProductsList from "./pages/admin/Products/ProductsList";
+import InventoryList from "./pages/admin/Inventory/InventoryList";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -24,33 +28,6 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
   return <>{children}</>;
 }
-
-function collectRoutes(items: NavItem[]): { path: string; label: string }[] {
-  return items.flatMap((item) => {
-    if (item.subItems?.length) {
-      return item.subItems.flatMap((sub) => {
-        if (sub.otherSub?.length) {
-          return sub.otherSub
-            .filter((child): child is { label: string; path: string } => Boolean(child.path))
-            .map((child) => ({ path: child.path, label: child.label }));
-        }
-        if (sub.path) {
-          return [{ path: sub.path, label: sub.label }];
-        }
-        return [];
-      });
-    }
-    if (item.path) {
-      return [{ path: item.path, label: item.label }];
-    }
-    return [];
-  });
-}
-
-const routes = sideNavData
-  .flatMap((section) => collectRoutes(section.items))
-  .filter((route) => route.path !== "/");
-
 
 function App() {
   return (
@@ -65,25 +42,25 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/wholesale" element={<Wholesale />} />
 
-          {/* Authenticated Dashboard*/}
-          <Route 
-            element={
-              // <ProtectedRoute>
-                <AppLayout />
-              // {/* </ProtectedRoute> */}
-            }
-          >
-            <Route path="/dashboard" element={<EcommerceDashboard />} />
-            <Route path="/crm/settings" element={<Placeholder title="Settings" />} />
-            <Route path="/crm/:id" element={<CrmPage />} />
-            {routes.map((route) => (
-              <Route
-                key={route.path}
-                path={route.path}
-                element={<Placeholder title={route.label} />}
-              />
-            ))}
-          </Route>
+          {/* Authenticated Dashboard */}
+          <Route path="/admin/*" element={
+            // <ProtectedRoute>
+              <AdminLayout>
+                <Routes>
+                  <Route path="/" element={<DashboardOverview />} />
+                  <Route path="content/:slug" element={<PageEditor />} />
+                  <Route path="products" element={<ProductsList />} />
+                  <Route path="inventory" element={<InventoryList />} />
+                  <Route path="orders" element={<Placeholder title="Orders Management" />} />
+                  <Route path="customers" element={<Placeholder title="Customers" />} />
+                  <Route path="reports" element={<Placeholder title="Reports" />} />
+                  <Route path="settings" element={<Placeholder title="Global Settings" />} />
+                  <Route path="users" element={<Placeholder title="User Management" />} />
+                  <Route path="*" element={<Navigate to="/admin" replace />} />
+                </Routes>
+              </AdminLayout>
+            // </ProtectedRoute>
+          } />
 
           {/* Catch-All Universal Redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
