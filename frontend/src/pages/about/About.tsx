@@ -4,6 +4,7 @@ import { Leaf, Users, ShieldCheck, Award, ArrowRight, MapPin } from 'lucide-reac
 import Navbar from '../../components/navbar/Navbar';
 import pepperImage from '../../assets/images/pepper.png';
 import { apiGet } from '../../api/client';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import './About.css';
 
 /**
@@ -50,6 +51,7 @@ interface CtaContent { heading?: string; subheading?: string; primaryCta?: { lab
 interface CmsSection { type: string; content: HeroContent & StatsContent & StoryContent & ValuesContent & TeamContent & CtaContent }
 
 function About() {
+  usePageTitle('about', 'About');
   const [sections, setSections] = useState<CmsSection[]>([]);
 
   useEffect(() => {

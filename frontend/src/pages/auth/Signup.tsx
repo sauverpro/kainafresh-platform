@@ -4,6 +4,7 @@ import Navbar from '../../components/navbar/Navbar';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
 import { apiPost, setToken } from '../../api/client';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import tractorImg from '../../assets/images/tractor.png';
 import './Auth.css';
 
@@ -38,6 +39,7 @@ interface LoginResponse {
   };
 }
 function Signup() {
+  usePageTitle('signup', 'Sign Up');
  const navigate = useNavigate();
   const [step, setStep] = useState<number>(1);
 

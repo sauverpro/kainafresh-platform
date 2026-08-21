@@ -15,6 +15,7 @@ import productPlaceholder from "../../assets/images/placeholder.png";
 import "./Home.css";
 import Navbar from "../../components/navbar/Navbar";
 import { apiGet } from "../../api/client";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 /**
  * Home Page
@@ -177,6 +178,7 @@ const FAQS = [
 // ── Component ──
 
 function Home() {
+  usePageTitle("home", "Home");
   const [cmsHero, setCmsHero] = useState<HeroContent | null>(null);
   const [cmsValueProps, setCmsValueProps] = useState<ValuePropsContent | null>(null);
   const [cmsFaqs, setCmsFaqs] = useState<FaqsContent | null>(null);

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MapPin, Phone, Mail, Globe, Send, CheckCircle, Clock } from 'lucide-react';
 import Navbar from '../../components/navbar/Navbar';
 import { apiGet } from '../../api/client';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import './Contact.css';
 
 /**
@@ -41,6 +42,7 @@ interface ContactForm {
 }
 
 function Contact() {
+  usePageTitle('contact', 'Contact');
   const [settings, setSettings] = useState<SiteSettings>({});
   const [hero, setHero] = useState<HeroContent>({});
   const [form, setForm] = useState<ContactForm>({ name: '', email: '', phone: '', subject: '', message: '' });

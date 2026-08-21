@@ -8,7 +8,7 @@
  * Update .env when the backend team finalises the server URL.
  */
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? `${window.location.protocol}//${window.location.hostname}:8000` : import.meta.env.VITE_API_BASE_URL);
 const TOKEN_KEY = 'kainafresh_token';
 
 // ---------------------------------------------------------------------------

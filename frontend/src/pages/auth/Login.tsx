@@ -4,6 +4,7 @@ import Navbar from '../../components/navbar/Navbar';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { apiPost, setToken } from '../../api/client';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import tractorImg from '../../assets/images/tractor.png';
 import './Auth.css';
 
@@ -13,6 +14,7 @@ import './Auth.css';
  * On success: stores token and redirects to home (or /admin if admin role).
  */
 function Login() {
+  usePageTitle('login', 'Login');
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ email: '', password: '' });

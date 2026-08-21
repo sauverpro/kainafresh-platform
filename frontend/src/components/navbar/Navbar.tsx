@@ -1,9 +1,8 @@
 import React,{ useState } from 'react'; 
 import { NavLink, useNavigate } from 'react-router-dom';
-import { isAuthenticated, removeToken, apiGet } from '../../api/client';
 import './Navbar.css';
 // import api
-
+import { isAuthenticated, removeToken, apiGet } from '../../api/client';
 /**
  * Navbar
  * Global navigation bar for all public pages.
@@ -41,6 +40,7 @@ function Navbar() {
         if (settingsResp && settingsResp.data) {
           settingsData = settingsResp.data;
         } else if (Array.isArray(settingsResp) && settingsResp.length > 1) {
+         
           settingsData = settingsResp[1];
         }
 

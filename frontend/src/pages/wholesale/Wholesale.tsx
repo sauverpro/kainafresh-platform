@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Navbar from "../../components/navbar/Navbar";
 import { apiGet } from "../../api/client";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import "./Wholesale.css";
 
 /**
@@ -147,6 +148,7 @@ const PROCESS_STEPS = [
 ];
 
 function Wholesale() {
+  usePageTitle("wholesale", "Wholesale & Exports");
   const [cmsHero, setCmsHero] = useState<WholesaleHero | null>(null);
   const [form, setForm] = useState({
     companyName: "",

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { LayoutGrid } from "lucide-react";
 import { useSidebar } from "../../context/SidebarContext";
@@ -11,10 +11,21 @@ export default function Sidebar() {
   const { isExpanded, isMobileOpen, isRailExpanded, setIsHovered } =
     useSidebar();
   const { pages, fetchPages } = usePageStore();
+  const [settings, setSettings] = useState<{ site_title?: string; site_logo?: string } | null>(null);
 
   useEffect(() => {
     fetchPages();
   }, [fetchPages]);
+
+  useEffect(() => {
+    // fetch global site settings so the sidebar can show real title/logo
+    import("../../api/client").then(({ apiGet }) => {
+      apiGet<any>("/api/settings").then((res) => {
+        const data = res?.data ?? (Array.isArray(res) ? res[1] : res);
+        setSettings(data || null);
+      }).catch(() => setSettings(null));
+    });
+  }, []);
 
   const navData: NavSection[] = useMemo(() => {
     return sideNavData.map((section) => ({
@@ -50,22 +61,21 @@ export default function Sidebar() {
       ].join(" ")}
     >
       <div className="flex h-[72px] shrink-0 items-center gap-2.5 px-6">
-        <Link
-          to="/"
-          className="flex items-center gap-2.5 overflow-hidden"
-        >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-white">
-            <LayoutGrid className="h-5 w-5" />
-          </span>
+        <Link to="/" className="flex items-center gap-2.5 overflow-hidden">
+          {settings?.site_logo ? (
+            <img src={(import.meta.env.VITE_API_BASE_URL || window.location.origin) + (settings.site_logo.startsWith('/') ? '' : '/') + settings.site_logo} alt={settings.site_title ?? 'logo'} className="h-9 w-9 rounded-lg object-contain" />
+          ) : (
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-white">
+              <LayoutGrid className="h-5 w-5" />
+            </span>
+          )}
           <span
             className={[
               "whitespace-nowrap text-lg font-semibold text-gray-900 transition-all duration-200 dark:text-white",
-              isRailExpanded
-                ? "max-w-[160px] opacity-100"
-                : "max-w-0 opacity-0",
+              isRailExpanded ? "max-w-[160px] opacity-100" : "max-w-0 opacity-0",
             ].join(" ")}
           >
-            Kaina Fresh LTD
+            {settings?.site_title ?? 'Kaina Fresh LTD'}
           </span>
         </Link>
       </div>
