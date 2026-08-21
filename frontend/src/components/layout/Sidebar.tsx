@@ -20,8 +20,9 @@ export default function Sidebar() {
   useEffect(() => {
     // fetch global site settings so the sidebar can show real title/logo
     import("../../api/client").then(({ apiGet }) => {
-      apiGet<any>("/api/settings").then((res) => {
-        const data = res?.data ?? (Array.isArray(res) ? res[1] : res);
+      apiGet<{ data?: unknown } | unknown[]>("/api/settings").then((res) => {
+        const data = (res && typeof res === 'object' && 'data' in res ? (res as { data: unknown }).data : null) 
+                     ?? (Array.isArray(res) ? res[1] : res);
         setSettings(data || null);
       }).catch(() => setSettings(null));
     });
