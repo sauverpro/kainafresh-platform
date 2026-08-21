@@ -36,7 +36,7 @@ function DashboardOverview() {
       {/* ── Top Header Banner ── */}
       <div className="dash-top-banner">
         <div className="dash-greeting">
-          <h1>Welcome back, Admin 👋</h1>
+          <h1>Welcome back, Admin</h1>
           <p>Here is a complete composition of your store overview today.</p>
         </div>
 
@@ -57,39 +57,58 @@ function DashboardOverview() {
         {/* ── LEFT COLUMN ── */}
         <div className="bento-left">
           
-          {/* Card 1: Target Ring Progress & Metric Chips */}
+          {/* Card 1: Target Ring Progress & Metric Cards Grid */}
           <div className="bento-card hero-chart-card">
             <div className="hero-chart-header">
-              <h3>Sales & Goal Statistics</h3>
+              <h3>Sales & Goal Performance</h3>
               <button className="date-pill-btn" style={{ fontSize: '0.75rem', padding: '0.3rem 0.8rem' }}>
                 Month <ChevronDown size={12} />
               </button>
             </div>
 
             <div className="hero-chart-body">
-              {/* Left Metric Column */}
-              <div className="metric-column">
-                <div className="metric-chip chip-purple">
-                  <div className="chip-icon"><DollarSign size={14} color="#7C3AED" /></div>
-                  <div className="metric-chip-info">
-                    <span className="metric-chip-title">Total Revenue</span>
-                    <span className="metric-chip-val">RWF 840,000</span>
+              {/* 2x2 Metric Cards Grid */}
+              <div className="metrics-grid-2x2">
+                <div className="metric-card chip-purple">
+                  <div className="chip-icon"><DollarSign size={20} color="#7C3AED" /></div>
+                  <div className="metric-card-info">
+                    <span className="metric-card-title">Total Revenue</span>
+                    <span className="metric-card-val">RWF 840,000</span>
+                    <span className="metric-card-sub">↑ 15% vs last month</span>
                   </div>
                 </div>
 
-                <div className="metric-chip chip-green">
-                  <div className="chip-icon"><Leaf size={14} color="#076935" /></div>
-                  <div className="metric-chip-info">
-                    <span className="metric-chip-title">Active Produce</span>
-                    <span className="metric-chip-val">24 Items</span>
+                <div className="metric-card chip-green">
+                  <div className="chip-icon"><Leaf size={20} color="#076935" /></div>
+                  <div className="metric-card-info">
+                    <span className="metric-card-title">Active Produce</span>
+                    <span className="metric-card-val">24 Items</span>
+                    <span className="metric-card-sub">Organic Fresh Stock</span>
+                  </div>
+                </div>
+
+                <div className="metric-card chip-amber">
+                  <div className="chip-icon"><ShoppingBag size={20} color="#D97706" /></div>
+                  <div className="metric-card-info">
+                    <span className="metric-card-title">Completed Orders</span>
+                    <span className="metric-card-val">156 Orders</span>
+                    <span className="metric-card-sub">↑ 8% vs last week</span>
+                  </div>
+                </div>
+
+                <div className="metric-card chip-blue">
+                  <div className="chip-icon"><Users size={20} color="#0284C7" /></div>
+                  <div className="metric-card-info">
+                    <span className="metric-card-title">Active Customers</span>
+                    <span className="metric-card-val">120 Buyers</span>
+                    <span className="metric-card-sub">Registered Accounts</span>
                   </div>
                 </div>
               </div>
 
-              {/* Center Ring Progress Chart */}
+              {/* Right Side Ring Progress Chart */}
               <div className="ring-chart-wrapper">
                 <svg className="ring-chart-svg" viewBox="0 0 100 100">
-                  {/* Background Track */}
                   <circle
                     cx="50"
                     cy="50"
@@ -98,7 +117,6 @@ function DashboardOverview() {
                     stroke="#F3F4F6"
                     strokeWidth="10"
                   />
-                  {/* Primary Ring */}
                   <circle
                     cx="50"
                     cy="50"
@@ -121,25 +139,6 @@ function DashboardOverview() {
                 <div className="ring-chart-center">
                   <div className="ring-chart-number">84%</div>
                   <div className="ring-chart-label">Goal Achieved</div>
-                </div>
-              </div>
-
-              {/* Right Metric Column */}
-              <div className="metric-column">
-                <div className="metric-chip chip-amber">
-                  <div className="chip-icon"><ShoppingBag size={14} color="#D97706" /></div>
-                  <div className="metric-chip-info">
-                    <span className="metric-chip-title">Orders</span>
-                    <span className="metric-chip-val">156 Completed</span>
-                  </div>
-                </div>
-
-                <div className="metric-chip chip-blue">
-                  <div className="chip-icon"><Users size={14} color="#0284C7" /></div>
-                  <div className="metric-chip-info">
-                    <span className="metric-chip-title">Customers</span>
-                    <span className="metric-chip-val">120 Active</span>
-                  </div>
                 </div>
               </div>
             </div>
