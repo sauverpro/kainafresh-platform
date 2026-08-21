@@ -148,9 +148,12 @@ const PROCESS_STEPS = [
   },
 ];
 
+import PageLoader from "../../components/PageLoader/PageLoader";
+
 function Wholesale() {
   usePageTitle("wholesale", "Wholesale & Exports");
   const [cmsHero, setCmsHero] = useState<WholesaleHero | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
   const [form, setForm] = useState({
     companyName: "",
     contactName: "",
@@ -165,13 +168,15 @@ function Wholesale() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    setPageLoading(true);
     apiGet<{ success: boolean; data: { sections: { type: string; content: WholesaleHero }[] } }>('/api/pages/slug/wholesale')
       .then((res) => {
         if (!res.success || !res.data?.sections) return;
         const heroSection = res.data.sections.find((s) => s.type === 'hero');
         if (heroSection) setCmsHero(heroSection.content);
       })
-      .catch(() => { /* silently use defaults */ });
+      .catch(() => { /* silently use defaults */ })
+      .finally(() => { setPageLoading(false); });
   }, []);
 
   // Merge CMS with defaults
@@ -200,10 +205,14 @@ function Wholesale() {
     }, 1200);
   };
 
+  if (pageLoading) {
+    return <PageLoader text="Loading wholesale catalog and export details..." />;
+  }
+
   return (
     <>
       <Navbar />
-      <main className="wholesale-page">
+      <main className="wholesale-page fade-in-content">
         {/* ── Hero ── */}
         <section className="wholesale-hero">
           <div className="wholesale-hero-inner">

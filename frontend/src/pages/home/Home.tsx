@@ -178,14 +178,18 @@ const FAQS = [
 
 // ── Component ──
 
+import PageLoader from "../../components/PageLoader/PageLoader";
+
 function Home() {
   usePageTitle("home", "Home");
   const [cmsHero, setCmsHero] = useState<HeroContent | null>(null);
   const [cmsValueProps, setCmsValueProps] = useState<ValuePropsContent | null>(null);
   const [cmsFaqs, setCmsFaqs] = useState<FaqsContent | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     apiGet<{ success: boolean; data: { sections: CmsSection[] } }>('/api/pages/slug/home')
       .then((res) => {
         if (!res.success || !res.data?.sections) return;
@@ -198,7 +202,10 @@ function Home() {
         setCmsValueProps(find<ValuePropsContent>('value_props'));
         setCmsFaqs(find<FaqsContent>('faqs'));
       })
-      .catch(() => { /* silently fall back to hardcoded defaults */ });
+      .catch(() => { /* silently fall back to hardcoded defaults */ })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const toggleFaq = (id: number) => setOpenFaq(openFaq === id ? null : id);
@@ -222,10 +229,14 @@ function Home() {
     ? cmsFaqs.items.map((f, i) => ({ id: i + 1, question: f.question, answer: f.answer }))
     : FAQS;
 
+  if (loading) {
+    return <PageLoader text="Fetching fresh produce data from database..." />;
+  }
+
   return (
     <>
       <Navbar />
-      <main className="home-page">
+      <main className="home-page fade-in-content">
         {/* ── Hero ── */}
         {/* ── Hero ── */}
         <section className="hero">

@@ -51,14 +51,19 @@ interface CtaContent { heading?: string; subheading?: string; primaryCta?: { lab
 
 interface CmsSection { type: string; content: HeroContent & StatsContent & StoryContent & ValuesContent & TeamContent & CtaContent }
 
+import PageLoader from '../../components/PageLoader/PageLoader';
+
 function About() {
   usePageTitle('about', 'About');
   const [sections, setSections] = useState<CmsSection[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     apiGet<{ success: boolean; data: { sections: CmsSection[] } }>('/api/pages/slug/about')
       .then((res) => { if (res.success && res.data?.sections) setSections(res.data.sections); })
-      .catch(() => { /* silently fall back to hardcoded defaults */ });
+      .catch(() => { /* silently fall back to hardcoded defaults */ })
+      .finally(() => { setLoading(false); });
   }, []);
 
   // Helper: find a section of a given type from the CMS response
@@ -80,10 +85,15 @@ function About() {
     ? valuesSection.items.map((v) => ({ icon: ICON_MAP[v.iconName] ?? Leaf, title: v.title, description: v.description }))
     : DEFAULT_VALUES;
   const team = teamSection?.members ?? DEFAULT_TEAM;
+
+  if (loading) {
+    return <PageLoader text="Loading farm story and credentials from database..." />;
+  }
+
   return (
     <>
       <Navbar />
-      <main className="about-page">
+      <main className="about-page fade-in-content">
 
         {/* ── Hero ── */}
         <section className="about-hero">
