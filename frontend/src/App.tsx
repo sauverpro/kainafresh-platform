@@ -17,6 +17,7 @@ import DashboardOverview from "./pages/admin/Dashboard/DashboardOverview";
 import PageEditor from "./pages/admin/CMS/PageEditor";
 import ProductsList from "./pages/admin/Products/ProductsList";
 import InventoryList from "./pages/admin/Inventory/InventoryList";
+import GlobalSettings from "./pages/admin/Settings/GlobalSettings";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -44,7 +45,7 @@ function App() {
 
           {/* Authenticated Dashboard */}
           <Route path="/admin/*" element={
-            // <ProtectedRoute>
+            <ProtectedRoute>
               <AdminLayout>
                 <Routes>
                   <Route path="/" element={<DashboardOverview />} />
@@ -54,12 +55,12 @@ function App() {
                   <Route path="orders" element={<Placeholder title="Orders Management" />} />
                   <Route path="customers" element={<Placeholder title="Customers" />} />
                   <Route path="reports" element={<Placeholder title="Reports" />} />
-                  <Route path="settings" element={<Placeholder title="Global Settings" />} />
+                  <Route path="settings" element={<GlobalSettings />} />
                   <Route path="users" element={<Placeholder title="User Management" />} />
                   <Route path="*" element={<Navigate to="/admin" replace />} />
                 </Routes>
               </AdminLayout>
-            // </ProtectedRoute>
+            </ProtectedRoute>
           } />
 
           {/* Catch-All Universal Redirect */}
