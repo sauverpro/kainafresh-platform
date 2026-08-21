@@ -13,6 +13,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import Navbar from "../../components/navbar/Navbar";
+import Footer from "../../components/footer/Footer";
 import { apiGet } from "../../api/client";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import "./Wholesale.css";
@@ -521,6 +522,7 @@ function Wholesale() {
           </div>
         </section>
       </main>
+      <Footer />
     </>
   );
 }

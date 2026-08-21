@@ -14,6 +14,7 @@ import heroFarmers from "../../assets/images/hero-farmers.png";
 import productPlaceholder from "../../assets/images/placeholder.png";
 import "./Home.css";
 import Navbar from "../../components/navbar/Navbar";
+import Footer from "../../components/footer/Footer";
 import { apiGet } from "../../api/client";
 import { usePageTitle } from "../../hooks/usePageTitle";
 
@@ -407,6 +408,7 @@ function Home() {
           </div>
         </section>
       </main>
+      <Footer />
     </>
   );
 }

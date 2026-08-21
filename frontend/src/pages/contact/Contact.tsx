@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Phone, Mail, Globe, Send, CheckCircle, Clock } from 'lucide-react';
 import Navbar from '../../components/navbar/Navbar';
+import Footer from '../../components/footer/Footer';
 import { apiGet } from '../../api/client';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import './Contact.css';
@@ -249,6 +250,7 @@ function Contact() {
         </section>
 
       </main>
+      <Footer />
     </>
   );
 }

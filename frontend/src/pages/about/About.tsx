@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Leaf, Users, ShieldCheck, Award, ArrowRight, MapPin } from 'lucide-react';
 import Navbar from '../../components/navbar/Navbar';
+import Footer from '../../components/footer/Footer';
 import pepperImage from '../../assets/images/pepper.png';
 import { apiGet } from '../../api/client';
 import { usePageTitle } from '../../hooks/usePageTitle';
@@ -198,6 +199,7 @@ function About() {
         </section>
 
       </main>
+      <Footer />
     </>
   );
 }
