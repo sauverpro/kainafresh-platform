@@ -22,13 +22,6 @@ const ICON_MAP: Record<string, React.FC<{ size?: number; color?: string; strokeW
 
 
 
-const DEFAULT_VALUES = [
-  { icon: Leaf, title: 'Sustainable Farming', description: 'We use eco-friendly practices that protect the soil, water, and biodiversity for generations to come.' },
-  { icon: ShieldCheck, title: 'Quality & Safety', description: 'Every product is inspected, packed, and handled under strict quality standards before it reaches you.' },
-  { icon: Users, title: 'Community First', description: 'We work directly with local communities, creating fair employment and supporting local economies.' },
-  { icon: Award, title: 'Farm Transparency', description: 'From seed to delivery, we believe you deserve to know exactly where your food comes from.' },
-];
-
 const DEFAULT_TEAM = [
   { name: 'Jean-Pierre Uwimana', role: 'Founder & Farm Director', initials: 'JU' },
   { name: 'Amina Keza', role: 'Head of Operations', initials: 'AK' },
@@ -46,17 +39,26 @@ interface HeroContent {
    stat_bottom?: {stat_number:number; stat_label:string};
   }
 
-interface StatsContentItem { iconName?: string; icon?: string; title: string; description: string }
+interface StatsContentItem { value?: string, label?: string }
 interface StatsContent { tag?: string; heading?: string; items?: StatsContentItem[] }
 
 interface StoryContent { tag?: string; heading?: string; paragraphs?: string[] }
-interface ValuesContent { tag?: string; heading?: string; subheading?: string; items?: { iconName: string; title: string; description: string }[] }
+interface ValuesContentItem { icon: string; title: string; description: string; }
+interface ValuesContent { 
+  tag?: string; 
+  heading?: string; 
+  subheading?: string; 
+  vision?: string; 
+  mission?: string; 
+  items?: ValuesContentItem[]; 
+}
 interface TeamContent { tag?: string; heading?: string; members?: { name: string; role: string; initials: string }[] }
 interface CtaContent { heading?: string; subheading?: string; primaryCta?: { label: string; to: string }; secondaryCta?: { label: string; to: string } }
 
 interface CmsSection { type: string; content: HeroContent & StatsContent & StoryContent & ValuesContent & TeamContent & CtaContent }
 
 import PageLoader from '../../components/PageLoader/PageLoader';
+
 
 function About() {
   usePageTitle('about', 'About');
@@ -65,6 +67,7 @@ function About() {
   const [cmsAboutHero, setCmsAboutHero] = useState<HeroContent | null>(null);
   const [cmsStat, setCmsStat] = useState<StatsContent | null>(null);
   const [cmsStory, setCmsStory] = useState<StoryContent | null>(null);
+  const [cmsMission, setCmsMission] = useState<ValuesContent | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -89,7 +92,33 @@ function About() {
         );
         // our story section
         setCmsStory(find<StoryContent>('about-story'));
-
+        // mission and vission
+            const mission_content = sections.find((sec) => sec.type === 'about-values');
+        const missionValue = mission_content?.content;
+        
+        // Properly handle the values content
+        if (Array.isArray(missionValue)) {
+          // If it's an array, wrap it in an object with items
+          setCmsMission({ items: missionValue as ValuesContentItem[] });
+        } else if (missionValue && typeof missionValue === 'object') {
+          // If it's an object with items property
+          if ('items' in missionValue && Array.isArray(missionValue.items)) {
+            setCmsMission(missionValue as ValuesContent);
+          } else {
+            // If it's an object but no items, treat it as the content with tag, heading, etc.
+            setCmsMission({
+              tag: (missionValue as any).tag,
+              heading: (missionValue as any).heading,
+              subheading: (missionValue as any).subheading,
+              vision: (missionValue as any).vision,
+              mission: (missionValue as any).mission,
+              items: (missionValue as any).items || []
+            });
+          }
+        } else {
+          setCmsMission(null);
+        }
+      
        })
       .catch(() => { /* silently fall back to hardcoded defaults */ })
       .finally(() => { setLoading(false); });
@@ -118,19 +147,26 @@ function About() {
     heading: cmsStory?.heading,
     paragraphs: cmsStory?.paragraphs
   }
-  console.log(stories);
+  // console.log(stories);
+ const valuesContent = cmsMission || { items: [] };
   
+  // Map values to icons
+  const values = valuesContent?.items && valuesContent.items.length > 0
+    ? valuesContent.items.map((v) => ({
+        icon: ICON_MAP[v.icon] ?? Leaf,
+        title: v.title,
+        description: v.description,
+      }))
+    : [];
   
-  const valuesSection = getSection<ValuesContent>('values');
+ 
   const teamSection = getSection<TeamContent>('team');
   const ctaSection = getSection<CtaContent>('cta');
   // stat action bar 
   const stats = cmsStat?.items;
 
   
-  const values = valuesSection?.items
-    ? valuesSection.items.map((v) => ({ icon: ICON_MAP[v.iconName] ?? Leaf, title: v.title, description: v.description }))
-    : DEFAULT_VALUES;
+  
   const team = teamSection?.members ?? DEFAULT_TEAM;
 
   if (loading) {
@@ -207,11 +243,27 @@ function About() {
         {/* ── Mission & Values ── */}
         <section className="about-values">
           <div className="about-values-header">
-            <span className="section-tag">{valuesSection?.tag ?? 'What We Stand For'}</span>
-            <h2>{valuesSection?.heading ?? 'Our Mission & Values'}</h2>
+            <span className="section-tag">{valuesContent?.tag }</span>
+            <h2>{valuesContent?.heading }</h2>
             <p>
-              {valuesSection?.subheading ?? 'Everything we do is guided by a commitment to freshness, sustainability, and the communities that make our farm possible.'}
+              {valuesContent?.subheading }
             </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center mb-3 pt-3">
+              <div className="value-card card">
+                <h2 className='text-3xl'>Our Vision</h2>
+                <p className='pt-3'>
+                  {valuesContent?.vision}
+
+                </p>
+              </div>
+              <div className="value-card card">
+                <h2 className='text-3xl'>Our Mission</h2>
+                <p className='pt-3'>
+                  {valuesContent.mission}
+                </p>
+              </div>
+
           </div>
           <div className="values-grid">
             {values.map(({ icon: Icon, title, description }) => (
