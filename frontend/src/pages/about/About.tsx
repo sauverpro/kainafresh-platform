@@ -52,7 +52,7 @@ interface ValuesContent {
   mission?: string; 
   items?: ValuesContentItem[]; 
 }
-interface TeamContent { tag?: string; heading?: string; members?: { name: string; role: string; initials: string }[] }
+interface TeamContent {  name?: string; role?: string; initials?: string;phone_number?:string;email?:string }
 interface CtaContent { heading?: string; subheading?: string; primaryCta?: { label: string; to: string }; secondaryCta?: { label: string; to: string } }
 
 interface CmsSection { type: string; content: HeroContent & StatsContent & StoryContent & ValuesContent & TeamContent & CtaContent }
@@ -68,9 +68,12 @@ function About() {
   const [cmsStat, setCmsStat] = useState<StatsContent | null>(null);
   const [cmsStory, setCmsStory] = useState<StoryContent | null>(null);
   const [cmsMission, setCmsMission] = useState<ValuesContent | null>(null);
+  const [cmsTeam, setCmsTeam] = useState<TeamContent | null>(null);
 
   useEffect(() => {
+   
     setLoading(true);
+    
     apiGet<{ success: boolean; data: { sections: CmsSection[] } }>('/api/pages/slug/about')
       .then((res) => { 
         if (!res.success || !res.data?.sections) return;
