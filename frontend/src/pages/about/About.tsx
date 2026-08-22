@@ -42,7 +42,16 @@ const DEFAULT_TEAM = [
 ];
 
 // ── TypeScript shapes matching the CMS section content JSON ──
-interface HeroContent { location?: string; heading?: string; headingHighlight?: string; description?: string; cta?: { label: string; to: string } }
+interface HeroContent { 
+  location?: string; 
+  heading?: string;
+   headingHighlight?: string; 
+   description?: string; 
+   cta?: { label: string; to: string } ;
+   stat_top?: {stat_number:number; stat_label:string};
+   stat_bottom?: {stat_number:number; stat_label:string};
+  }
+
 interface StatsContent { items?: { value: string; label: string }[] }
 interface StoryContent { tag?: string; heading?: string; paragraphs?: string[] }
 interface ValuesContent { tag?: string; heading?: string; subheading?: string; items?: { iconName: string; title: string; description: string }[] }
@@ -57,11 +66,20 @@ function About() {
   usePageTitle('about', 'About');
   const [sections, setSections] = useState<CmsSection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cmsAboutHero, setCmsAboutHero] = useState<HeroContent | null>(null);
 
   useEffect(() => {
     setLoading(true);
     apiGet<{ success: boolean; data: { sections: CmsSection[] } }>('/api/pages/slug/about')
-      .then((res) => { if (res.success && res.data?.sections) setSections(res.data.sections); })
+      .then((res) => { 
+        if (!res.success || !res.data?.sections) return;
+        const sections = res.data.sections;
+        const find = <T,>(type: string): T | null => {
+          const s = sections.find((sec) => sec.type === type);
+          return s ? (s.content as T) : null;
+        };
+        setCmsAboutHero(find<HeroContent>('about-hero'));
+       })
       .catch(() => { /* silently fall back to hardcoded defaults */ })
       .finally(() => { setLoading(false); });
   }, []);
@@ -73,7 +91,15 @@ function About() {
   };
 
   // Hydrate from CMS or fall back to defaults
-  const hero = getSection<HeroContent>('hero');
+  const hero :HeroContent = {
+    location: cmsAboutHero?.location,
+    heading: cmsAboutHero?.heading,
+    headingHighlight: cmsAboutHero?.headingHighlight,
+    cta: cmsAboutHero?.cta,
+    stat_top: cmsAboutHero?.stat_top,
+    stat_bottom: cmsAboutHero?.stat_bottom,
+    description : cmsAboutHero?.description
+  }
   const statsBar = getSection<StatsContent>('stats_bar');
   const story = getSection<StoryContent>('story');
   const valuesSection = getSection<ValuesContent>('values');
@@ -99,12 +125,15 @@ function About() {
         <section className="about-hero">
           <div className="about-hero-content">
             <span className="about-tag">
-              <MapPin size={14} /> Kigali, Rwanda
+              <MapPin size={14} /> {hero.location}
             </span>
             <h1>
               {hero?.heading ?? 'Growing Fresh.'}<br />
-              <span className="highlight-orange">{hero?.headingHighlight ?? 'Building Community.'}</span>
+              
             </h1>
+             <h2 className="text-2xl">
+              <span className="highlight-orange">{hero?.headingHighlight ?? 'Building Community.'}</span>
+             </h2>
             <p>
               {hero?.description ?? 'KainaFresh is a Rwanda-based farm dedicated to producing premium, organic agricultural produce — from our fields directly to your table.'}
             </p>
@@ -115,12 +144,12 @@ function About() {
           <div className="about-hero-visual">
             <img src={pepperImage} alt="Fresh KainaFresh Pepper" className="about-hero-image" />
             <div className="about-stat-card stat-card-1">
-              <strong>350+</strong>
-              <span>Happy Customers</span>
+              <strong>{hero.stat_top?.stat_number}+</strong>
+              <span>{hero.stat_top?.stat_label}</span>
             </div>
             <div className="about-stat-card stat-card-2">
-              <strong>100%</strong>
-              <span>Organic Certified</span>
+              <strong>{hero.stat_bottom?.stat_number}</strong>
+              <span>{hero.stat_bottom?.stat_label}</span>
             </div>
           </div>
         </section>
