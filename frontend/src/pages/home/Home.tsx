@@ -46,6 +46,14 @@ interface HeroContent {
   secondaryCta?: { label: string; to: string };
 }
 
+// home cta content
+interface HomectaContent {
+  heading?:string,
+  paragraph?: string,
+  primary_cta?: {label: string, to: string};
+  secondary_cta?: {label:string, to: string};
+}
+
 interface ValuePropItem { iconName?: string; icon?: string; title: string; description: string }
 interface ValuePropsContent { tag?: string; heading?: string; items?: ValuePropItem[] }
 
@@ -168,6 +176,7 @@ function Home() {
   const [cmsValueProps, setCmsValueProps] = useState<ValuePropsContent | null>(null);
   const [cmsFaqs, setCmsFaqs] = useState<FaqsContent | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [cmsHomeCta, setCmsHomeCta] = useState<HomectaContent | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -181,6 +190,7 @@ function Home() {
           return s ? (s.content as T) : null;
         };
         setCmsHero(find<HeroContent>('hero'));
+        setCmsHomeCta(find<HomectaContent>('home-cta'));
 
         const valuePropsSection = sections.find((sec) => sec.type === 'value_props');
         // some CMS rows store a bare items array, so we set for array data
@@ -216,6 +226,12 @@ function Home() {
     subheading: cmsHero?.subheading ?? 'We grow it. We pack it. We deliver it — fresh, certified, and straight from our fields to your table.',
     primaryCta: cmsHero?.primaryCta ?? { label: 'Our Products', to: '/products' },
     secondaryCta: cmsHero?.secondaryCta ?? { label: 'Wholesale & Exports', to: '/wholesale' },
+  };
+  const homeCTA : HomectaContent ={
+    heading: cmsHomeCta?.heading,
+    paragraph: cmsHomeCta?.paragraph,
+    primary_cta: cmsHomeCta?.primary_cta,
+    secondary_cta: cmsHomeCta?.secondary_cta
   };
 
   const valueProps = (cmsValueProps?.items ?? []).map((v) => ({
@@ -402,17 +418,16 @@ function Home() {
         {/* ── Bottom CTA ── */}
         <section className="home-cta">
           <div className="home-cta-inner">
-            <h2>Ready to taste farm-fresh produce?</h2>
+            <h2>{homeCTA.heading}</h2>
             <p>
-              Join over 350 households and businesses already ordering from
-              KainaFresh.
+              {homeCTA.paragraph}
             </p>
             <div className="home-cta-buttons">
-              <Link to="/products" className="btn btn-primary">
-                Our Products
+              <Link to={homeCTA.primary_cta?.to} className="btn btn-primary">
+                {homeCTA.primary_cta?.label}
               </Link>
-              <Link to="/wholesale" className="btn btn-secondary">
-                Wholesale & Exports
+              <Link to={homeCTA.secondary_cta?.to} className="btn btn-secondary">
+                {homeCTA.secondary_cta?.label}
               </Link>
             </div>
           </div>
