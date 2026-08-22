@@ -20,13 +20,7 @@ const ICON_MAP: Record<string, React.FC<{ size?: number; color?: string; strokeW
   Leaf, ShieldCheck, Users, Award,
 };
 
-// ── Default fallback data ──
-const DEFAULT_STATS = [
-  { value: '350+', label: 'Happy Customers' },
-  { value: '5+', label: 'Years Farming' },
-  { value: '100%', label: 'Organic Certified' },
-  { value: '20+', label: 'Produce Varieties' },
-];
+
 
 const DEFAULT_VALUES = [
   { icon: Leaf, title: 'Sustainable Farming', description: 'We use eco-friendly practices that protect the soil, water, and biodiversity for generations to come.' },
@@ -52,7 +46,9 @@ interface HeroContent {
    stat_bottom?: {stat_number:number; stat_label:string};
   }
 
-interface StatsContent { items?: { value: string; label: string }[] }
+interface StatsContentItem { iconName?: string; icon?: string; title: string; description: string }
+interface StatsContent { tag?: string; heading?: string; items?: StatsContentItem[] }
+
 interface StoryContent { tag?: string; heading?: string; paragraphs?: string[] }
 interface ValuesContent { tag?: string; heading?: string; subheading?: string; items?: { iconName: string; title: string; description: string }[] }
 interface TeamContent { tag?: string; heading?: string; members?: { name: string; role: string; initials: string }[] }
@@ -67,6 +63,7 @@ function About() {
   const [sections, setSections] = useState<CmsSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [cmsAboutHero, setCmsAboutHero] = useState<HeroContent | null>(null);
+  const [cmsStat, setCmsStat] = useState<StatsContent | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -78,7 +75,21 @@ function About() {
           const s = sections.find((sec) => sec.type === type);
           return s ? (s.content as T) : null;
         };
+        // check if section type is about-hero
         setCmsAboutHero(find<HeroContent>('about-hero'));
+        // now let's check if section type is about-stats-bar
+        const stats_value = sections.find((sec)=>sec.type === 'about-stats-bar');
+        
+        const StatValue = stats_value?.content;
+        setCmsStat(
+          Array.isArray(StatValue)
+            ? {items: StatValue as StatsContentItem []} :
+            (StatValue as StatsContent) ?? null
+        );
+
+        
+        
+
        })
       .catch(() => { /* silently fall back to hardcoded defaults */ })
       .finally(() => { setLoading(false); });
@@ -106,7 +117,9 @@ function About() {
   const teamSection = getSection<TeamContent>('team');
   const ctaSection = getSection<CtaContent>('cta');
 
-  const stats = statsBar?.items ?? DEFAULT_STATS;
+  const stats = cmsStat?.items ;
+
+  
   const values = valuesSection?.items
     ? valuesSection.items.map((v) => ({ icon: ICON_MAP[v.iconName] ?? Leaf, title: v.title, description: v.description }))
     : DEFAULT_VALUES;
