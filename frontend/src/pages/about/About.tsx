@@ -64,6 +64,7 @@ function About() {
   const [loading, setLoading] = useState(true);
   const [cmsAboutHero, setCmsAboutHero] = useState<HeroContent | null>(null);
   const [cmsStat, setCmsStat] = useState<StatsContent | null>(null);
+  const [cmsStory, setCmsStory] = useState<StoryContent | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -86,9 +87,8 @@ function About() {
             ? {items: StatValue as StatsContentItem []} :
             (StatValue as StatsContent) ?? null
         );
-
-        
-        
+        // our story section
+        setCmsStory(find<StoryContent>('about-story'));
 
        })
       .catch(() => { /* silently fall back to hardcoded defaults */ })
@@ -111,13 +111,21 @@ function About() {
     stat_bottom: cmsAboutHero?.stat_bottom,
     description : cmsAboutHero?.description
   }
-  const statsBar = getSection<StatsContent>('stats_bar');
-  const story = getSection<StoryContent>('story');
+  
+
+  const stories : StoryContent ={
+    tag: cmsStory?.tag,
+    heading: cmsStory?.heading,
+    paragraphs: cmsStory?.paragraphs
+  }
+  console.log(stories);
+  
+  
   const valuesSection = getSection<ValuesContent>('values');
   const teamSection = getSection<TeamContent>('team');
   const ctaSection = getSection<CtaContent>('cta');
-
-  const stats = cmsStat?.items ;
+  // stat action bar 
+  const stats = cmsStat?.items;
 
   
   const values = valuesSection?.items
@@ -180,12 +188,9 @@ function About() {
         {/* ── Our Story ── */}
         <section className="about-story">
           <div className="about-story-text">
-            <span className="section-tag">{story?.tag ?? 'Our Story'}</span>
-            <h2>{story?.heading ?? 'From a small plot of land to a thriving farm.'}</h2>
-            {(story?.paragraphs ?? [
-              'KainaFresh started with a simple belief: that Rwandans deserve access to food that is genuinely fresh, honestly grown, and responsibly delivered.',
-              'Today, we manage over 20 varieties of produce — from tomatoes and avocados to seasonal greens and tropical fruits.',
-            ]).map((para, i) => <p key={i}>{para}</p>)}
+            <span className="section-tag">{stories?.tag}</span>
+            <h2>{stories?.heading }</h2>
+            <p>{stories.paragraphs}</p>
           </div>
           <div className="about-story-visual">
             <div className="story-image-block story-block-main">
