@@ -45,6 +45,12 @@ function DynamicForm({ data, onChange }) {
   };
 
   const handleChange = (key, value) => {
+    if (Array.isArray(data)) {
+      const newArr = [...data];
+      newArr[Number(key)] = value;
+      onChange(newArr);
+      return;
+    }
     onChange({ ...data, [key]: value });
   };
 

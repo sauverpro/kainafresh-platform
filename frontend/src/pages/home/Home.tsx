@@ -26,8 +26,17 @@ import { usePageTitle } from "../../hooks/usePageTitle";
  */
 
 // ── TypeScript interfaces for CMS section content ──
-const ICON_MAP: Record<string, React.FC<{ size?: number; strokeWidth?: number; color?: string }>> = {
+const ICON_COMPONENTS: Record<string, React.FC<{ size?: number; strokeWidth?: number; color?: string }>> = {
   Leaf, Truck, ShieldCheck, Package,
+};
+
+// CMS icon values may arrive as PascalCase ("Truck") or kebab/lowercase ("truck", "shield-check")
+const resolveIcon = (name?: string) => {
+  if (!name) return Leaf;
+  if (ICON_COMPONENTS[name]) return ICON_COMPONENTS[name];
+  const normalized = name.toLowerCase().replace(/[^a-z]/g, '');
+  const match = Object.keys(ICON_COMPONENTS).find((key) => key.toLowerCase() === normalized);
+  return match ? ICON_COMPONENTS[match] : Leaf;
 };
 
 interface HeroContent {
@@ -37,7 +46,7 @@ interface HeroContent {
   secondaryCta?: { label: string; to: string };
 }
 
-interface ValuePropItem { iconName: string; title: string; description: string }
+interface ValuePropItem { iconName?: string; icon?: string; title: string; description: string }
 interface ValuePropsContent { tag?: string; heading?: string; items?: ValuePropItem[] }
 
 interface FaqItem { question: string; answer: string }
@@ -46,33 +55,6 @@ interface FaqsContent { tag?: string; heading?: string; subheading?: string; ite
 interface CmsSection { type: string; content: HeroContent & ValuePropsContent & FaqsContent }
 
 // --- Dummy Data ---
-
-const VALUE_PROPS = [
-  {
-    icon: Leaf,
-    title: "Organically Grown",
-    description:
-      "No synthetic chemicals. Every crop is grown using eco-friendly practices that are good for the soil and good for you.",
-  },
-  {
-    icon: Truck,
-    title: "Fast Delivery",
-    description:
-      "Order today, receive tomorrow. Our cold-chain logistics ensure your produce arrives as fresh as the day it was picked.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Quality Guaranteed",
-    description:
-      "Every product is hand-inspected and graded before packing. If it's not perfect, it doesn't leave our farm.",
-  },
-  {
-    icon: Package,
-    title: "Bulk & Wholesale",
-    description:
-      "Need large volumes? We supply restaurants, supermarkets, and exporters with consistent, certified bulk produce.",
-  },
-];
 
 const FEATURED_PRODUCTS = [
   {
@@ -195,7 +177,16 @@ function Home() {
           return s ? (s.content as T) : null;
         };
         setCmsHero(find<HeroContent>('hero'));
-        setCmsValueProps(find<ValuePropsContent>('value_props'));
+
+        const valuePropsSection = sections.find((sec) => sec.type === 'value_props');
+        // some CMS rows store a bare items array, so we set for array data
+        const valuePropsContent = valuePropsSection?.content;
+        setCmsValueProps(
+          Array.isArray(valuePropsContent)
+            ? { items: valuePropsContent as ValuePropItem[] }
+            : (valuePropsContent as ValuePropsContent) ?? null
+        );
+
         setCmsFaqs(find<FaqsContent>('faqs'));
       })
       .catch(() => { /* silently fall back to hardcoded defaults */ });
@@ -214,10 +205,12 @@ function Home() {
     secondaryCta: cmsHero?.secondaryCta ?? { label: 'Wholesale & Exports', to: '/wholesale' },
   };
 
-  const valueProps = cmsValueProps?.items
-    ? cmsValueProps.items.map((v) => ({ icon: ICON_MAP[v.iconName] ?? Leaf, title: v.title, description: v.description }))
-    : VALUE_PROPS;
-
+  const valueProps = (cmsValueProps?.items ?? []).map((v) => ({
+    icon: resolveIcon(v.iconName ?? v.icon),
+    title: v.title,
+    description: v.description,
+  }));
+  console.log(valueProps);
   const faqs = cmsFaqs?.items
     ? cmsFaqs.items.map((f, i) => ({ id: i + 1, question: f.question, answer: f.answer }))
     : FAQS;
