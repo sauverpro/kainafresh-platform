@@ -1,361 +1,298 @@
 /* ==========================================================================
-   Products Dashboard Styles (Inspiration Match)
+   Products / Shop Management Dashboard (Brand Opacity Bento Cards UI)
    ========================================================================== */
 
 .products-dashboard {
-  font-family: 'Inter', sans-serif; /* Ensure clean modern font */
-  padding-bottom: 4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem 3rem 1rem;
+  font-family: var(--font-body);
+  color: #1F2937;
 }
 
-.products-header h1 {
-  font-family: var(--font-heading);
-  font-size: 2.2rem;
-  color: var(--color-text-dark);
-  margin-bottom: 2rem;
-}
-
-/* ── Summary Cards ── */
-.summary-cards-container {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.summary-card {
-  display: flex;
-  flex-direction: column;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-}
-
-.summary-card-top {
-  padding: 1.2rem 1.5rem;
-  font-weight: 500;
-  font-size: 1rem;
-  color: var(--color-text-dark);
-}
-
-/* Specific colors matching KainaFresh vibe */
-.bg-blue { background-color: #8DA2E8; color: #111827; }
-.bg-orange { background-color: #F1A36B; color: #111827; }
-.bg-yellow { background-color: #FBE083; color: #111827; }
-.bg-green { background-color: #7BE495; color: #111827; }
-
-.summary-card-bottom {
-  background: white;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.summary-value {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--color-text-dark);
-}
-
-.summary-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 12px;
-}
-
-.summary-badge span {
-  font-size: 0.7rem;
-  color: var(--color-text-light);
-  font-weight: 500;
-  margin-top: 0.2rem;
-}
-
-.badge-green { color: #059669; background: rgba(5, 150, 105, 0.1); }
-.badge-red { color: #DC2626; background: rgba(220, 38, 38, 0.1); }
-
-/* ── Toolbar ── */
-.products-toolbar {
+.products-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
 }
 
-.toolbar-left, .toolbar-right {
+.products-header h1 {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  color: #111827;
+}
+
+/* ── Summary Bento Cards Row ── */
+.summary-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-card {
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.8rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid transparent;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+}
+
+.summary-card.bg-blue {
+  background: var(--brand-blue-bg);
+  border-color: var(--brand-blue-border);
+  color: #0369A1;
+}
+
+.summary-card.bg-orange {
+  background: var(--brand-amber-bg);
+  border-color: var(--brand-amber-border);
+  color: #B45309;
+}
+
+.summary-card.bg-green {
+  background: var(--brand-green-bg);
+  border-color: var(--brand-green-border);
+  color: #047857;
+}
+
+.summary-card.bg-purple {
+  background: var(--brand-purple-bg);
+  border-color: var(--brand-purple-border);
+  color: #6D28D9;
+}
+
+.summary-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
+.summary-card-bottom {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.summary-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #1E293B;
+}
+
+.summary-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.7);
+}
+
+/* ── Toolbar & Filter Pills ── */
+.products-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 1rem 1.25rem;
+  border-radius: 14px;
+  border: 1px solid #E5E7EB;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.toolbar-left {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .search-box {
   display: flex;
   align-items: center;
-  background: white;
-  border-radius: 30px;
-  padding: 0.6rem 1.2rem;
-  width: 300px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-}
-
-.search-icon {
-  color: var(--color-text-light);
-  margin-right: 0.5rem;
+  gap: 0.5rem;
+  background: #F9FAFB;
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #E5E7EB;
+  width: 240px;
 }
 
 .search-box input {
   border: none;
-  background: transparent;
   outline: none;
-  font-size: 0.95rem;
+  background: transparent;
   width: 100%;
+  font-size: 0.85rem;
 }
 
 .total-text {
-  color: var(--color-text-light);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
+  color: #6B7280;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-text, .btn-outline, .btn-primary-dark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
 }
 
 .btn-text {
-  background: none;
+  background: transparent;
   border: none;
-  color: #3B82F6;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
+  color: #374151;
 }
 
 .btn-outline {
   background: white;
-  border: 1px solid #E5E7EB;
-  padding: 0.6rem 1.2rem;
-  border-radius: 12px;
-  font-weight: 600;
-  color: var(--color-text-dark);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
+  border: 1px solid #D1D5DB;
+  color: #374151;
 }
 
 .btn-primary-dark {
-  background: #27272A;
-  color: white;
+  background: var(--color-primary);
   border: none;
-  padding: 0.8rem 1.5rem;
-  border-radius: 20px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: opacity 0.2s;
+  color: white;
 }
 
 .btn-primary-dark:hover {
-  opacity: 0.9;
+  background: #055229;
 }
 
-/* ── Filters ── */
+/* Filter Pills */
 .filter-pills {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  position: relative;
-}
-
-.filter-icon-btn {
-  background: white;
-  border: 1px solid #E5E7EB;
-  border-radius: 12px;
-  padding: 0.6rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-dark);
-  cursor: pointer;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .filter-pill {
-  background: white;
-  border: 1px solid #E5E7EB;
-  padding: 0.4rem 0.8rem 0.4rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  background: #F3F4F6;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
 }
 
 .filter-pill button {
   background: none;
   border: none;
-  color: var(--color-text-light);
   cursor: pointer;
-  font-size: 1.1rem;
-  line-height: 1;
-}
-
-.clear-all-btn {
-  background: none;
-  border: none;
-  color: var(--color-text-light);
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.pagination-text {
-  margin-left: auto;
-  color: var(--color-text-light);
   font-size: 0.9rem;
+  color: #9CA3AF;
 }
 
-/* ── Table ── */
+/* ── Card Styled Table ── */
 .table-container {
   background: white;
-  border-radius: 20px;
-  padding: 0.5rem;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-  overflow-x: auto;
+  border-radius: 16px;
+  border: 1px solid #E5E7EB;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 }
 
 .products-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: left;
 }
 
 .products-table th {
-  background: #F8FAFC;
-  padding: 1rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--color-text-light);
+  text-align: left;
+  padding: 0.8rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: #6B7280;
+  background: #F9FAFB;
+  border-bottom: 1px solid #E5E7EB;
 }
-
-.products-table th:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
-.products-table th:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
 
 .products-table td {
-  padding: 1rem;
+  padding: 0.9rem 1rem;
+  font-size: 0.85rem;
   border-bottom: 1px solid #F3F4F6;
-  font-size: 0.95rem;
+  vertical-align: middle;
 }
 
-.products-table tr:last-child td {
-  border-bottom: none;
+.products-table tr:hover {
+  background: #FCFDFD;
 }
 
-.checkbox-col {
-  width: 40px;
-  text-align: center;
-}
-
-.fw-bold { font-weight: 600; color: var(--color-text-dark); }
-.text-dark { color: var(--color-text-dark); }
-.text-light { color: var(--color-text-light); font-size: 0.85rem; }
-
-/* Custom Product Cell */
 .product-name-cell {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .product-avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
-  background: #F3F4F6;
-  border: 1px solid #E5E7EB;
+  background: var(--brand-green-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--brand-green-text);
+  font-size: 0.9rem;
 }
 
-/* Status Badges */
 .status-badge-table {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
   font-weight: 600;
-  text-transform: capitalize;
+  text-transform: uppercase;
 }
 
 .status-badge-table.active {
-  background: rgba(123, 228, 149, 0.2);
-  color: #059669;
+  background: var(--brand-green-bg);
+  color: var(--brand-green-text);
 }
 
 .status-badge-table.draft {
-  background: rgba(241, 163, 107, 0.15);
-  color: #D97706;
+  background: #F3F4F6;
+  color: #6B7280;
 }
 
 .status-badge-table.low-stock {
-  background: rgba(251, 224, 131, 0.3);
-  color: #B45309;
-}
-
-/* More Button */
-.btn-more {
-  background: none;
-  border: none;
-  color: var(--color-text-light);
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 8px;
-}
-
-.btn-more:hover {
-  background: #F3F4F6;
-}
-
-/* ==========================================================================
-   Mobile Responsiveness (Products List)
-   ========================================================================== */
-
-@media (max-width: 1024px) {
-  .summary-cards-container {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .products-header h1 {
-    font-size: 1.8rem;
-  }
-  
-  .summary-cards-container {
-    grid-template-columns: 1fr;
-  }
-
-  .products-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-
-  .toolbar-left, .toolbar-right {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-box {
-    width: 100%;
-  }
-
-  .filter-pills {
-    flex-wrap: wrap;
-  }
+  background: var(--brand-amber-bg);
+  color: var(--brand-amber-text);
 }

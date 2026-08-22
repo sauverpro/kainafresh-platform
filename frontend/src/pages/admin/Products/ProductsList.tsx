@@ -56,46 +56,46 @@ function ProductsList() {
       {/* --- Top Summary Cards --- */}
       <div className="summary-cards-container">
         {/* Card 1: Total */}
-        <div className="summary-card">
-          <div className="summary-card-top bg-blue">
+        <div className="summary-card bg-blue">
+          <div className="summary-card-top">
             <span>Total products</span>
           </div>
           <div className="summary-card-bottom">
             <div className="summary-value">124</div>
-            <div className="summary-badge badge-green">↑ 12.5%<span>Than last week</span></div>
+            <div className="summary-badge">↑ 12.5%</div>
           </div>
         </div>
 
         {/* Card 2: Active */}
-        <div className="summary-card">
-          <div className="summary-card-top bg-orange">
-            <span>Active products</span>
+        <div className="summary-card bg-green">
+          <div className="summary-card-top">
+            <span>Active produce</span>
           </div>
           <div className="summary-card-bottom">
             <div className="summary-value">108</div>
-            <div className="summary-badge badge-green">↑ 4.2%<span>Than last week</span></div>
+            <div className="summary-badge">↑ 4.2%</div>
           </div>
         </div>
 
         {/* Card 3: Low Stock */}
-        <div className="summary-card">
-          <div className="summary-card-top bg-yellow">
+        <div className="summary-card bg-orange">
+          <div className="summary-card-top">
             <span>Low stock alerts</span>
           </div>
           <div className="summary-card-bottom">
             <div className="summary-value">12</div>
-            <div className="summary-badge badge-red">↓ 1.5%<span>Than last week</span></div>
+            <div className="summary-badge">↓ 1.5%</div>
           </div>
         </div>
 
-        {/* Card 4: Drafts */}
-        <div className="summary-card">
-          <div className="summary-card-top bg-green">
-            <span>Draft / Hidden</span>
+        {/* Card 4: Purple Category */}
+        <div className="summary-card bg-purple">
+          <div className="summary-card-top">
+            <span>Wholesale Items</span>
           </div>
           <div className="summary-card-bottom">
-            <div className="summary-value">4</div>
-            <div className="summary-badge badge-green">↑ 0.5%<span>Than last week</span></div>
+            <div className="summary-value">16</div>
+            <div className="summary-badge">↑ 2.0%</div>
           </div>
         </div>
       </div>

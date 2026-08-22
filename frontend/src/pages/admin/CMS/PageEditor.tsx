@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiGet, apiPut } from '../../../api/client';
+import PageLoader from '../../../components/PageLoader/PageLoader';
+
+interface ApiResponse<T = unknown> {
+  success?: boolean;
+  message?: string;
+  data?: T;
+  [key: string]: unknown;
+}
 import { 
   Save, AlertCircle, Plus, Trash2, ChevronDown, ChevronUp, GripVertical, 
   CheckCircle2, Layout, FileText, List, MessageSquare, Image as ImageIcon,
@@ -217,14 +225,14 @@ function ActiveWorkspace({ section, pageId, onSaveSuccess }) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const res = await apiPut(`/api/pages/${pageId}/sections/${section.id}`, {
+      const res = await apiPut<ApiResponse>(`/api/pages/${pageId}/sections/${section.id}`, {
         content: contentData,
         settings: section.settings || {}
       });
       if (res.success) {
         onSaveSuccess('success', 'Changes saved successfully!');
       } else {
-        onSaveSuccess('error', res.message || 'Failed to save changes.');
+        onSaveSuccess('error', (res.message as string) || 'Failed to save changes.');
       }
     } catch (err) {
       console.error(err);
@@ -279,15 +287,15 @@ function PageEditor() {
       setLoading(true);
       setError('');
       try {
-        const res = await apiGet(`/api/pages/slug/${slug}`);
-        if (res.success) {
-          setPage(res.data);
+        const res = await apiGet<ApiResponse<{ id: number; title: string; sections: Array<{ id: number; title: string; type: string; content: any }> }>>(`/api/pages/slug/${slug}`);
+        if (res.success && res.data) {
+          setPage(res.data as any);
           // Auto-select the first section
           if (res.data.sections && res.data.sections.length > 0) {
             setActiveSectionId(res.data.sections[0].id);
           }
         } else {
-          setError(res.message);
+          setError((res.message as string) || 'Page not found.');
         }
       } catch (error) {
         console.error(error);
@@ -299,7 +307,7 @@ function PageEditor() {
     fetchPageData();
   }, [slug]);
 
-  if (loading) return <div className="cms-loading">Loading page data...</div>;
+  if (loading) return <PageLoader text="Loading CMS page schema & sections from database..." />;
   if (error) return <div className="cms-error"><AlertCircle /> {error}</div>;
   if (!page) return <div className="cms-error">Page not found.</div>;
 

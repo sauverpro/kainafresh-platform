@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MapPin, Phone, Mail, Globe, Send, CheckCircle, Clock } from 'lucide-react';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
+import PageLoader from '../../components/PageLoader/PageLoader';
 import { apiGet } from '../../api/client';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import './Contact.css';
@@ -46,26 +47,32 @@ function Contact() {
   usePageTitle('contact', 'Contact');
   const [settings, setSettings] = useState<SiteSettings>({});
   const [hero, setHero] = useState<HeroContent>({});
+  const [pageLoading, setPageLoading] = useState(true);
   const [form, setForm] = useState<ContactForm>({ name: '', email: '', phone: '', subject: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Fetch CMS page data for the hero section
-    apiGet<{ success: boolean; data: { sections: { type: string; content: HeroContent }[] } }>('/api/pages/slug/contact')
-      .then((res) => {
-        if (res.success && res.data?.sections) {
-          const heroSection = res.data.sections.find((s) => s.type === 'hero');
-          if (heroSection) setHero(heroSection.content);
-        }
-      })
-      .catch(() => { /* silently fall back to defaults */ });
+    setPageLoading(true);
+    Promise.all([
+      apiGet<{ success: boolean; data: { sections: { type: string; content: HeroContent }[] } }>('/api/pages/slug/contact')
+        .then((res) => {
+          if (res.success && res.data?.sections) {
+            const heroSection = res.data.sections.find((s) => s.type === 'hero');
+            if (heroSection) setHero(heroSection.content);
+          }
+        })
+        .catch(() => { /* silently fall back */ }),
 
-    // Fetch site settings for contact info
-    // NOTE: Backend returns ["settings", {...}] — we read index [1]
-    apiGet<[string, SiteSettings]>('/api/settings')
-      .then((res) => { if (res[1]) setSettings(res[1]); })
-      .catch(() => { /* silently fall back */ });
+      apiGet<any>('/api/settings')
+        .then((res) => {
+          if (res?.data) setSettings(res.data);
+          else if (Array.isArray(res) && res[1]) setSettings(res[1]);
+        })
+        .catch(() => { /* silently fall back */ })
+    ]).finally(() => {
+      setPageLoading(false);
+    });
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -80,7 +87,7 @@ function Contact() {
     setTimeout(() => {
       setIsLoading(false);
       setSubmitted(true);
-    }, 1000);
+    }, 1200);
   };
 
   const socialLinks = [
@@ -90,6 +97,10 @@ function Contact() {
     { label: 'LinkedIn', url: settings.linkedin },
     { label: 'YouTube', url: settings.youtube },
   ].filter((s) => s.url);
+
+  if (pageLoading) {
+    return <PageLoader text="Retrieving contact information from database..." />;
+  }
 
   return (
     <>

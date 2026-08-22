@@ -102,6 +102,27 @@ export const apiPut = (endpoint, body) =>
  */
 export const apiDelete = (endpoint) => request(endpoint, { method: 'DELETE' });
 
+/** POST FormData request (for File Uploads like Logo). */
+export const apiPostFormData = async (endpoint, formData) => {
+  const token = getToken();
+  const headers = {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    const error = new Error(data.message || 'Upload failed');
+    error.status = response.status;
+    error.data = data;
+    throw error;
+  }
+  return data;
+};
+
 
 //  endpoints for settings and nav links
 

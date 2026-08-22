@@ -16,9 +16,9 @@ const TOKEN_KEY = 'kainafresh_token';
 // ---------------------------------------------------------------------------
 export class ApiError extends Error {
   status: number;
-  data: any;
+  data: unknown;
 
-  constructor(message: string, status: number, data: any) {
+  constructor(message: string, status: number, data: unknown) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
@@ -51,7 +51,7 @@ export const isAuthenticated = (): boolean => Boolean(getToken());
  * @param endpoint - API path, e.g. '/api/login'
  * @param options - Fetch options (method, body, etc.)
  */
-async function request<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+async function request<T = unknown>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
 
   const headers: Record<string, string> = {
@@ -80,23 +80,41 @@ async function request<T = any>(endpoint: string, options: RequestInit = {}): Pr
 // ---------------------------------------------------------------------------
 
 /** GET request. */
-export const apiGet = <T = any>(endpoint: string): Promise<T> => 
+export const apiGet = <T = unknown>(endpoint: string): Promise<T> => 
   request<T>(endpoint, { method: 'GET' });
 
 /** POST request. */
-export const apiPost = <T = any>(endpoint: string, body: unknown): Promise<T> =>
+export const apiPost = <T = unknown>(endpoint: string, body: unknown): Promise<T> =>
   request<T>(endpoint, {
     method: 'POST',
     body: JSON.stringify(body),
   });
 
 /** PUT request. */
-export const apiPut = <T = any>(endpoint: string, body: unknown): Promise<T> =>
+export const apiPut = <T = unknown>(endpoint: string, body: unknown): Promise<T> =>
   request<T>(endpoint, {
     method: 'PUT',
     body: JSON.stringify(body),
   });
 
 /** DELETE request. */
-export const apiDelete = <T = any>(endpoint: string): Promise<T> => 
+export const apiDelete = <T = unknown>(endpoint: string): Promise<T> => 
   request<T>(endpoint, { method: 'DELETE' });
+
+/** POST FormData request (for File Uploads like Logo). */
+export const apiPostFormData = async <T = unknown>(endpoint: string, formData: FormData): Promise<T> => {
+  const token = getToken();
+  const headers: Record<string, string> = {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new ApiError(data.message || 'Upload failed', response.status, data);
+  }
+  return data as T;
+};

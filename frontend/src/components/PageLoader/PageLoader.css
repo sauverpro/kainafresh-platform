@@ -1,0 +1,76 @@
+/* ==========================================================================
+   Page Loader Overlay (Brand Animated Spinner & Glassmorphic Overlay)
+   ========================================================================== */
+
+.page-loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  background: rgba(255, 253, 249, 0.96);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.page-loader-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loader-logo-text {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  letter-spacing: -0.5px;
+}
+
+.loader-logo-accent {
+  color: var(--color-secondary);
+}
+
+.loader-spinner-ring {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid rgba(7, 105, 53, 0.1);
+  border-top-color: var(--color-secondary);
+  border-right-color: var(--color-primary);
+  animation: spinLoader 0.8s linear infinite;
+}
+
+.loader-text {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6B7280;
+  letter-spacing: 0.02em;
+}
+
+@keyframes spinLoader {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.fade-in-content {
+  animation: fadeInPage 0.5s ease-out forwards;
+}
+
+@keyframes fadeInPage {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

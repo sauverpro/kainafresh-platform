@@ -119,6 +119,10 @@
   color: var(--color-primary); /* Green text on white bg */
 }
 
+.admin-nav-item.active > .admin-nav-link svg {
+  color: var(--color-secondary); /* Golden amber icon highlight on active tab! */
+}
+
 /* The curved connectors using box-shadow magic */
 .admin-nav-item.active::before,
 .admin-nav-item.active::after,

@@ -7,8 +7,7 @@ class NavLink extends Model{
      protected $fillable = ['link_name','link','link_type'];
 
       public function getNavlinks(){
-        $all = $this->all();
-        return !empty($all) ? $all[0] : null;
+        return $this->all();
     }
 
     public function createNavLink($data){
@@ -23,7 +22,6 @@ class NavLink extends Model{
      return $this->delete($id);
     }
 
-    // get nav links
     public function getNavs(){
         $sql = "SELECT * FROM `{$this->table}` WHERE `link_type` = ?";
         $stmt = $this->db->prepare($sql);
@@ -31,7 +29,8 @@ class NavLink extends Model{
         $stmt->bind_param("s", $linkType);
         $stmt->execute();
         $result = $stmt->get_result();
-        return $this->fetchAll($result);
+        $rows = $this->fetchAll($result);
+        return !empty($rows) ? $rows : $this->all();
     }
 
 
