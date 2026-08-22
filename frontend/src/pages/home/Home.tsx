@@ -125,38 +125,38 @@ const FEATURED_PRODUCTS = [
   },
 ];
 
-const FAQS = [
-  {
-    id: 1,
-    question: "How do I place an order?",
-    answer:
-      "Browse our products, add your items to the cart, and checkout. You can pay on delivery or via mobile money. Orders placed before 2 PM are delivered the next day.",
-  },
-  {
-    id: 2,
-    question: "Do you deliver to my area?",
-    answer:
-      "We currently deliver across Kigali and surrounding districts. Enter your location at checkout to confirm delivery availability and estimated time.",
-  },
-  {
-    id: 3,
-    question: "How do I know the produce is truly organic?",
-    answer:
-      "KainaFresh is certified organic. Our farm undergoes regular inspections, and all products carry a certification label. You can visit our farm — we welcome it!",
-  },
-  {
-    id: 4,
-    question: "Can I order in bulk for my business?",
-    answer:
-      "Absolutely. We have a dedicated wholesale programme for restaurants, supermarkets, and exporters. Visit our Wholesale & Exports page or contact us directly.",
-  },
-  {
-    id: 5,
-    question: "What if I receive produce that is not fresh?",
-    answer:
-      "We stand behind every delivery. If anything isn't up to standard, contact us within 24 hours and we will replace it or issue a full refund — no questions asked.",
-  },
-];
+// const FAQS = [
+//   {
+//     id: 1,
+//     question: "How do I place an order?",
+//     answer:
+//       "Browse our products, add your items to the cart, and checkout. You can pay on delivery or via mobile money. Orders placed before 2 PM are delivered the next day.",
+//   },
+//   {
+//     id: 2,
+//     question: "Do you deliver to my area?",
+//     answer:
+//       "We currently deliver across Kigali and surrounding districts. Enter your location at checkout to confirm delivery availability and estimated time.",
+//   },
+//   {
+//     id: 3,
+//     question: "How do I know the produce is truly organic?",
+//     answer:
+//       "KainaFresh is certified organic. Our farm undergoes regular inspections, and all products carry a certification label. You can visit our farm — we welcome it!",
+//   },
+//   {
+//     id: 4,
+//     question: "Can I order in bulk for my business?",
+//     answer:
+//       "Absolutely. We have a dedicated wholesale programme for restaurants, supermarkets, and exporters. Visit our Wholesale & Exports page or contact us directly.",
+//   },
+//   {
+//     id: 5,
+//     question: "What if I receive produce that is not fresh?",
+//     answer:
+//       "We stand behind every delivery. If anything isn't up to standard, contact us within 24 hours and we will replace it or issue a full refund — no questions asked.",
+//   },
+// ];
 
 // ── Component ──
 
@@ -190,8 +190,14 @@ function Home() {
             ? { items: valuePropsContent as ValuePropItem[] }
             : (valuePropsContent as ValuePropsContent) ?? null
         );
+        // get faqs questions and answer from api
+        const FaqsSection = sections.find((sec)=> sec.type === 'faqs');
+        const valueFaq = FaqsSection?.content;
+        setCmsFaqs(
+          Array.isArray(valueFaq) ? {items: valueFaq as FaqItem[]} :(valueFaq as FaqsContent)
+        );
 
-        setCmsFaqs(find<FaqsContent>('faqs'));
+        
       })
       .catch(() => { /* silently fall back to hardcoded defaults */ })
       .finally(() => {
@@ -217,10 +223,10 @@ function Home() {
     title: v.title,
     description: v.description,
   }));
-  console.log(valueProps);
+  
   const faqs = cmsFaqs?.items
     ? cmsFaqs.items.map((f, i) => ({ id: i + 1, question: f.question, answer: f.answer }))
-    : FAQS;
+    : '';
 
   if (loading) {
     return <PageLoader text="Fetching fresh produce data from database..." />;
@@ -362,9 +368,9 @@ function Home() {
         <section className="faqs">
           <div className="faq-inner">
             <div className="faq-header">
-              <span className="home-tag">{cmsFaqs?.tag ?? 'Got Questions?'}</span>
-              <h2>{cmsFaqs?.heading ?? 'Frequently Asked Questions'}</h2>
-              <p>{cmsFaqs?.subheading ?? 'Everything you need to know about ordering from KainaFresh.'}</p>
+              <span className="home-tag">{cmsFaqs?.tag ?? ''}</span>
+              <h2>{cmsFaqs?.heading ?? ''}</h2>
+              <p>{cmsFaqs?.subheading ?? ''}</p>
             </div>
             <div className="faq-list">
               {faqs.map((faq) => (
