@@ -273,24 +273,73 @@ function ActiveWorkspace({ section, pageId, onSaveSuccess }) {
   );
 }
 
-// Main Page Editor
-function PageEditor() {
-  const { slug } = useParams();
-  const [page, setPage] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [activeSectionId, setActiveSectionId] = useState(null);
-  const [toast, setToast] = useState(null);
+/**
+ * ============================================================================
+ * KainaFresh Organic Platform — Dynamic CMS Section & Page Editor
+ * ============================================================================
+ * 
+ * Features:
+ * 1. Dynamic recursive form builder generating inputs, textareas, accordions, and icon pickers.
+ * 2. Real-time section content saves to MariaDB (/api/pages/:pageId/sections/:sectionId).
+ * 3. Integrated glassmorphic page loading overlay while retrieving page schemas.
+ */
 
+/**
+ * Interface representing a single CMS section record.
+ */
+interface CmsPageSection {
+  id: number;
+  title: string;
+  type: string;
+  content: Record<string, unknown>;
+  settings?: Record<string, unknown>;
+}
+
+/**
+ * Interface representing a full CMS page schema returned from MariaDB.
+ */
+interface CmsPageData {
+  id: number;
+  title: string;
+  slug: string;
+  status?: string;
+  sections: CmsPageSection[];
+}
+
+/**
+ * Main PageEditor Functional Component.
+ */
+function PageEditor() {
+  // Extract URL slug route parameter
+  const { slug } = useParams();
+
+  // Page schema data state
+  const [page, setPage] = useState<CmsPageData | null>(null);
+
+  // Loading spinner state while fetching schema from MariaDB
+  const [loading, setLoading] = useState(true);
+
+  // Error message state
+  const [error, setError] = useState('');
+
+  // Currently selected active section ID in editor workspace
+  const [activeSectionId, setActiveSectionId] = useState<number | null>(null);
+
+  // Toast notification feedback banner state
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Lifecycle effect: Fetch page schema by slug parameter on route change
   useEffect(() => {
     const fetchPageData = async () => {
       setLoading(true);
       setError('');
       try {
-        const res = await apiGet<ApiResponse<{ id: number; title: string; sections: Array<{ id: number; title: string; type: string; content: any }> }>>(`/api/pages/slug/${slug}`);
+        // Query GET /api/pages/slug/:slug
+        const res = await apiGet<ApiResponse<CmsPageData>>(`/api/pages/slug/${slug}`);
         if (res.success && res.data) {
-          setPage(res.data as any);
-          // Auto-select the first section
+          setPage(res.data);
+          
+          // Auto-select the first section by default
           if (res.data.sections && res.data.sections.length > 0) {
             setActiveSectionId(res.data.sections[0].id);
           }
@@ -304,9 +353,11 @@ function PageEditor() {
         setLoading(false);
       }
     };
+
     fetchPageData();
   }, [slug]);
 
+  // Display glassmorphic brand page loader if schema is loading
   if (loading) return <PageLoader text="Loading CMS page schema & sections from database..." />;
   if (error) return <div className="cms-error"><AlertCircle /> {error}</div>;
   if (!page) return <div className="cms-error">Page not found.</div>;

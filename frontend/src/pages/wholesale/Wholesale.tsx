@@ -148,12 +148,34 @@ const PROCESS_STEPS = [
   },
 ];
 
+/**
+ * ============================================================================
+ * KainaFresh Organic Platform — Wholesale B2B & Export Program Component
+ * ============================================================================
+ * 
+ * Features:
+ * 1. B2B Wholesale inquiry form with country, product interest, and volume specs.
+ * 2. Export capabilities showcase, cold-chain logistics specs, and certifications.
+ * 3. Integrated glassmorphic page loading screen during database fetch.
+ */
+
+// Import PageLoader component for database retrieval loading overlay
 import PageLoader from "../../components/PageLoader/PageLoader";
 
+/**
+ * Wholesale Functional Component.
+ */
 function Wholesale() {
+  // Set document SEO title
   usePageTitle("wholesale", "Wholesale & Exports");
+
+  // Dynamic CMS hero section state
   const [cmsHero, setCmsHero] = useState<WholesaleHero | null>(null);
+
+  // Page loading overlay state
   const [pageLoading, setPageLoading] = useState(true);
+
+  // B2B Inquiry form input fields state
   const [form, setForm] = useState({
     companyName: "",
     contactName: "",
@@ -164,19 +186,27 @@ function Wholesale() {
     estimatedQuantity: "",
     message: "",
   });
+
+  // Form submission success banner state
   const [submitted, setSubmitted] = useState(false);
+
+  // Form submitting button spinner state
   const [isLoading, setIsLoading] = useState(false);
 
+  // Lifecycle effect: Query MariaDB for 'wholesale' page CMS section on mount
   useEffect(() => {
-    setPageLoading(true);
     apiGet<{ success: boolean; data: { sections: { type: string; content: WholesaleHero }[] } }>('/api/pages/slug/wholesale')
       .then((res) => {
         if (!res.success || !res.data?.sections) return;
         const heroSection = res.data.sections.find((s) => s.type === 'hero');
         if (heroSection) setCmsHero(heroSection.content);
       })
-      .catch(() => { /* silently use defaults */ })
-      .finally(() => { setPageLoading(false); });
+      .catch(() => { 
+        // Silently use defaults on error
+      })
+      .finally(() => { 
+        setPageLoading(false); 
+      });
   }, []);
 
   // Merge CMS with defaults

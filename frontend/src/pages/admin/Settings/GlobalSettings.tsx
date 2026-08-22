@@ -1,11 +1,33 @@
+/**
+ * ============================================================================
+ * KainaFresh Organic Platform — Global System Settings & Branding Manager
+ * ============================================================================
+ * 
+ * Features:
+ * 1. General & Branding Tab: Live site logo file upload (/api/settings/uploadlogo) & Site Title.
+ * 2. Contact Information Tab: Phone numbers, emails, physical headquarters address.
+ * 3. Social Media Tab: Facebook, Instagram, TikTok, LinkedIn, YouTube links.
+ * 4. Header NavLinks Tab: Live CRUD manager for adding/deleting dynamic navigation links.
+ */
+
+// Import React hooks for managing state and lifecycle effects
 import React, { useState, useEffect } from 'react';
+
+// Import Lucide vector icons for UI tabs, notifications, and buttons
 import { 
   Globe, Image as ImageIcon, Phone, Share2, 
   Save, Upload, CheckCircle2, AlertCircle, RefreshCw 
 } from 'lucide-react';
+
+// Import HTTP API client utilities for CRUD calls
 import { apiGet, apiPost, apiPostFormData, apiDelete } from '../../../api/client';
+
+// Import Global Settings tab stylesheet
 import './GlobalSettings.css';
 
+/**
+ * Interface definition representing a single dynamic navigation link item.
+ */
 interface NavItem {
   id: number;
   link_name: string;
@@ -13,6 +35,9 @@ interface NavItem {
   link_type: string;
 }
 
+/**
+ * Interface definition representing global platform settings stored in MariaDB.
+ */
 interface SiteSettingsData {
   site_title?: string;
   site_logo?: string;
@@ -30,6 +55,9 @@ interface SiteSettingsData {
   youtube?: string;
 }
 
+/**
+ * Generic API response interface wrapper.
+ */
 interface ApiResponse<T = unknown> {
   success?: boolean;
   message?: string;
@@ -39,13 +67,19 @@ interface ApiResponse<T = unknown> {
   [key: string]: unknown;
 }
 
+/**
+ * Toast Notification Banner Component.
+ * Automatically dismisses itself after 3 seconds.
+ */
 function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
   useEffect(() => {
+    // Set auto-dismiss timer for 3000ms
     const timer = setTimeout(onClose, 3000);
     return () => clearTimeout(timer);
   }, [onClose]);
 
   return (
+    // Render alert container with success or error class
     <div className={`cms-toast ${type}`}>
       {type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
       <span>{message}</span>
@@ -53,18 +87,35 @@ function Toast({ message, type, onClose }: { message: string; type: 'success' | 
   );
 }
 
+/**
+ * Main GlobalSettings Admin Component.
+ */
 export default function GlobalSettings() {
+  // Currently selected active tab identifier state
   const [activeTab, setActiveTab] = useState<'general' | 'contact' | 'social' | 'navlinks'>('general');
+
+  // Overall page initial loading state while fetching settings from MariaDB
   const [loading, setLoading] = useState(true);
+
+  // Form saving button spinner state
   const [saving, setSaving] = useState(false);
+
+  // Logo file uploading button spinner state
   const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  // Toast notification message state
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
-  // Dynamic Navigation Links state
-  const [navItems, setNavItems] = useState<Array<{ id: number; link_name: string; link: string; link_type: string }>>([]);
+  // Dynamic Navigation Links list state fetched from database
+  const [navItems, setNavItems] = useState<NavItem[]>([]);
+
+  // Form state for creating a new custom navigation link
   const [newNavLink, setNewNavLink] = useState({ link_name: '', link: '', link_type: 'nav' });
+
+  // Adding navigation link loading state
   const [addingNav, setAddingNav] = useState(false);
 
+  // Main global settings form state holding all site configurations
   const [form, setForm] = useState({
     site_title: 'KainaFresh Organic Platform',
     site_logo: '',
@@ -82,8 +133,12 @@ export default function GlobalSettings() {
     youtube: 'https://youtube.com/@kainafresh'
   });
 
+  /**
+   * Fetches latest navigation links from MariaDB database endpoint.
+   */
   const fetchNavLinks = async () => {
     try {
+      // Query /api/navlinks API endpoint
       const res = await apiGet<ApiResponse<NavItem[]>>('/api/navlinks');
       const items = res?.data || res?.navlinks || [];
       if (Array.isArray(items)) {
@@ -94,23 +149,30 @@ export default function GlobalSettings() {
     }
   };
 
-  // Fetch current global settings and navlinks on mount
+  /**
+   * Lifecycle effect: Fetches global settings and dynamic navlinks on component mount.
+   */
   useEffect(() => {
     let isMounted = true;
+
     const loadInitialData = async () => {
       setLoading(true);
       try {
+        // Perform parallel async fetch for both settings and navlinks
         const [settingsRes, navsRes] = await Promise.all([
           apiGet<ApiResponse<SiteSettingsData>>('/api/settings'),
           apiGet<ApiResponse<NavItem[]>>('/api/navlinks/nav')
         ]);
+
         if (isMounted) {
+          // Populate settings form state if returned from MariaDB
           if (settingsRes?.success && settingsRes.data) {
             setForm(prev => ({
               ...prev,
               ...settingsRes.data
             }));
           }
+          // Populate navlinks state array if returned from MariaDB
           if (navsRes?.success && Array.isArray(navsRes.data)) {
             setNavItems(navsRes.data as NavItem[]);
           }
@@ -121,21 +183,34 @@ export default function GlobalSettings() {
         if (isMounted) setLoading(false);
       }
     };
+
     loadInitialData();
+
+    // Cleanup function to avoid setting state on unmounted component
     return () => { isMounted = false; };
   }, []);
 
+  /**
+   * Form handler for adding a new dynamic navigation link to MariaDB.
+   */
   const handleAddNavLink = async () => {
+    // Validate inputs
     if (!newNavLink.link_name || !newNavLink.link) {
       setToast({ type: 'error', message: 'Please provide both link name and URL path.' });
       return;
     }
+
     setAddingNav(true);
     try {
+      // Submit POST payload to /api/navlinks/create
       const res = await apiPost<ApiResponse>('/api/navlinks/create', newNavLink);
       if (res.success) {
         setToast({ type: 'success', message: 'Navigation link added successfully!' });
+        
+        // Reset form inputs
         setNewNavLink({ link_name: '', link: '', link_type: 'nav' });
+
+        // Refresh navigation items table
         fetchNavLinks();
       } else {
         setToast({ type: 'error', message: res.message || 'Failed to add link.' });
@@ -148,10 +223,16 @@ export default function GlobalSettings() {
     }
   };
 
+  /**
+   * Generalized input field change handler.
+   */
   const handleChange = (field: string, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
+  /**
+   * Submits all updated settings fields to MariaDB via POST /api/settings/create.
+   */
   const handleSaveSettings = async () => {
     setSaving(true);
     try {
@@ -170,18 +251,27 @@ export default function GlobalSettings() {
     }
   };
 
+  /**
+   * Multipart File Upload Handler for updating Site Logo in MariaDB & Server Storage.
+   */
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Extract selected file from input event
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploadingLogo(true);
+
+    // Create Multipart FormData container
     const formData = new FormData();
     formData.append('site_logo', file);
 
     try {
+      // POST multipart file to /api/settings/uploadlogo
       const res = await apiPostFormData<ApiResponse<SiteSettingsData>>('/api/settings/uploadlogo', formData);
       if (res.success && res.data) {
         const logoPath = typeof res.data === 'string' ? res.data : (res.data as SiteSettingsData).site_logo || '';
+        
+        // Update form state with new logo path
         setForm(prev => ({ ...prev, site_logo: logoPath }));
         setToast({ type: 'success', message: 'Site logo updated successfully!' });
       } else {

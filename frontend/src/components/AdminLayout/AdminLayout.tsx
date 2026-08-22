@@ -1,5 +1,23 @@
+/**
+ * ============================================================================
+ * KainaFresh Organic Platform — Admin Dashboard Layout Shell Component
+ * ============================================================================
+ * 
+ * Features:
+ * 1. Collapsible Accordion Navigation Sidebar (Content CMS, Shop Management, System).
+ * 2. Dynamic CMS Page items fetching from MariaDB (/api/pages) into the CMS dropdown.
+ * 3. Active route highlight logic and automatic dropdown expansion.
+ * 4. Desktop green header topbar with search & notification badges.
+ * 5. Mobile responsive hamburger drawer layout.
+ */
+
+// Import React hooks for managing state and lifecycle effects
 import React, { useState, useEffect } from 'react';
+
+// Import React Router DOM components for navigation and location tracking
 import { useLocation, Link, useNavigate } from 'react-router-dom';
+
+// Import Lucide vector icons for navigation menus and topbar actions
 import { 
   LayoutDashboard, 
   FileText, 
@@ -18,28 +36,64 @@ import {
   User,
   Bell
 } from 'lucide-react';
+
+// Import API client for dynamic page fetching
 import { apiGet } from '../../api/client';
+
+// Import Admin Layout stylesheet
 import './AdminLayout.css';
 
-function AdminLayout({ children }) {
+/**
+ * Interface definition for AdminLayout component props.
+ */
+interface AdminLayoutProps {
+  children: React.ReactNode;
+}
+
+/**
+ * Interface representing a page record returned from MariaDB.
+ */
+interface PageItem {
+  id: number;
+  title: string;
+  slug: string;
+}
+
+/**
+ * AdminLayout Functional Component.
+ */
+function AdminLayout({ children }: AdminLayoutProps) {
+  // Access current URL location state
   const location = useLocation();
+
+  // Imperative navigation hook instance
   const navigate = useNavigate();
-  const [pages, setPages] = useState([]);
-  const [openDropdown, setOpenDropdown] = useState(null);
+
+  // Dynamic CMS pages list array fetched from MariaDB
+  const [pages, setPages] = useState<PageItem[]>([]);
+
+  // Currently open dropdown submenu title key
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  // Mobile sidebar drawer open/close toggle state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Lifecycle effect: Query MariaDB for page list and auto-expand relevant navigation dropdown
   useEffect(() => {
     const fetchPages = async () => {
       try {
-        const res = await apiGet('/api/pages');
-        if (res.success) setPages(res.data);
+        const res = await apiGet<any>('/api/pages');
+        if (res?.success && Array.isArray(res.data)) {
+          setPages(res.data);
+        }
       } catch (err) {
         console.error('Failed to fetch pages', err);
       }
     };
+
     fetchPages();
     
-    // Auto-open corresponding dropdown based on current route
+    // Auto-open corresponding dropdown based on active URL route
     if (location.pathname.startsWith('/admin/content')) {
       setOpenDropdown('Content CMS');
     } else if (['/admin/products', '/admin/inventory', '/admin/orders', '/admin/customers', '/admin/reports'].some(path => location.pathname.startsWith(path))) {
@@ -51,8 +105,8 @@ function AdminLayout({ children }) {
     }
   }, [location.pathname]);
 
-  // Helper to determine if a path is active
-  const isActive = (path) => {
+  // Helper method: Determines if a given route path matches the current browser URL
+  const isActive = (path: string) => {
     if (path === '/admin' && location.pathname === '/admin') return true;
     if (path !== '/admin' && location.pathname === path) return true;
     return false;

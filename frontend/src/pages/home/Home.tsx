@@ -168,27 +168,57 @@ const FEATURED_PRODUCTS = [
 
 // ── Component ──
 
+/**
+ * ============================================================================
+ * KainaFresh Organic Platform — Public Home Landing Page Component
+ * ============================================================================
+ * 
+ * Features:
+ * 1. CMS Page Section Hydration from MariaDB (/api/pages/slug/home).
+ * 2. Hero Section with dynamic headlines, subheadings, and CTA buttons.
+ * 3. Value Propositions Grid featuring eco-friendly organic farming benefits.
+ * 4. Interactive Accordion FAQ Component.
+ * 5. Full glassmorphic page loading overlay while data retrieves.
+ */
+
+// Import PageLoader overlay for smooth database retrieval loading states
 import PageLoader from "../../components/PageLoader/PageLoader";
 
+/**
+ * Main Home Landing Page Functional Component.
+ */
 function Home() {
+  // Update document HTML title tag for SEO optimization
   usePageTitle("home", "Home");
+
+  // Dynamic CMS state definitions
   const [cmsHero, setCmsHero] = useState<HeroContent | null>(null);
   const [cmsValueProps, setCmsValueProps] = useState<ValuePropsContent | null>(null);
   const [cmsFaqs, setCmsFaqs] = useState<FaqsContent | null>(null);
+
+  // FAQ accordion open item toggle index state
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  // Dynamic CTA section content state
   const [cmsHomeCta, setCmsHomeCta] = useState<HomectaContent | null>(null);
+
+  // Page loading indicator state while fetching CMS data from MariaDB
   const [loading, setLoading] = useState(true);
 
+  // Lifecycle effect: Query CMS sections for page slug 'home' on mount
   useEffect(() => {
-    setLoading(true);
+    // Perform HTTP GET request to retrieve dynamic CMS sections
     apiGet<{ success: boolean; data: { sections: CmsSection[] } }>('/api/pages/slug/home')
       .then((res) => {
         if (!res.success || !res.data?.sections) return;
         const sections = res.data.sections;
+
+        // Helper function to extract specific CMS section payload by type key
         const find = <T,>(type: string): T | null => {
           const s = sections.find((sec) => sec.type === type);
           return s ? (s.content as T) : null;
         };
+
+        // Populate state variables with dynamic content
         setCmsHero(find<HeroContent>('hero'));
         setCmsHomeCta(find<HomectaContent>('home-cta'));
 
@@ -209,48 +239,70 @@ function Home() {
 
         
       })
-      .catch(() => { /* silently fall back to hardcoded defaults */ })
+      .catch(() => { 
+        // Silently catch network errors and rely on fallback defaults
+      })
       .finally(() => {
+        // Complete loading phase
         setLoading(false);
       });
   }, []);
 
+  // Toggle handler for opening/closing FAQ accordion items
   const toggleFaq = (id: number) => setOpenFaq(openFaq === id ? null : id);
 
-  // Merge CMS data with fallback defaults
-  const hero: HeroContent = {
+  // Merge dynamic CMS hero data with fallback default copy
+  const hero = {
     badge: cmsHero?.badge ?? 'Farm-fresh, direct to you',
     heading: cmsHero?.heading ?? 'Farm Fresh Produce,',
     headingAccent: cmsHero?.headingAccent ?? 'Delivered Direct',
     headingAccentSecondary: cmsHero?.headingAccentSecondary ?? 'to You.',
     subheading: cmsHero?.subheading ?? 'We grow it. We pack it. We deliver it — fresh, certified, and straight from our fields to your table.',
-    primaryCta: cmsHero?.primaryCta ?? { label: 'Our Products', to: '/products' },
-    secondaryCta: cmsHero?.secondaryCta ?? { label: 'Wholesale & Exports', to: '/wholesale' },
-  };
-  const homeCTA : HomectaContent ={
-    heading: cmsHomeCta?.heading,
-    paragraph: cmsHomeCta?.paragraph,
-    primary_cta: cmsHomeCta?.primary_cta,
-    secondary_cta: cmsHomeCta?.secondary_cta
+    primaryCta: { label: cmsHero?.primaryCta?.label ?? 'Our Products', to: cmsHero?.primaryCta?.to ?? '/products' },
+    secondaryCta: { label: cmsHero?.secondaryCta?.label ?? 'Wholesale & Exports', to: cmsHero?.secondaryCta?.to ?? '/wholesale' },
   };
 
-  const valueProps = (cmsValueProps?.items ?? []).map((v) => ({
-    icon: resolveIcon(v.iconName ?? v.icon),
-    title: v.title,
-    description: v.description,
-  }));
-  
-  const faqs = cmsFaqs?.items
+  const homeCTA = {
+    heading: cmsHomeCta?.heading ?? 'Fresh Food, Direct to You',
+    paragraph: cmsHomeCta?.paragraph ?? 'Ready to taste the difference of real organic farming? Order today.',
+    primary_cta: { label: cmsHomeCta?.primary_cta?.label ?? 'Order Now', to: cmsHomeCta?.primary_cta?.to ?? '/products' },
+    secondary_cta: { label: cmsHomeCta?.secondary_cta?.label ?? 'Contact Sales', to: cmsHomeCta?.secondary_cta?.to ?? '/contact' }
+  };
+
+  // Merge dynamic value props with fallbacks
+  const valueProps = (cmsValueProps?.items && cmsValueProps.items.length > 0)
+    ? cmsValueProps.items.map((v) => ({
+        icon: resolveIcon(v.iconName ?? v.icon),
+        title: v.title,
+        description: v.description,
+      }))
+    : [
+        { icon: Leaf, title: '100% Certified Organic', description: 'Grown naturally without synthetic pesticides or chemicals.' },
+        { icon: Truck, title: 'Farm to Door in 24 Hours', description: 'Harvested daily and delivered fresh to your doorstep.' },
+        { icon: ShieldCheck, title: 'Direct Farm Pricing', description: 'No middlemen — fair prices for you, fair pay for our farmers.' },
+        { icon: Package, title: 'Zero-Waste Packaging', description: 'Eco-friendly, biodegradable materials that protect the planet.' },
+      ];
+
+  // Merge dynamic FAQs with fallbacks
+  const faqs = (cmsFaqs?.items && cmsFaqs.items.length > 0)
     ? cmsFaqs.items.map((f, i) => ({ id: i + 1, question: f.question, answer: f.answer }))
-    : '';
+    : [
+        { id: 1, question: 'How do I place an order?', answer: 'Browse our products, add items to cart, and checkout easily.' },
+        { id: 2, question: 'Do you deliver to my area?', answer: 'We deliver across Kigali and surrounding districts.' },
+        { id: 3, question: 'How do I know produce is organic?', answer: 'KainaFresh is certified organic with regular farm inspections.' },
+      ];
 
+  // Display glassmorphic brand page loader if data is currently fetching
   if (loading) {
     return <PageLoader text="Fetching fresh produce data from database..." />;
   }
 
   return (
     <>
+      {/* Global Header Navigation Bar */}
       <Navbar />
+
+      {/* Main Home Page Container with Fade-in Animation */}
       <main className="home-page fade-in-content">
         {/* ── Hero ── */}
         {/* ── Hero ── */}
@@ -423,11 +475,11 @@ function Home() {
               {homeCTA.paragraph}
             </p>
             <div className="home-cta-buttons">
-              <Link to={homeCTA.primary_cta?.to} className="btn btn-primary">
-                {homeCTA.primary_cta?.label}
+              <Link to={homeCTA.primary_cta.to || '/products'} className="btn btn-primary">
+                {homeCTA.primary_cta.label}
               </Link>
-              <Link to={homeCTA.secondary_cta?.to} className="btn btn-secondary">
-                {homeCTA.secondary_cta?.label}
+              <Link to={homeCTA.secondary_cta.to || '/contact'} className="btn btn-secondary">
+                {homeCTA.secondary_cta.label}
               </Link>
             </div>
           </div>

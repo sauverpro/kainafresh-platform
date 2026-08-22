@@ -60,58 +60,86 @@ interface CtaContent { heading?: string; subheading?: string; primaryCta?: { lab
 
 interface CmsSection { type: string; content: HeroContent & StatsContent & StoryContent & ValuesContent & TeamContent & CtaContent }
 
+/**
+ * ============================================================================
+ * KainaFresh Organic Platform — Our Farm & About Us Page Component
+ * ============================================================================
+ * 
+ * Features:
+ * 1. CMS Page Section Hydration from MariaDB (/api/pages/slug/about).
+ * 2. Farm History, Stats Bar, Mission & Values, and Team Showcase.
+ * 3. Integrated glassmorphic page loading screen during database fetch.
+ */
+
+// Import PageLoader overlay component
 import PageLoader from '../../components/PageLoader/PageLoader';
 
+/**
+ * About Functional Component.
+ */
 function About() {
+  // Update document head title for SEO
   usePageTitle('about', 'About');
+
+  // CMS sections state container
   const [sections, setSections] = useState<CmsSection[]>([]);
+
+  // Page loading indicator state (defaults to true)
   const [loading, setLoading] = useState(true);
   const [cmsAboutHero, setCmsAboutHero] = useState<HeroContent | null>(null);
 
+  // Lifecycle effect: Query MariaDB for 'about' page CMS sections on mount
   useEffect(() => {
-    setLoading(true);
+    // Fetch dynamic sections from /api/pages/slug/about
     apiGet<{ success: boolean; data: { sections: CmsSection[] } }>('/api/pages/slug/about')
       .then((res) => { 
-        if (!res.success || !res.data?.sections) return;
-        const sections = res.data.sections;
-        const find = <T,>(type: string): T | null => {
-          const s = sections.find((sec) => sec.type === type);
-          return s ? (s.content as T) : null;
-        };
-        setCmsAboutHero(find<HeroContent>('about-hero'));
-       })
-      .catch(() => { /* silently fall back to hardcoded defaults */ })
-      .finally(() => { setLoading(false); });
+        if (res.success && res.data?.sections) {
+          const secs = res.data.sections;
+          setSections(secs);
+          const aboutHeroSec = secs.find((sec) => sec.type === 'about-hero');
+          if (aboutHeroSec) setCmsAboutHero(aboutHeroSec.content as HeroContent);
+        }
+      })
+      .catch(() => { 
+        // Fall back gracefully to hardcoded defaults
+      })
+      .finally(() => { 
+        // Complete loading phase
+        setLoading(false); 
+      });
   }, []);
 
-  // Helper: find a section of a given type from the CMS response
+  // Helper method: Extracts specific CMS section content by type string
   const getSection = <T,>(type: string): T | null => {
     const s = sections.find((sec) => sec.type === type);
     return s ? (s.content as T) : null;
   };
 
-  // Hydrate from CMS or fall back to defaults
-  const hero :HeroContent = {
-    location: cmsAboutHero?.location,
-    heading: cmsAboutHero?.heading,
-    headingHighlight: cmsAboutHero?.headingHighlight,
-    cta: cmsAboutHero?.cta,
-    stat_top: cmsAboutHero?.stat_top,
-    stat_bottom: cmsAboutHero?.stat_bottom,
-    description : cmsAboutHero?.description
-  }
+  // Hydrate sections from dynamic CMS response or default fallbacks
+  const heroFromSection = getSection<HeroContent>('hero');
+  const hero: HeroContent = {
+    location: cmsAboutHero?.location ?? heroFromSection?.location ?? 'Musanze & Bugesera, Rwanda',
+    heading: cmsAboutHero?.heading ?? heroFromSection?.heading ?? 'Growing Fresh.',
+    headingHighlight: cmsAboutHero?.headingHighlight ?? heroFromSection?.headingHighlight ?? 'Building Community.',
+    description: cmsAboutHero?.description ?? heroFromSection?.description ?? 'KainaFresh is a Rwanda-based farm dedicated to producing premium, organic agricultural produce — from our fields directly to your table.',
+    cta: cmsAboutHero?.cta ?? heroFromSection?.cta ?? { label: 'Get in Touch', to: '/contact' },
+    stat_top: cmsAboutHero?.stat_top ?? heroFromSection?.stat_top ?? { stat_number: 50, stat_label: 'Hectares Farmed' },
+    stat_bottom: cmsAboutHero?.stat_bottom ?? heroFromSection?.stat_bottom ?? { stat_number: 100, stat_label: 'Organic Certified' },
+  };
   const statsBar = getSection<StatsContent>('stats_bar');
   const story = getSection<StoryContent>('story');
   const valuesSection = getSection<ValuesContent>('values');
   const teamSection = getSection<TeamContent>('team');
   const ctaSection = getSection<CtaContent>('cta');
 
+  // Resolve arrays with fallbacks
   const stats = statsBar?.items ?? DEFAULT_STATS;
   const values = valuesSection?.items
     ? valuesSection.items.map((v) => ({ icon: ICON_MAP[v.iconName] ?? Leaf, title: v.title, description: v.description }))
     : DEFAULT_VALUES;
   const team = teamSection?.members ?? DEFAULT_TEAM;
 
+  // Render glassmorphic page loader overlay if data is fetching
   if (loading) {
     return <PageLoader text="Loading farm story and credentials from database..." />;
   }
