@@ -24,11 +24,14 @@ import "./Wholesale.css";
  * Remaining content uses hardcoded defaults (benefits, products, process, form).
  * Contact form submission: POST /api/wholesale/inquiry — NOT YET IMPLEMENTED (mock).
  */
-
+// Icon map: CMS stores icon names as strings, we map them to lucide-react components
+const ICON_MAP: Record<string, React.FC<{ size?: number; color?: string; strokeWidth?: number }>> = {
+  Package, Truck, Globe, CheckCircle,TrendingUp,Handshake
+};
 interface WholesaleHero {
   badge?: string;
   heading?: string;
-  headingAccent?: string;
+  headingHighlight?: string;
   description?: string;
   primaryCta?: { label: string; to: string };
   secondaryCta?: { label: string; to: string };
@@ -36,45 +39,52 @@ interface WholesaleHero {
   export_stat?:{stat_label:string; stat_number:string};
   product_stat?:{stat_label:string; stat_number:string};
 }
+interface WhyContentItem {icon:string; title:string; description:string}
+interface WhyContent {
+  tag?:string;
+  heading?: string;
+  paragraphs?:string;
+  items?:WhyContentItem[];
+}
 
-const BENEFITS = [
-  {
-    icon: Package,
-    title: "Bulk Pricing",
-    description:
-      "Competitive tiered pricing for large volume orders. The more you order, the better the rate.",
-  },
-  {
-    icon: Truck,
-    title: "Reliable Delivery",
-    description:
-      "Scheduled, on-time delivery with cold-chain logistics to preserve freshness throughout transit.",
-  },
-  {
-    icon: Globe,
-    title: "Export Ready",
-    description:
-      "All produce is certified and packaged to meet international export standards and phytosanitary requirements.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Consistent Supply",
-    description:
-      "Year-round availability on most produce lines. We plan our harvests to match your supply needs.",
-  },
-  {
-    icon: Handshake,
-    title: "Dedicated Account Manager",
-    description:
-      "Every wholesale client gets a dedicated point of contact for orders, queries, and custom arrangements.",
-  },
-  {
-    icon: CheckCircle,
-    title: "Certified Quality",
-    description:
-      "All products are organically certified, inspected, and graded before any bulk order is dispatched.",
-  },
-];
+// const BENEFITS = [
+//   {
+//     icon: Package,
+//     title: "Bulk Pricing",
+//     description:
+//       "Competitive tiered pricing for large volume orders. The more you order, the better the rate.",
+//   },
+//   {
+//     icon: Truck,
+//     title: "Reliable Delivery",
+//     description:
+//       "Scheduled, on-time delivery with cold-chain logistics to preserve freshness throughout transit.",
+//   },
+//   {
+//     icon: Globe,
+//     title: "Export Ready",
+//     description:
+//       "All produce is certified and packaged to meet international export standards and phytosanitary requirements.",
+//   },
+//   {
+//     icon: TrendingUp,
+//     title: "Consistent Supply",
+//     description:
+//       "Year-round availability on most produce lines. We plan our harvests to match your supply needs.",
+//   },
+//   {
+//     icon: Handshake,
+//     title: "Dedicated Account Manager",
+//     description:
+//       "Every wholesale client gets a dedicated point of contact for orders, queries, and custom arrangements.",
+//   },
+//   {
+//     icon: CheckCircle,
+//     title: "Certified Quality",
+//     description:
+//       "All products are organically certified, inspected, and graded before any bulk order is dispatched.",
+//   },
+// ];
 
 const PRODUCT_CATEGORIES = [
   {
@@ -153,6 +163,7 @@ const PROCESS_STEPS = [
 
 import PageLoader from "../../components/PageLoader/PageLoader";
 
+
 function Wholesale() {
   usePageTitle("wholesale", "Wholesale & Exports");
   const [cmsHero, setCmsHero] = useState<WholesaleHero | null>(null);
@@ -169,7 +180,7 @@ function Wholesale() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [cmsWhy, setCmsWhy] = useState<WhyContent |null>(null);
   useEffect(() => {
     setPageLoading(true);
     apiGet<{ success: boolean; data: { sections: { type: string; content: WholesaleHero }[] } }>('/api/pages/slug/wholesale')
@@ -177,7 +188,28 @@ function Wholesale() {
         if (!res.success || !res.data?.sections) return;
         const heroSection = res.data.sections.find((s) => s.type === 'wholesale-hero');
         if (heroSection) setCmsHero(heroSection.content);
+        const Whysection = res.data.sections.find((s)=> s.type === 'ws-benefits');
+        const whycontents = Whysection?.content;
+        if(Array.isArray(whycontents)){
+          setCmsWhy({items: whycontents as WhyContentItem []});
+
+        }
+        else if(whycontents && typeof whycontents ==='object'){
+          if ('items' in whycontents && Array.isArray(whycontents.items)) {
+            setCmsWhy(whycontents as WhyContent);
+          } else {
+            // If it's an object but no items, treat it as the content with tag, heading, etc.
+            setCmsWhy({
+              tag: (whycontents as any).tag,
+              heading: (whycontents as any).heading,
+              paragraphs: (whycontents as any).paragraphs,
+              items: (whycontents as any).items || []
+            });
+          }
+
+        }
       })
+      
       .catch(() => { /* silently use defaults */ })
       .finally(() => { setPageLoading(false); });
   }, []);
@@ -186,7 +218,7 @@ function Wholesale() {
   const hero: WholesaleHero = {
     badge: cmsHero?.badge,
     heading: cmsHero?.heading ,
-    headingAccent: cmsHero?.headingAccent ,
+    headingHighlight: cmsHero?.headingHighlight ,
     description: cmsHero?.description ,
     primaryCta: cmsHero?.primaryCta ,
     secondaryCta: cmsHero?.secondaryCta,
@@ -194,6 +226,15 @@ function Wholesale() {
     export_stat : cmsHero?.export_stat,
     product_stat: cmsHero?.product_stat
   };
+  const wholesale_why = cmsWhy || {items: []};
+  //  map value icons 
+  const values = wholesale_why?.items && wholesale_why.items.length > 0
+        ? wholesale_why.items.map((v) =>({
+          icon: ICON_MAP[v.icon] ?? Package,
+          title: v.title,
+          description: v.description,
+        }))
+        : [];
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -228,7 +269,7 @@ function Wholesale() {
             <h1>
               {hero.heading}
               <br />
-              <span className="highlight-orange">{hero.headingAccent}</span>
+              <span className="highlight-orange">{hero.headingHighlight}</span>
             </h1>
             <p>{hero.description}</p>
             <div className="ws-hero-actions">
@@ -259,15 +300,14 @@ function Wholesale() {
         {/* ── Why Choose Us ── */}
         <section className="ws-benefits">
           <div className="ws-section-header">
-            <span className="section-tag">Why KainaFresh</span>
-            <h2>The Smart Choice for Bulk Buyers</h2>
+            <span className="section-tag">{wholesale_why.tag}</span>
+            <h2>{wholesale_why.heading}</h2>
             <p>
-              We make large-scale procurement simple, reliable, and
-              cost-effective.
+              {wholesale_why.paragraphs}
             </p>
           </div>
           <div className="benefits-grid">
-            {BENEFITS.map(({ icon: Icon, title, description }) => (
+            {values.map(({ icon: Icon, title, description }) => (
               <div key={title} className="benefit-card card">
                 <div className="benefit-icon">
                   <Icon
