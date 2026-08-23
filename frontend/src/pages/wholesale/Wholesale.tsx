@@ -46,6 +46,14 @@ interface WhyContent {
   paragraphs?:string;
   items?:WhyContentItem[];
 }
+interface DestinationContentItem {destination:string};
+interface DestinationContent {
+  tag?:string;
+  heading?: string;
+  paragraphs?:string;
+  items?: DestinationContentItem[];
+
+}
 
 // const BENEFITS = [
 //   {
@@ -125,15 +133,6 @@ const PRODUCT_CATEGORIES = [
   },
 ];
 
-const EXPORT_DESTINATIONS = [
-  "Kenya",
-  "Uganda",
-  "Tanzania",
-  "DRC Congo",
-  "Burundi",
-  "Europe (selected countries)",
-];
-
 const PROCESS_STEPS = [
   {
     number: "01",
@@ -164,6 +163,7 @@ const PROCESS_STEPS = [
 import PageLoader from "../../components/PageLoader/PageLoader";
 
 
+
 function Wholesale() {
   usePageTitle("wholesale", "Wholesale & Exports");
   const [cmsHero, setCmsHero] = useState<WholesaleHero | null>(null);
@@ -181,6 +181,7 @@ function Wholesale() {
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [cmsWhy, setCmsWhy] = useState<WhyContent |null>(null);
+  const [cmsDestination, setCmsDestination] = useState<DestinationContent | null>(null);
   useEffect(() => {
     setPageLoading(true);
     apiGet<{ success: boolean; data: { sections: { type: string; content: WholesaleHero }[] } }>('/api/pages/slug/wholesale')
@@ -207,6 +208,27 @@ function Wholesale() {
             });
           }
 
+        }
+        const destinationSec = res.data.sections.find((sec)=>sec.type === 'ws-exports');
+        const destinationValue = destinationSec?.content;
+        if(Array.isArray(destinationValue)){
+          setCmsDestination({items: destinationValue  as DestinationContentItem[]})
+        }
+        else if(destinationValue && typeof destinationValue === 'object'){
+          if('items' in destinationValue && Array.isArray(destinationValue.items)){
+            setCmsDestination(destinationValue as DestinationContent);
+          }
+          else{
+            setCmsDestination({
+              tag: (destinationValue as any).tag,
+               heading: (destinationValue as any).heading,
+              paragraphs: (destinationValue as any).paragraphs,
+              items: (destinationValue as any).items || []
+            });
+          }
+        }
+        else{
+          setCmsDestination(null);
         }
       })
       
@@ -235,7 +257,11 @@ function Wholesale() {
           description: v.description,
         }))
         : [];
-
+  const destinationcontent = cmsDestination || {items: []};
+  const destinationVal = destinationcontent?.items && destinationcontent.items.length > 0
+        ? destinationcontent.items.map((v)=>({
+          destination: v.destination
+        })):[];
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -324,7 +350,7 @@ function Wholesale() {
         </section>
 
         {/* ── Products ── */}
-        <section className="ws-products">
+        {/* <section className="ws-products">
           <div className="ws-section-header">
             <span className="section-tag">What We Offer</span>
             <h2>Product Categories</h2>
@@ -346,25 +372,23 @@ function Wholesale() {
               </div>
             ))}
           </div>
-        </section>
+        </section> */}
 
         {/* ── Exports ── */}
         <section className="ws-exports">
           <div className="ws-exports-inner">
             <div className="ws-exports-text">
               <span className="section-tag section-tag-light">
-                Export Capabilities
+                {destinationcontent.tag}
               </span>
-              <h2>We Export Across East Africa & Beyond</h2>
+              <h2>{destinationcontent.heading}</h2>
               <p>
-                KainaFresh is certified for export and has established logistics
-                partnerships for cross-border deliveries. All export produce is
-                packed to international phytosanitary and food safety standards.
+                {destinationcontent.paragraphs}
               </p>
               <div className="export-destinations">
-                {EXPORT_DESTINATIONS.map((dest) => (
-                  <span key={dest} className="export-badge">
-                    <CheckCircle size={13} /> {dest}
+                {destinationVal.map((dest) => (
+                  <span key={dest.destination} className="export-badge">
+                    <CheckCircle size={13} /> {dest.destination}
                   </span>
                 ))}
               </div>
