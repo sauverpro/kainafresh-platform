@@ -20,14 +20,6 @@ const ICON_MAP: Record<string, React.FC<{ size?: number; color?: string; strokeW
   Leaf, ShieldCheck, Users, Award,
 };
 
-
-
-const DEFAULT_TEAM = [
-  { name: 'Jean-Pierre Uwimana', role: 'Founder & Farm Director', initials: 'JU' },
-  { name: 'Amina Keza', role: 'Head of Operations', initials: 'AK' },
-  { name: 'David Mugisha', role: 'Export & Logistics Manager', initials: 'DM' },
-];
-
 // ── TypeScript shapes matching the CMS section content JSON ──
 interface HeroContent { 
   location?: string; 
@@ -52,7 +44,13 @@ interface ValuesContent {
   mission?: string; 
   items?: ValuesContentItem[]; 
 }
-interface TeamContent {  name?: string; role?: string; initials?: string;phone_number?:string;email?:string }
+interface TeamContent {
+    name?: string;
+     role?: string; 
+     initials?: string;
+     phone_number?:string;
+     email?:string 
+    }
 interface CtaContent { heading?: string; subheading?: string; primaryCta?: { label: string; to: string }; secondaryCta?: { label: string; to: string } }
 
 interface CmsSection { type: string; content: HeroContent & StatsContent & StoryContent & ValuesContent & TeamContent & CtaContent }
@@ -68,10 +66,24 @@ function About() {
   const [cmsStat, setCmsStat] = useState<StatsContent | null>(null);
   const [cmsStory, setCmsStory] = useState<StoryContent | null>(null);
   const [cmsMission, setCmsMission] = useState<ValuesContent | null>(null);
-  const [cmsTeam, setCmsTeam] = useState<TeamContent | null>(null);
+  const [cmsTeam, setCmsTeam] = useState<TeamContent[] | null>(null);
 
   useEffect(() => {
-   
+  
+    async function loadData(){
+      try {
+        const teams = await apiGet<{status:boolean; data:TeamContent[]}>('/api/team');
+        if(teams?.status && Array.isArray(teams?.data)){
+          setCmsTeam(teams.data);
+        }        
+       
+
+      } catch (error) {
+        console.debug('Failed to load', error);
+        setCmsTeam([]);
+      }
+
+    }
     setLoading(true);
     
     apiGet<{ success: boolean; data: { sections: CmsSection[] } }>('/api/pages/slug/about')
@@ -96,7 +108,7 @@ function About() {
         // our story section
         setCmsStory(find<StoryContent>('about-story'));
         // mission and vission
-            const mission_content = sections.find((sec) => sec.type === 'about-values');
+        const mission_content = sections.find((sec) => sec.type === 'about-values');
         const missionValue = mission_content?.content;
         
         // Properly handle the values content
@@ -125,6 +137,7 @@ function About() {
        })
       .catch(() => { /* silently fall back to hardcoded defaults */ })
       .finally(() => { setLoading(false); });
+      loadData();
   }, []);
 
   // Helper: find a section of a given type from the CMS response
@@ -163,14 +176,12 @@ function About() {
     : [];
   
  
-  const teamSection = getSection<TeamContent>('team');
+  
   const ctaSection = getSection<CtaContent>('cta');
   // stat action bar 
   const stats = cmsStat?.items;
-
   
-  
-  const team = teamSection?.members ?? DEFAULT_TEAM;
+  const team = cmsTeam || [];
 
   if (loading) {
     return <PageLoader text="Loading farm story and credentials from database..." />;
@@ -284,8 +295,8 @@ function About() {
         {/* ── Team ── */}
         <section className="about-team">
           <div className="about-team-header">
-            <span className="section-tag">{teamSection?.tag ?? 'The People Behind the Farm'}</span>
-            <h2>{teamSection?.heading ?? 'Meet Our Team'}</h2>
+            <span className="section-tag">The People Behind the Farm</span>
+            <h2>Meet Our Team</h2>
           </div>
           <div className="team-grid">
             {team.map((member) => (
@@ -293,6 +304,8 @@ function About() {
                 <div className="team-avatar">{member.initials}</div>
                 <h3>{member.name}</h3>
                 <span className="team-role">{member.role}</span>
+                  <p className='text-sm'>{member.email}</p>
+                  <p className='text-sm'>{member.phone_number}</p>
               </div>
             ))}
           </div>
