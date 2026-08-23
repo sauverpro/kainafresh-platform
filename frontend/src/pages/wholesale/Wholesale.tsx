@@ -32,6 +32,9 @@ interface WholesaleHero {
   description?: string;
   primaryCta?: { label: string; to: string };
   secondaryCta?: { label: string; to: string };
+  client_stat?:{stat_label:string; stat_number:string};
+  export_stat?:{stat_label:string; stat_number:string};
+  product_stat?:{stat_label:string; stat_number:string};
 }
 
 const BENEFITS = [
@@ -172,7 +175,7 @@ function Wholesale() {
     apiGet<{ success: boolean; data: { sections: { type: string; content: WholesaleHero }[] } }>('/api/pages/slug/wholesale')
       .then((res) => {
         if (!res.success || !res.data?.sections) return;
-        const heroSection = res.data.sections.find((s) => s.type === 'hero');
+        const heroSection = res.data.sections.find((s) => s.type === 'wholesale-hero');
         if (heroSection) setCmsHero(heroSection.content);
       })
       .catch(() => { /* silently use defaults */ })
@@ -181,12 +184,15 @@ function Wholesale() {
 
   // Merge CMS with defaults
   const hero: WholesaleHero = {
-    badge: cmsHero?.badge ?? 'Wholesale & Exports',
-    heading: cmsHero?.heading ?? 'Fresh Produce at Scale.',
-    headingAccent: cmsHero?.headingAccent ?? 'Direct from Our Farm.',
-    description: cmsHero?.description ?? 'Supplying restaurants, supermarkets, distributors, and exporters across East Africa and beyond.',
-    primaryCta: cmsHero?.primaryCta ?? { label: 'Submit an Inquiry', to: '#inquiry-form' },
-    secondaryCta: cmsHero?.secondaryCta ?? { label: 'How It Works', to: '#how-it-works' },
+    badge: cmsHero?.badge,
+    heading: cmsHero?.heading ,
+    headingAccent: cmsHero?.headingAccent ,
+    description: cmsHero?.description ,
+    primaryCta: cmsHero?.primaryCta ,
+    secondaryCta: cmsHero?.secondaryCta,
+    client_stat : cmsHero?.client_stat,
+    export_stat : cmsHero?.export_stat,
+    product_stat: cmsHero?.product_stat
   };
 
   const handleChange = (
@@ -226,25 +232,25 @@ function Wholesale() {
             </h1>
             <p>{hero.description}</p>
             <div className="ws-hero-actions">
-              <a href={hero.primaryCta?.to ?? '#inquiry-form'} className="btn btn-secondary">
-                {hero.primaryCta?.label ?? 'Submit an Inquiry'}
+              <a href={hero.primaryCta?.to } className="btn btn-secondary">
+                {hero.primaryCta?.label }
               </a>
-              <a href={hero.secondaryCta?.to ?? '#how-it-works'} className="btn btn-outline-white">
-                {hero.secondaryCta?.label ?? 'How It Works'}
+              <a href={hero.secondaryCta?.to } className="btn btn-outline-white">
+                {hero.secondaryCta?.label }
               </a>
             </div>
             <div className="ws-hero-stats">
               <div className="ws-hero-stat">
-                <strong>50+</strong>
-                <span>Wholesale clients</span>
+                <strong>{hero.client_stat?.stat_number}</strong>
+                <span>{hero.client_stat?.stat_label}</span>
               </div>
               <div className="ws-hero-stat">
-                <strong>6</strong>
-                <span>Export destinations</span>
+                <strong>{hero.export_stat?.stat_number}</strong>
+                <span>{hero.export_stat?.stat_label}</span>
               </div>
               <div className="ws-hero-stat">
-                <strong>20+</strong>
-                <span>Product varieties</span>
+                <strong>{hero.product_stat?.stat_number}</strong>
+                <span>{hero.product_stat?.stat_label}</span>
               </div>
             </div>
           </div>
