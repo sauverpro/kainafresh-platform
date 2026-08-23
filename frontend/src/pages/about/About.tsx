@@ -20,20 +20,7 @@ const ICON_MAP: Record<string, React.FC<{ size?: number; color?: string; strokeW
   Leaf, ShieldCheck, Users, Award,
 };
 
-// ── Default fallback data ──
-const DEFAULT_STATS = [
-  { value: '350+', label: 'Happy Customers' },
-  { value: '5+', label: 'Years Farming' },
-  { value: '100%', label: 'Organic Certified' },
-  { value: '20+', label: 'Produce Varieties' },
-];
 
-const DEFAULT_VALUES = [
-  { icon: Leaf, title: 'Sustainable Farming', description: 'We use eco-friendly practices that protect the soil, water, and biodiversity for generations to come.' },
-  { icon: ShieldCheck, title: 'Quality & Safety', description: 'Every product is inspected, packed, and handled under strict quality standards before it reaches you.' },
-  { icon: Users, title: 'Community First', description: 'We work directly with local communities, creating fair employment and supporting local economies.' },
-  { icon: Award, title: 'Farm Transparency', description: 'From seed to delivery, we believe you deserve to know exactly where your food comes from.' },
-];
 
 const DEFAULT_TEAM = [
   { name: 'Jean-Pierre Uwimana', role: 'Founder & Farm Director', initials: 'JU' },
@@ -52,10 +39,20 @@ interface HeroContent {
    stat_bottom?: {stat_number:number; stat_label:string};
   }
 
-interface StatsContent { items?: { value: string; label: string }[] }
+interface StatsContentItem { value?: string, label?: string }
+interface StatsContent { tag?: string; heading?: string; items?: StatsContentItem[] }
+
 interface StoryContent { tag?: string; heading?: string; paragraphs?: string[] }
-interface ValuesContent { tag?: string; heading?: string; subheading?: string; items?: { iconName: string; title: string; description: string }[] }
-interface TeamContent { tag?: string; heading?: string; members?: { name: string; role: string; initials: string }[] }
+interface ValuesContentItem { icon: string; title: string; description: string; }
+interface ValuesContent { 
+  tag?: string; 
+  heading?: string; 
+  subheading?: string; 
+  vision?: string; 
+  mission?: string; 
+  items?: ValuesContentItem[]; 
+}
+interface TeamContent {  name?: string; role?: string; initials?: string;phone_number?:string;email?:string }
 interface CtaContent { heading?: string; subheading?: string; primaryCta?: { label: string; to: string }; secondaryCta?: { label: string; to: string } }
 
 interface CmsSection { type: string; content: HeroContent & StatsContent & StoryContent & ValuesContent & TeamContent & CtaContent }
@@ -77,6 +74,7 @@ import PageLoader from '../../components/PageLoader/PageLoader';
 /**
  * About Functional Component.
  */
+
 function About() {
   // Update document head title for SEO
   usePageTitle('about', 'About');
@@ -87,26 +85,68 @@ function About() {
   // Page loading indicator state (defaults to true)
   const [loading, setLoading] = useState(true);
   const [cmsAboutHero, setCmsAboutHero] = useState<HeroContent | null>(null);
+  const [cmsStat, setCmsStat] = useState<StatsContent | null>(null);
+  const [cmsStory, setCmsStory] = useState<StoryContent | null>(null);
+  const [cmsMission, setCmsMission] = useState<ValuesContent | null>(null);
+  const [cmsTeam, setCmsTeam] = useState<TeamContent | null>(null);
 
   // Lifecycle effect: Query MariaDB for 'about' page CMS sections on mount
   useEffect(() => {
-    // Fetch dynamic sections from /api/pages/slug/about
+    setLoading(true);
+
     apiGet<{ success: boolean; data: { sections: CmsSection[] } }>('/api/pages/slug/about')
-      .then((res) => { 
+      .then((res) => {
         if (res.success && res.data?.sections) {
-          const secs = res.data.sections;
-          setSections(secs);
-          const aboutHeroSec = secs.find((sec) => sec.type === 'about-hero');
+          const sections = res.data.sections;
+          setSections(sections);
+
+          const find = <T,>(type: string): T | null => {
+            const s = sections.find((sec) => sec.type === type);
+            return s ? (s.content as T) : null;
+          };
+
+          const aboutHeroSec = sections.find((sec) => sec.type === 'about-hero');
           if (aboutHeroSec) setCmsAboutHero(aboutHeroSec.content as HeroContent);
+
+          const statsValue = sections.find((sec) => sec.type === 'about-stats-bar')?.content;
+          setCmsStat(
+            Array.isArray(statsValue)
+              ? { items: statsValue as StatsContentItem[] }
+              : (statsValue as StatsContent) ?? null
+          );
+
+          setCmsStory(find<StoryContent>('about-story'));
+
+          const missionContent = sections.find((sec) => sec.type === 'about-values')?.content;
+          const missionValue = missionContent;
+
+          if (Array.isArray(missionValue)) {
+            setCmsMission({ items: missionValue as ValuesContentItem[] });
+          } else if (missionValue && typeof missionValue === 'object') {
+            if ('items' in missionValue && Array.isArray(missionValue.items)) {
+              setCmsMission(missionValue as ValuesContent);
+            } else {
+              setCmsMission({
+                tag: (missionValue as any).tag,
+                heading: (missionValue as any).heading,
+                subheading: (missionValue as any).subheading,
+                vision: (missionValue as any).vision,
+                mission: (missionValue as any).mission,
+                items: (missionValue as any).items || []
+              });
+            }
+          } else {
+            setCmsMission(null);
+          }
         }
       })
-      .catch(() => { 
+      .catch(() => {
         // Fall back gracefully to hardcoded defaults
       })
-      .finally(() => { 
-        // Complete loading phase
-        setLoading(false); 
+      .finally(() => {
+        setLoading(false);
       });
+
   }, []);
 
   // Helper method: Extracts specific CMS section content by type string
@@ -115,7 +155,7 @@ function About() {
     return s ? (s.content as T) : null;
   };
 
-  // Hydrate sections from dynamic CMS response or default fallbacks
+  // Hydrate from CMS or fall back to defaults
   const heroFromSection = getSection<HeroContent>('hero');
   const hero: HeroContent = {
     location: cmsAboutHero?.location ?? heroFromSection?.location ?? 'Musanze & Bugesera, Rwanda',
@@ -126,17 +166,37 @@ function About() {
     stat_top: cmsAboutHero?.stat_top ?? heroFromSection?.stat_top ?? { stat_number: 50, stat_label: 'Hectares Farmed' },
     stat_bottom: cmsAboutHero?.stat_bottom ?? heroFromSection?.stat_bottom ?? { stat_number: 100, stat_label: 'Organic Certified' },
   };
+
   const statsBar = getSection<StatsContent>('stats_bar');
   const story = getSection<StoryContent>('story');
+  const stories: StoryContent = {
+    tag: cmsStory?.tag ?? story?.tag,
+    heading: cmsStory?.heading ?? story?.heading,
+    paragraphs: cmsStory?.paragraphs ?? story?.paragraphs
+  };
+
   const valuesSection = getSection<ValuesContent>('values');
+  const valuesContent = cmsMission ?? valuesSection ?? { items: [] };
+
   const teamSection = getSection<TeamContent>('team');
   const ctaSection = getSection<CtaContent>('cta');
 
-  // Resolve arrays with fallbacks
-  const stats = statsBar?.items ?? DEFAULT_STATS;
-  const values = valuesSection?.items
-    ? valuesSection.items.map((v) => ({ icon: ICON_MAP[v.iconName] ?? Leaf, title: v.title, description: v.description }))
+  const teamSection = getSection<TeamContent>('team');
+  const ctaSection = getSection<CtaContent>('cta');
+  // stat action bar 
+  const stats = cmsStat?.items;
+
+  const stats = cmsStat?.items ?? statsBar?.items ?? DEFAULT_STATS;
+  const values = valuesContent?.items && valuesContent.items.length > 0
+    ? valuesContent.items.map((v) => ({
+        icon: ICON_MAP[v.iconName ?? v.icon] ?? Leaf,
+        title: v.title,
+        description: v.description,
+      }))
     : DEFAULT_VALUES;
+
+  const team = teamSection?.members ?? DEFAULT_TEAM;
+
   const team = teamSection?.members ?? DEFAULT_TEAM;
 
   // Render glassmorphic page loader overlay if data is fetching
@@ -195,12 +255,9 @@ function About() {
         {/* ── Our Story ── */}
         <section className="about-story">
           <div className="about-story-text">
-            <span className="section-tag">{story?.tag ?? 'Our Story'}</span>
-            <h2>{story?.heading ?? 'From a small plot of land to a thriving farm.'}</h2>
-            {(story?.paragraphs ?? [
-              'KainaFresh started with a simple belief: that Rwandans deserve access to food that is genuinely fresh, honestly grown, and responsibly delivered.',
-              'Today, we manage over 20 varieties of produce — from tomatoes and avocados to seasonal greens and tropical fruits.',
-            ]).map((para, i) => <p key={i}>{para}</p>)}
+            <span className="section-tag">{stories?.tag}</span>
+            <h2>{stories?.heading }</h2>
+            <p>{stories.paragraphs}</p>
           </div>
           <div className="about-story-visual">
             <div className="story-image-block story-block-main">
@@ -217,11 +274,27 @@ function About() {
         {/* ── Mission & Values ── */}
         <section className="about-values">
           <div className="about-values-header">
-            <span className="section-tag">{valuesSection?.tag ?? 'What We Stand For'}</span>
-            <h2>{valuesSection?.heading ?? 'Our Mission & Values'}</h2>
+            <span className="section-tag">{valuesContent?.tag }</span>
+            <h2>{valuesContent?.heading }</h2>
             <p>
-              {valuesSection?.subheading ?? 'Everything we do is guided by a commitment to freshness, sustainability, and the communities that make our farm possible.'}
+              {valuesContent?.subheading }
             </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center mb-3 pt-3">
+              <div className="value-card card">
+                <h2 className='text-3xl'>Our Vision</h2>
+                <p className='pt-3'>
+                  {valuesContent?.vision}
+
+                </p>
+              </div>
+              <div className="value-card card">
+                <h2 className='text-3xl'>Our Mission</h2>
+                <p className='pt-3'>
+                  {valuesContent.mission}
+                </p>
+              </div>
+
           </div>
           <div className="values-grid">
             {values.map(({ icon: Icon, title, description }) => (

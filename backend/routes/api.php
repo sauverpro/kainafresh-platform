@@ -89,6 +89,7 @@ $router->addRoute(
 $router->addRoute('GET','/api/settings','SettingController@index');
 $router->addRoute('GET','/api/navlinks','NavLinkController@index');
 $router->addRoute('GET','/api/navlinks/nav','NavLinkController@navs');
+$router->addRoute('GET','/api/get_team','TeamController@index');
 // middleware protected routes
 $router->addRoute('POST','/api/settings/create','SettingController@store','auth');
 
@@ -97,3 +98,5 @@ $router->addRoute('POST','/api/settings/uploadlogo','SettingController@uploadlog
 $router->addRoute('POST','/api/navlinks/create','NavLinkController@store','auth');
 $router->addRoute('PUT','/api/navlinks/update/{id}','NavLinkController@update','auth');
 $router->addRoute('DELETE','/api/navlinks/delete/{id}','NavLinkController@delete','auth');
+// create team
+$router->addRoute('POST','/api/team/create','TeamController@create');
