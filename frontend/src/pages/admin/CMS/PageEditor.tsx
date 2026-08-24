@@ -50,13 +50,13 @@ function Toast({ message, type, onClose }: ToastProps) {
   );
 }
 
-interface DynamicFormProps {
-  data: any;
-  onChange: (updated: any) => void;
+interface DynamicFormProps<T extends Record<string, unknown> | unknown[] = Record<string, unknown> | unknown[]> {
+  data: T;
+  onChange: (updated: T) => void;
 }
 
 // A dynamic form renderer that iterates over JSON object keys
-function DynamicForm({ data, onChange }: DynamicFormProps) {
+function DynamicForm<T extends Record<string, unknown> | unknown[]>({ data, onChange }: DynamicFormProps<T>) {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
   const toggleAccordion = (path: string, index: number) => {
@@ -64,17 +64,17 @@ function DynamicForm({ data, onChange }: DynamicFormProps) {
     setExpandedItems(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleChange = (key: string | number, value: any) => {
+  const handleChange = (key: string | number, value: unknown) => {
     if (Array.isArray(data)) {
       const newArr = [...data];
       newArr[Number(key)] = value;
-      onChange(newArr);
+      onChange(newArr as T);
       return;
     }
-    onChange({ ...data, [key]: value });
+    onChange({ ...(data as Record<string, unknown>), [key]: value } as T);
   };
 
-  const renderField = (key: string, value: any, path: string) => {
+  const renderField = (key: string, value: unknown, path: string) => {
     const label = formatLabel(key);
     
     // Arrays (e.g. stats, faqs, valueProps)
@@ -97,8 +97,9 @@ function DynamicForm({ data, onChange }: DynamicFormProps) {
                 const accordionKey = `${path}-${index}`;
                 const isExpanded = expandedItems[accordionKey] !== false; // Default expanded initially for empty, or just default true
                 
+                const itemObj = (typeof item === 'object' && item !== null ? item : {}) as Record<string, unknown>;
                 // Try to find a title for the accordion header
-                const itemTitle = item.title || item.heading || item.question || item.name || item.value || `Item ${index + 1}`;
+                const itemTitle = (itemObj.title || itemObj.heading || itemObj.question || itemObj.name || itemObj.value || `Item ${index + 1}`) as string;
 
                 return (
                   <div key={index} className="cms-accordion-item">
@@ -130,8 +131,8 @@ function DynamicForm({ data, onChange }: DynamicFormProps) {
                     {isExpanded && (
                       <div className="cms-accordion-body">
                         <DynamicForm 
-                          data={item} 
-                          onChange={(updatedItem: any) => {
+                          data={itemObj} 
+                          onChange={(updatedItem) => {
                             const newArr = [...value];
                             newArr[index] = updatedItem;
                             handleChange(key, newArr);
@@ -150,8 +151,9 @@ function DynamicForm({ data, onChange }: DynamicFormProps) {
             className="btn-add-item"
             onClick={() => {
               // Determine template from the first item if exists
-              const template = value.length > 0 
-                ? Object.keys(value[0]).reduce((acc: Record<string, string>, k: string) => ({...acc, [k]: ''}), {} as Record<string, string>) 
+              const firstItem = value[0] as Record<string, unknown> | undefined;
+              const template = (value.length > 0 && firstItem && typeof firstItem === 'object')
+                ? Object.keys(firstItem).reduce((acc: Record<string, string>, k: string) => ({...acc, [k]: ''}), {} as Record<string, string>) 
                 : { text: '' };
               
               handleChange(key, [...value, template]);
@@ -172,8 +174,8 @@ function DynamicForm({ data, onChange }: DynamicFormProps) {
           <label className="cms-label">{label}</label>
           <div className="cms-nested-object">
             <DynamicForm 
-              data={value} 
-              onChange={(updatedObj: any) => handleChange(key, updatedObj)} 
+              data={value as Record<string, unknown>} 
+              onChange={(updatedObj) => handleChange(key, updatedObj)} 
             />
           </div>
         </div>
@@ -193,7 +195,7 @@ function DynamicForm({ data, onChange }: DynamicFormProps) {
             </span>
             <select
               className="cms-input has-icon"
-              value={value || ''}
+              value={(value as string) || ''}
               onChange={(e) => handleChange(key, e.target.value)}
             >
               <option value="">Select an icon...</option>
@@ -206,14 +208,14 @@ function DynamicForm({ data, onChange }: DynamicFormProps) {
         ) : typeof value === 'string' && value.length > 50 ? (
           <textarea 
             className="cms-input cms-textarea" 
-            value={value} 
+            value={value as string} 
             onChange={(e) => handleChange(key, e.target.value)} 
           />
         ) : (
           <input 
             type={typeof value === 'number' ? 'number' : 'text'}
             className="cms-input" 
-            value={value || ''} 
+            value={(value as string | number) ?? ''} 
             onChange={(e) => handleChange(key, e.target.value)} 
             placeholder={`Enter ${label.toLowerCase()}...`}
           />
