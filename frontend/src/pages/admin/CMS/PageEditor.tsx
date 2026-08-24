@@ -17,19 +17,26 @@ import {
 import './PageEditor.css';
 
 // Utility to convert camelCase to human readable labels
-const formatLabel = (key) => {
-  return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+// Utility to convert camelCase to human readable labels
+const formatLabel = (key: string) => {
+  return key.replace(/([A-Z])/g, ' $1').replace(/^./, (str: string) => str.toUpperCase());
 };
 
 // Map of common icons used in KainaFresh for the Icon Picker
-const IconMap = {
+const IconMap: Record<string, React.ReactNode> = {
   Leaf: <Leaf size={18} />,
   Truck: <Truck size={18} />,
   ShieldCheck: <ShieldCheck size={18} />,
   Package: <Package size={18} />
 };
 
-function Toast({ message, type, onClose }) {
+interface ToastProps {
+  message: string;
+  type: 'success' | 'error';
+  onClose: () => void;
+}
+
+function Toast({ message, type, onClose }: ToastProps) {
   useEffect(() => {
     const timer = setTimeout(onClose, 3000);
     return () => clearTimeout(timer);
@@ -43,16 +50,21 @@ function Toast({ message, type, onClose }) {
   );
 }
 
-// A dynamic form renderer that iterates over JSON object keys
-function DynamicForm({ data, onChange }) {
-  const [expandedItems, setExpandedItems] = useState({});
+interface DynamicFormProps {
+  data: any;
+  onChange: (updated: any) => void;
+}
 
-  const toggleAccordion = (path, index) => {
+// A dynamic form renderer that iterates over JSON object keys
+function DynamicForm({ data, onChange }: DynamicFormProps) {
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+
+  const toggleAccordion = (path: string, index: number) => {
     const key = `${path}-${index}`;
     setExpandedItems(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleChange = (key, value) => {
+  const handleChange = (key: string | number, value: any) => {
     if (Array.isArray(data)) {
       const newArr = [...data];
       newArr[Number(key)] = value;
@@ -62,7 +74,7 @@ function DynamicForm({ data, onChange }) {
     onChange({ ...data, [key]: value });
   };
 
-  const renderField = (key, value, path) => {
+  const renderField = (key: string, value: any, path: string) => {
     const label = formatLabel(key);
     
     // Arrays (e.g. stats, faqs, valueProps)
@@ -119,7 +131,7 @@ function DynamicForm({ data, onChange }) {
                       <div className="cms-accordion-body">
                         <DynamicForm 
                           data={item} 
-                          onChange={(updatedItem) => {
+                          onChange={(updatedItem: any) => {
                             const newArr = [...value];
                             newArr[index] = updatedItem;
                             handleChange(key, newArr);
@@ -139,7 +151,7 @@ function DynamicForm({ data, onChange }) {
             onClick={() => {
               // Determine template from the first item if exists
               const template = value.length > 0 
-                ? Object.keys(value[0]).reduce((acc, k) => ({...acc, [k]: ''}), {}) 
+                ? Object.keys(value[0]).reduce((acc: Record<string, string>, k: string) => ({...acc, [k]: ''}), {} as Record<string, string>) 
                 : { text: '' };
               
               handleChange(key, [...value, template]);
@@ -161,7 +173,7 @@ function DynamicForm({ data, onChange }) {
           <div className="cms-nested-object">
             <DynamicForm 
               data={value} 
-              onChange={(updatedObj) => handleChange(key, updatedObj)} 
+              onChange={(updatedObj: any) => handleChange(key, updatedObj)} 
             />
           </div>
         </div>
@@ -177,7 +189,7 @@ function DynamicForm({ data, onChange }) {
         {key === 'iconName' ? (
           <div className="icon-preview-field">
             <span className="icon-preview">
-              {IconMap[value] || <ImageIcon size={18} />}
+              {IconMap[value as keyof typeof IconMap] || <ImageIcon size={18} />}
             </span>
             <select
               className="cms-input has-icon"
@@ -217,8 +229,14 @@ function DynamicForm({ data, onChange }) {
   );
 }
 
+interface ActiveWorkspaceProps {
+  section: CmsPageSection;
+  pageId: number;
+  onSaveSuccess: (type: 'success' | 'error', message: string) => void;
+}
+
 // Right Column: Workspace
-function ActiveWorkspace({ section, pageId, onSaveSuccess }) {
+function ActiveWorkspace({ section, pageId, onSaveSuccess }: ActiveWorkspaceProps) {
   const [contentData, setContentData] = useState(section.content || {});
   const [isSaving, setIsSaving] = useState(false);
 
@@ -364,7 +382,7 @@ function PageEditor() {
 
   const activeSection = page.sections?.find(s => s.id === activeSectionId);
 
-  const getSectionIcon = (type) => {
+  const getSectionIcon = (type: string) => {
     switch (type) {
       case 'hero': return <ImageIcon size={18} />;
       case 'value_props': return <List size={18} />;

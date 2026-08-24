@@ -230,11 +230,12 @@ function Wholesale() {
             setCmsWhy(whycontents as WhyContent);
           } else {
             // If it's an object but no items, treat it as the content with tag, heading, etc.
+            const whyObj = whycontents as WhyContent;
             setCmsWhy({
-              tag: (whycontents as any).tag,
-              heading: (whycontents as any).heading,
-              paragraphs: (whycontents as any).paragraphs,
-              items: (whycontents as any).items || []
+              tag: whyObj.tag,
+              heading: whyObj.heading,
+              paragraphs: whyObj.paragraphs,
+              items: whyObj.items || []
             });
           }
 
@@ -249,11 +250,12 @@ function Wholesale() {
             setCmsDestination(destinationValue as DestinationContent);
           }
           else {
+            const destObj = destinationValue as DestinationContent;
             setCmsDestination({
-              tag: (destinationValue as any).tag,
-              heading: (destinationValue as any).heading,
-              paragraphs: (destinationValue as any).paragraphs,
-              items: (destinationValue as any).items || []
+              tag: destObj.tag,
+              heading: destObj.heading,
+              paragraphs: destObj.paragraphs,
+              items: destObj.items || []
             });
           }
         }
@@ -272,11 +274,12 @@ function Wholesale() {
             setCmsProgress(progressContent as ProgressContent);
           }
           else {
+            const progObj = progressContent as ProgressContent;
             setCmsProgress({
-              tag: (progressContent as any).tag,
-              heading: (progressContent as any).heading,
-              paragraphs: (progressContent as any).paragraphs,
-              items: (progressContent as any).items || []
+              tag: progObj.tag,
+              heading: progObj.heading,
+              paragraphs: progObj.paragraphs,
+              items: progObj.items || []
             });
           }
         }

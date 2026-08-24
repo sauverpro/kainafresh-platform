@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { apiGet } from '../../api/client';

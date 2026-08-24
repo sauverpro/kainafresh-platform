@@ -11,7 +11,7 @@
  */
 
 // Import React library and state hooks
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 // Import Lucide vector icons for table badges and actions
 import { Search, Upload, SlidersHorizontal, Plus, MoreHorizontal, Check, Clock, AlertTriangle } from 'lucide-react';

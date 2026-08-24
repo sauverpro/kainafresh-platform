@@ -11,10 +11,10 @@
  */
 
 // Import React library and state hooks
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 // Import Lucide vector icons for inventory badges and toolbar actions
-import { Search, Upload, SlidersHorizontal, Plus, MoreHorizontal, AlertTriangle, CheckCircle, PackageSearch } from 'lucide-react';
+import { Search, Upload, AlertTriangle, CheckCircle, PackageSearch } from 'lucide-react';
 
 // Import Inventory stylesheet
 import './InventoryList.css';

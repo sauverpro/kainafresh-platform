@@ -15,17 +15,13 @@
 import React, { useState, useEffect } from 'react';
 
 // Import React Router DOM components for navigation and location tracking
-import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 
 // Import Lucide vector icons for navigation menus and topbar actions
 import { 
   LayoutDashboard, 
   FileText, 
   Package, 
-  Box,
-  ShoppingCart,
-  BarChart2,
-  Users, 
   Settings,
   LogOut,
   ChevronDown,
@@ -59,15 +55,18 @@ interface PageItem {
   slug: string;
 }
 
+interface DropdownItem {
+  id?: number | string;
+  name: string;
+  path: string;
+}
+
 /**
  * AdminLayout Functional Component.
  */
 function AdminLayout({ children }: AdminLayoutProps) {
   // Access current URL location state
   const location = useLocation();
-
-  // Imperative navigation hook instance
-  const navigate = useNavigate();
 
   // Dynamic CMS pages list array fetched from MariaDB
   const [pages, setPages] = useState<PageItem[]>([]);
@@ -159,7 +158,7 @@ function AdminLayout({ children }: AdminLayoutProps) {
 
         <nav className="admin-nav">
           <ul>
-            {navLinks.map((link, index) => {
+            {navLinks.map((link) => {
               const Icon = link.icon;
               
               if (link.isDropdown) {
@@ -175,7 +174,7 @@ function AdminLayout({ children }: AdminLayoutProps) {
                 }
 
                 // Prepare children array
-                let dropdownItems = [];
+                let dropdownItems: DropdownItem[] = [];
                 if (link.isDynamicCMS) {
                   dropdownItems = pages.map(page => ({
                     id: page.id,
@@ -220,12 +219,12 @@ function AdminLayout({ children }: AdminLayoutProps) {
               }
 
               // Force standard links to visually lose their active state if their parent dropdown is not relevant but another dropdown is open
-              const active = isActive(link.path) && !openDropdown;
+              const active = isActive(link.path ?? '') && !openDropdown;
               
               return (
                 <li key={link.name} className={`admin-nav-item ${active ? 'active' : ''}`}>
                   <Link 
-                    to={link.path} 
+                    to={link.path ?? '#'} 
                     className="admin-nav-link" 
                     onClick={() => {
                       setOpenDropdown(null);

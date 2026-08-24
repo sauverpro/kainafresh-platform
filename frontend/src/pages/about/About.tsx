@@ -105,12 +105,12 @@ function About() {
       }
 
     }
-    setLoading(true);
 
     apiGet<{ success: boolean; data: { sections: CmsSection[] } }>('/api/pages/slug/about')
       .then((res) => {
         if (!res.success || !res.data?.sections) return;
         const sections = res.data.sections;
+        setSections(sections);
         const find = <T,>(type: string): T | null => {
           const s = sections.find((sec) => sec.type === type);
           return s ? (s.content as T) : null;
@@ -142,13 +142,14 @@ function About() {
             setCmsMission(missionValue as ValuesContent);
           } else {
             // If it's an object but no items, treat it as the content with tag, heading, etc.
+            const mv = missionValue as ValuesContent;
             setCmsMission({
-              tag: (missionValue as any).tag,
-              heading: (missionValue as any).heading,
-              subheading: (missionValue as any).subheading,
-              vision: (missionValue as any).vision,
-              mission: (missionValue as any).mission,
-              items: (missionValue as any).items || []
+              tag: mv.tag,
+              heading: mv.heading,
+              subheading: mv.subheading,
+              vision: mv.vision,
+              mission: mv.mission,
+              items: mv.items || []
             });
           }
         } else {
@@ -200,7 +201,7 @@ function About() {
 
   const ctaSection = getSection<CtaContent>('cta');
   // stat action bar 
-  const stats = cmsStat?.items;
+  const stats = cmsStat?.items ?? [];
 
   const team = cmsTeam || [];
 

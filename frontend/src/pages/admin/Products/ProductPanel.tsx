@@ -1,8 +1,12 @@
-import React from 'react';
-import { X, UploadCloud, Image as ImageIcon } from 'lucide-react';
+import { X, Image as ImageIcon } from 'lucide-react';
 import './ProductPanel.css';
 
-function ProductPanel({ isOpen, onClose }) {
+interface ProductPanelProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+function ProductPanel({ isOpen, onClose }: ProductPanelProps) {
   if (!isOpen) return null;
 
   return (
