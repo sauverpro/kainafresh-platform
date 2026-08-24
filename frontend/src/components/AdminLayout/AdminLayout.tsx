@@ -71,17 +71,36 @@ function AdminLayout({ children }: AdminLayoutProps) {
   // Dynamic CMS pages list array fetched from MariaDB
   const [pages, setPages] = useState<PageItem[]>([]);
 
-  // Currently open dropdown submenu title key
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  // Helper method: Determines default dropdown key based on current path
+  const getAutoDropdown = (pathname: string): string | null => {
+    if (pathname.startsWith('/admin/content')) return 'Content CMS';
+    if (['/admin/products', '/admin/inventory', '/admin/orders', '/admin/customers', '/admin/reports'].some(path => pathname.startsWith(path))) return 'Shop Management';
+    if (['/admin/settings', '/admin/users'].some(path => pathname.startsWith(path))) return 'System';
+    return null;
+  };
+
+  // Currently open dropdown submenu title key (user override state)
+  const [manualDropdown, setManualDropdown] = useState<{ path: string; name: string | null } | null>(null);
+
+  // Compute active open dropdown title
+  const openDropdown = (manualDropdown && manualDropdown.path === location.pathname) 
+    ? manualDropdown.name 
+    : getAutoDropdown(location.pathname);
+
+  // Function to toggle dropdown
+  const toggleDropdown = (name: string) => {
+    const isCurrentlyOpen = openDropdown === name;
+    setManualDropdown({ path: location.pathname, name: isCurrentlyOpen ? null : name });
+  };
 
   // Mobile sidebar drawer open/close toggle state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Lifecycle effect: Query MariaDB for page list and auto-expand relevant navigation dropdown
+  // Lifecycle effect: Query MariaDB for page list on mount
   useEffect(() => {
     const fetchPages = async () => {
       try {
-        const res = await apiGet<any>('/api/pages');
+        const res = await apiGet<{ success?: boolean; data?: PageItem[] }>('/api/pages');
         if (res?.success && Array.isArray(res.data)) {
           setPages(res.data);
         }
@@ -91,18 +110,7 @@ function AdminLayout({ children }: AdminLayoutProps) {
     };
 
     fetchPages();
-    
-    // Auto-open corresponding dropdown based on active URL route
-    if (location.pathname.startsWith('/admin/content')) {
-      setOpenDropdown('Content CMS');
-    } else if (['/admin/products', '/admin/inventory', '/admin/orders', '/admin/customers', '/admin/reports'].some(path => location.pathname.startsWith(path))) {
-      setOpenDropdown('Shop Management');
-    } else if (['/admin/settings', '/admin/users'].some(path => location.pathname.startsWith(path))) {
-      setOpenDropdown('System');
-    } else {
-      setOpenDropdown(null);
-    }
-  }, [location.pathname]);
+  }, []);
 
   // Helper method: Determines if a given route path matches the current browser URL
   const isActive = (path: string) => {
@@ -189,7 +197,7 @@ function AdminLayout({ children }: AdminLayoutProps) {
                   <li key={link.name} className={`admin-nav-item dropdown-parent ${isOpen ? 'expanded' : ''} ${isAnyChildActive && !isOpen ? 'active' : ''}`}>
                     <div 
                       className="admin-nav-link" 
-                      onClick={() => setOpenDropdown(isOpen ? null : link.name)}
+                      onClick={() => toggleDropdown(link.name)}
                       style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -227,7 +235,7 @@ function AdminLayout({ children }: AdminLayoutProps) {
                     to={link.path ?? '#'} 
                     className="admin-nav-link" 
                     onClick={() => {
-                      setOpenDropdown(null);
+                      setManualDropdown({ path: location.pathname, name: null });
                       setIsMobileMenuOpen(false); // Close sidebar on mobile nav
                     }}
                   >

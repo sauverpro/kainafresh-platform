@@ -3,10 +3,15 @@ import { Link } from 'react-router';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { apiGet } from '../../api/client';
 
+interface FooterNavLink {
+  link?: string;
+  link_name?: string;
+}
+
 export default function Footer() {
   const [logoSrc, setLogoSrc] = useState<string | null>(null);
   const [siteTitle, setSiteTitle] = useState<string | null>(null);
-  const [navLinks, setNavLinks] = useState<Array<any>>([]);
+  const [navLinks, setNavLinks] = useState<FooterNavLink[]>([]);
   const [primaryEmail, setPrimaryEmail] = useState<string | null>(null);
   const [secondaryEmail, setSecondaryEmail] = useState<string | null>(null);
   const [primaryNumber, setPrimaryNumber] = useState<string | null>(null);
@@ -25,16 +30,16 @@ export default function Footer() {
      
       
       try {
-        const settings = await apiGet<any>('/api/settings/');
-        const settingsPayload = settings?.data ?? settings ?? {};
+        const settings = await apiGet<Record<string, unknown>>('/api/settings/');
+        const settingsPayload = (settings?.data ?? settings ?? {}) as Record<string, unknown>;
 
-        const settingData = Array.isArray(settingsPayload)
+        const settingData = (Array.isArray(settingsPayload)
           ? settingsPayload[0] ?? null
           : Array.isArray(settingsPayload?.results)
             ? settingsPayload.results[0] ?? null
             : settingsPayload?.settings && typeof settingsPayload.settings === 'object'
               ? settingsPayload.settings
-              : settingsPayload ?? null;
+              : settingsPayload ?? null) as Record<string, string> | null;
 
         if (!cancelled && settingData) {
           const API_BASE = import.meta.env.VITE_API_BASE_URL || window.location.origin;
@@ -65,8 +70,8 @@ export default function Footer() {
       }
 
       try {
-        const navigations = await apiGet<any>('/api/navlinks/nav');
-        const navigationData = navigations?.data ?? navigations?.results ?? [];
+        const navigations = await apiGet<Record<string, unknown>>('/api/navlinks/nav');
+        const navigationData = (navigations?.data ?? navigations?.results ?? []) as FooterNavLink[];
         if (!cancelled && Array.isArray(navigationData)) {
           setNavLinks(navigationData);
         }
