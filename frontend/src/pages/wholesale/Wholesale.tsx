@@ -54,7 +54,13 @@ interface DestinationContent {
   items?: DestinationContentItem[];
 
 }
-
+interface ProgressItem {number:string; title:string; description:string;}
+interface ProgressContent {
+  tag?:string;
+  heading?: string;
+  paragraphs?:string;
+  items?: ProgressItem[];
+}
 // const BENEFITS = [
 //   {
 //     icon: Package,
@@ -133,34 +139,35 @@ const PRODUCT_CATEGORIES = [
   },
 ];
 
-const PROCESS_STEPS = [
-  {
-    number: "01",
-    title: "Submit an Inquiry",
-    description:
-      "Fill in the inquiry form below or email us directly. Tell us what you need, quantities, and your preferred delivery schedule.",
-  },
-  {
-    number: "02",
-    title: "Get a Custom Quote",
-    description:
-      "Our team reviews your requirements and sends back a tailored pricing proposal within 24 hours.",
-  },
-  {
-    number: "03",
-    title: "Confirm & Sign",
-    description:
-      "Review the quote, agree on terms, and sign a supply agreement. A deposit confirms your order slot.",
-  },
-  {
-    number: "04",
-    title: "Harvest, Pack & Deliver",
-    description:
-      "We harvest to your schedule, pack under quality control, and dispatch with full tracking.",
-  },
-];
+// const PROCESS_STEPS = [
+//   {
+//     number: "01",
+//     title: "Submit an Inquiry",
+//     description:
+//       "Fill in the inquiry form below or email us directly. Tell us what you need, quantities, and your preferred delivery schedule.",
+//   },
+//   {
+//     number: "02",
+//     title: "Get a Custom Quote",
+//     description:
+//       "Our team reviews your requirements and sends back a tailored pricing proposal within 24 hours.",
+//   },
+//   {
+//     number: "03",
+//     title: "Confirm & Sign",
+//     description:
+//       "Review the quote, agree on terms, and sign a supply agreement. A deposit confirms your order slot.",
+//   },
+//   {
+//     number: "04",
+//     title: "Harvest, Pack & Deliver",
+//     description:
+//       "We harvest to your schedule, pack under quality control, and dispatch with full tracking.",
+//   },
+// ];
 
 import PageLoader from "../../components/PageLoader/PageLoader";
+
 
 
 
@@ -182,6 +189,7 @@ function Wholesale() {
   const [isLoading, setIsLoading] = useState(false);
   const [cmsWhy, setCmsWhy] = useState<WhyContent |null>(null);
   const [cmsDestination, setCmsDestination] = useState<DestinationContent | null>(null);
+  const [cmsProgress, setCmsProgress] = useState<ProgressContent | null>(null);
   useEffect(() => {
     setPageLoading(true);
     apiGet<{ success: boolean; data: { sections: { type: string; content: WholesaleHero }[] } }>('/api/pages/slug/wholesale')
@@ -230,6 +238,29 @@ function Wholesale() {
         else{
           setCmsDestination(null);
         }
+        // progress section
+        const progressT = res.data.sections.find((sec)=>sec.type ==="ws-process");
+        const progressContent = progressT?.content;
+        if(Array.isArray(progressContent)){
+          setCmsProgress({items: progressContent as ProgressItem[]});
+        } 
+        else if( progressContent &&  typeof progressContent === 'object'){
+
+        if('items' in progressContent && Array.isArray(progressContent.items)){
+            setCmsProgress(progressContent as ProgressContent);
+          }
+          else{
+            setCmsProgress({
+              tag: (progressContent as any).tag,
+               heading: (progressContent as any).heading,
+              paragraphs: (progressContent as any).paragraphs,
+              items: (progressContent as any).items || []
+            });
+          }
+        }
+        else{
+          setCmsProgress(null);
+        }
       })
       
       .catch(() => { /* silently use defaults */ })
@@ -261,6 +292,13 @@ function Wholesale() {
   const destinationVal = destinationcontent?.items && destinationcontent.items.length > 0
         ? destinationcontent.items.map((v)=>({
           destination: v.destination
+        })):[];
+  const progresscontent = cmsProgress || {items: []};
+   const progressVal = progresscontent?.items && progresscontent.items.length >0
+        ? progresscontent.items.map((v)=>({
+          number: v.number,
+          title : v.title,
+          description: v.description
         })):[];
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -402,21 +440,21 @@ function Wholesale() {
         {/* ── How It Works ── */}
         <section className="ws-process" id="how-it-works">
           <div className="ws-section-header">
-            <span className="section-tag">The Process</span>
-            <h2>How It Works</h2>
+            <span className="section-tag">{progresscontent.tag}</span>
+            <h2>{progresscontent.heading}</h2>
             <p>
-              From first inquiry to delivery — a simple, transparent process.
+             {progresscontent.paragraphs}
             </p>
           </div>
           <div className="process-steps">
-            {PROCESS_STEPS.map((step, index) => (
+            {progressVal.map((step, index) => (
               <div key={step.number} className="process-step">
                 <div className="step-number">{step.number}</div>
                 <div
                   className="step-connector"
                   style={{
                     display:
-                      index < PROCESS_STEPS.length - 1 ? "block" : "none",
+                      index < progressVal.length - 1 ? "block" : "none",
                   }}
                 />
                 <div className="step-content">
