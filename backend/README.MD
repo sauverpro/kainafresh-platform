@@ -511,4 +511,45 @@ Partners component
 This allows the backend to control page structure while the frontend controls visual presentation.
 
 ## update database
+
 use the provided sql file from folder name db and drop all tables from your local db you already have and import the newly provided sql file.
+
+## Units Management
+
+The `units` module manages measurement units used by the application.
+
+### Units Structure
+
+```text
+units
+├── id
+├── code
+├── name
+├── symbol
+├── created_at
+└── updated_at
+
+Example units:
+
+1 | kg | Kilogram  | kg
+2 | g  | Gram      | g
+3 | mg | Milligram | mg
+4 | lb | Pound     | lb
+5 | oz | Ounce     | oz
+API Routes
+Method	Endpoint	Description
+GET	/api/units	List all units
+GET	/api/units/{id}	Get a unit
+POST	/api/units	Create a unit
+PUT	/api/units/{id}	Update a unit
+DELETE	/api/units/{id}	Delete a unit
+Create Unit
+
+POST /api/units
+
+{
+    "code": "kg",
+    "name": "Kilogram",
+    "symbol": "kg"
+}
+```

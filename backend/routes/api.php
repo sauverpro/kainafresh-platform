@@ -101,3 +101,39 @@ $router->addRoute('PUT','/api/navlinks/update/{id}','NavLinkController@update','
 $router->addRoute('DELETE','/api/navlinks/delete/{id}','NavLinkController@delete','auth');
 // create team
 $router->addRoute('POST','/api/team/new','TeamController@create');
+
+/*
+|--------------------------------------------------------------------------
+| Units
+|--------------------------------------------------------------------------
+*/
+
+$router->addRoute(
+    'GET',
+    '/api/units',
+    'UnitController@index'
+);
+
+$router->addRoute(
+    'GET',
+    '/api/units/{id}',
+    'UnitController@show'
+);
+
+$router->addRoute(
+    'POST',
+    '/api/units',
+    'UnitController@store'
+);
+
+$router->addRoute(
+    'PUT',
+    '/api/units/{id}',
+    'UnitController@update'
+);
+
+$router->addRoute(
+    'DELETE',
+    '/api/units/{id}',
+    'UnitController@destroy'
+);
