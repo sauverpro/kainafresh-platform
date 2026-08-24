@@ -24,54 +24,81 @@ import "./Wholesale.css";
  * Remaining content uses hardcoded defaults (benefits, products, process, form).
  * Contact form submission: POST /api/wholesale/inquiry — NOT YET IMPLEMENTED (mock).
  */
-
+// Icon map: CMS stores icon names as strings, we map them to lucide-react components
+const ICON_MAP: Record<string, React.FC<{ size?: number; color?: string; strokeWidth?: number }>> = {
+  Package, Truck, Globe, CheckCircle, TrendingUp, Handshake
+};
 interface WholesaleHero {
   badge?: string;
   heading?: string;
-  headingAccent?: string;
+  headingHighlight?: string;
   description?: string;
   primaryCta?: { label: string; to: string };
   secondaryCta?: { label: string; to: string };
+  client_stat?: { stat_label: string; stat_number: string };
+  export_stat?: { stat_label: string; stat_number: string };
+  product_stat?: { stat_label: string; stat_number: string };
 }
+interface WhyContentItem { icon: string; title: string; description: string }
+interface WhyContent {
+  tag?: string;
+  heading?: string;
+  paragraphs?: string;
+  items?: WhyContentItem[];
+}
+interface DestinationContentItem { destination: string };
+interface DestinationContent {
+  tag?: string;
+  heading?: string;
+  paragraphs?: string;
+  items?: DestinationContentItem[];
 
-const BENEFITS = [
-  {
-    icon: Package,
-    title: "Bulk Pricing",
-    description:
-      "Competitive tiered pricing for large volume orders. The more you order, the better the rate.",
-  },
-  {
-    icon: Truck,
-    title: "Reliable Delivery",
-    description:
-      "Scheduled, on-time delivery with cold-chain logistics to preserve freshness throughout transit.",
-  },
-  {
-    icon: Globe,
-    title: "Export Ready",
-    description:
-      "All produce is certified and packaged to meet international export standards and phytosanitary requirements.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Consistent Supply",
-    description:
-      "Year-round availability on most produce lines. We plan our harvests to match your supply needs.",
-  },
-  {
-    icon: Handshake,
-    title: "Dedicated Account Manager",
-    description:
-      "Every wholesale client gets a dedicated point of contact for orders, queries, and custom arrangements.",
-  },
-  {
-    icon: CheckCircle,
-    title: "Certified Quality",
-    description:
-      "All products are organically certified, inspected, and graded before any bulk order is dispatched.",
-  },
-];
+}
+interface ProgressItem { number: string; title: string; description: string; }
+interface ProgressContent {
+  tag?: string;
+  heading?: string;
+  paragraphs?: string;
+  items?: ProgressItem[];
+}
+// const BENEFITS = [
+//   {
+//     icon: Package,
+//     title: "Bulk Pricing",
+//     description:
+//       "Competitive tiered pricing for large volume orders. The more you order, the better the rate.",
+//   },
+//   {
+//     icon: Truck,
+//     title: "Reliable Delivery",
+//     description:
+//       "Scheduled, on-time delivery with cold-chain logistics to preserve freshness throughout transit.",
+//   },
+//   {
+//     icon: Globe,
+//     title: "Export Ready",
+//     description:
+//       "All produce is certified and packaged to meet international export standards and phytosanitary requirements.",
+//   },
+//   {
+//     icon: TrendingUp,
+//     title: "Consistent Supply",
+//     description:
+//       "Year-round availability on most produce lines. We plan our harvests to match your supply needs.",
+//   },
+//   {
+//     icon: Handshake,
+//     title: "Dedicated Account Manager",
+//     description:
+//       "Every wholesale client gets a dedicated point of contact for orders, queries, and custom arrangements.",
+//   },
+//   {
+//     icon: CheckCircle,
+//     title: "Certified Quality",
+//     description:
+//       "All products are organically certified, inspected, and graded before any bulk order is dispatched.",
+//   },
+// ];
 
 const PRODUCT_CATEGORIES = [
   {
@@ -112,41 +139,32 @@ const PRODUCT_CATEGORIES = [
   },
 ];
 
-const EXPORT_DESTINATIONS = [
-  "Kenya",
-  "Uganda",
-  "Tanzania",
-  "DRC Congo",
-  "Burundi",
-  "Europe (selected countries)",
-];
-
-const PROCESS_STEPS = [
-  {
-    number: "01",
-    title: "Submit an Inquiry",
-    description:
-      "Fill in the inquiry form below or email us directly. Tell us what you need, quantities, and your preferred delivery schedule.",
-  },
-  {
-    number: "02",
-    title: "Get a Custom Quote",
-    description:
-      "Our team reviews your requirements and sends back a tailored pricing proposal within 24 hours.",
-  },
-  {
-    number: "03",
-    title: "Confirm & Sign",
-    description:
-      "Review the quote, agree on terms, and sign a supply agreement. A deposit confirms your order slot.",
-  },
-  {
-    number: "04",
-    title: "Harvest, Pack & Deliver",
-    description:
-      "We harvest to your schedule, pack under quality control, and dispatch with full tracking.",
-  },
-];
+// const PROCESS_STEPS = [
+//   {
+//     number: "01",
+//     title: "Submit an Inquiry",
+//     description:
+//       "Fill in the inquiry form below or email us directly. Tell us what you need, quantities, and your preferred delivery schedule.",
+//   },
+//   {
+//     number: "02",
+//     title: "Get a Custom Quote",
+//     description:
+//       "Our team reviews your requirements and sends back a tailored pricing proposal within 24 hours.",
+//   },
+//   {
+//     number: "03",
+//     title: "Confirm & Sign",
+//     description:
+//       "Review the quote, agree on terms, and sign a supply agreement. A deposit confirms your order slot.",
+//   },
+//   {
+//     number: "04",
+//     title: "Harvest, Pack & Deliver",
+//     description:
+//       "We harvest to your schedule, pack under quality control, and dispatch with full tracking.",
+//   },
+// ];
 
 /**
  * ============================================================================
@@ -162,9 +180,9 @@ const PROCESS_STEPS = [
 // Import PageLoader component for database retrieval loading overlay
 import PageLoader from "../../components/PageLoader/PageLoader";
 
-/**
- * Wholesale Functional Component.
- */
+
+
+
 function Wholesale() {
   // Set document SEO title
   usePageTitle("wholesale", "Wholesale & Exports");
@@ -192,33 +210,118 @@ function Wholesale() {
 
   // Form submitting button spinner state
   const [isLoading, setIsLoading] = useState(false);
-
-  // Lifecycle effect: Query MariaDB for 'wholesale' page CMS section on mount
+  const [cmsWhy, setCmsWhy] = useState<WhyContent | null>(null);
+  const [cmsDestination, setCmsDestination] = useState<DestinationContent | null>(null);
+  const [cmsProgress, setCmsProgress] = useState<ProgressContent | null>(null);
   useEffect(() => {
     apiGet<{ success: boolean; data: { sections: { type: string; content: WholesaleHero }[] } }>('/api/pages/slug/wholesale')
       .then((res) => {
         if (!res.success || !res.data?.sections) return;
-        const heroSection = res.data.sections.find((s) => s.type === 'hero');
+        const heroSection = res.data.sections.find((s) => s.type === 'wholesale-hero');
         if (heroSection) setCmsHero(heroSection.content);
+        const Whysection = res.data.sections.find((s) => s.type === 'ws-benefits');
+        const whycontents = Whysection?.content;
+        if (Array.isArray(whycontents)) {
+          setCmsWhy({ items: whycontents as WhyContentItem[] });
+
+        }
+        else if (whycontents && typeof whycontents === 'object') {
+          if ('items' in whycontents && Array.isArray(whycontents.items)) {
+            setCmsWhy(whycontents as WhyContent);
+          } else {
+            // If it's an object but no items, treat it as the content with tag, heading, etc.
+            setCmsWhy({
+              tag: (whycontents as any).tag,
+              heading: (whycontents as any).heading,
+              paragraphs: (whycontents as any).paragraphs,
+              items: (whycontents as any).items || []
+            });
+          }
+
+        }
+        const destinationSec = res.data.sections.find((sec) => sec.type === 'ws-exports');
+        const destinationValue = destinationSec?.content;
+        if (Array.isArray(destinationValue)) {
+          setCmsDestination({ items: destinationValue as DestinationContentItem[] })
+        }
+        else if (destinationValue && typeof destinationValue === 'object') {
+          if ('items' in destinationValue && Array.isArray(destinationValue.items)) {
+            setCmsDestination(destinationValue as DestinationContent);
+          }
+          else {
+            setCmsDestination({
+              tag: (destinationValue as any).tag,
+              heading: (destinationValue as any).heading,
+              paragraphs: (destinationValue as any).paragraphs,
+              items: (destinationValue as any).items || []
+            });
+          }
+        }
+        else {
+          setCmsDestination(null);
+        }
+        // progress section
+        const progressT = res.data.sections.find((sec) => sec.type === "ws-process");
+        const progressContent = progressT?.content;
+        if (Array.isArray(progressContent)) {
+          setCmsProgress({ items: progressContent as ProgressItem[] });
+        }
+        else if (progressContent && typeof progressContent === 'object') {
+
+          if ('items' in progressContent && Array.isArray(progressContent.items)) {
+            setCmsProgress(progressContent as ProgressContent);
+          }
+          else {
+            setCmsProgress({
+              tag: (progressContent as any).tag,
+              heading: (progressContent as any).heading,
+              paragraphs: (progressContent as any).paragraphs,
+              items: (progressContent as any).items || []
+            });
+          }
+        }
+        else {
+          setCmsProgress(null);
+        }
       })
-      .catch(() => { 
-        // Silently use defaults on error
-      })
-      .finally(() => { 
-        setPageLoading(false); 
-      });
+
+      .catch(() => { /* silently use defaults */ })
+      .finally(() => { setPageLoading(false); });
   }, []);
 
   // Merge CMS with defaults
   const hero: WholesaleHero = {
-    badge: cmsHero?.badge ?? 'Wholesale & Exports',
-    heading: cmsHero?.heading ?? 'Fresh Produce at Scale.',
-    headingAccent: cmsHero?.headingAccent ?? 'Direct from Our Farm.',
-    description: cmsHero?.description ?? 'Supplying restaurants, supermarkets, distributors, and exporters across East Africa and beyond.',
-    primaryCta: cmsHero?.primaryCta ?? { label: 'Submit an Inquiry', to: '#inquiry-form' },
-    secondaryCta: cmsHero?.secondaryCta ?? { label: 'How It Works', to: '#how-it-works' },
+    badge: cmsHero?.badge,
+    heading: cmsHero?.heading,
+    headingHighlight: cmsHero?.headingHighlight,
+    description: cmsHero?.description,
+    primaryCta: cmsHero?.primaryCta,
+    secondaryCta: cmsHero?.secondaryCta,
+    client_stat: cmsHero?.client_stat,
+    export_stat: cmsHero?.export_stat,
+    product_stat: cmsHero?.product_stat
   };
-
+  const wholesale_why = cmsWhy || { items: [] };
+  //  map value icons 
+  const values = wholesale_why?.items && wholesale_why.items.length > 0
+    ? wholesale_why.items.map((v) => ({
+      icon: ICON_MAP[v.icon] ?? Package,
+      title: v.title,
+      description: v.description,
+    }))
+    : [];
+  const destinationcontent = cmsDestination || { items: [] };
+  const destinationVal = destinationcontent?.items && destinationcontent.items.length > 0
+    ? destinationcontent.items.map((v) => ({
+      destination: v.destination
+    })) : [];
+  const progresscontent = cmsProgress || { items: [] };
+  const progressVal = progresscontent?.items && progresscontent.items.length > 0
+    ? progresscontent.items.map((v) => ({
+      number: v.number,
+      title: v.title,
+      description: v.description
+    })) : [];
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -252,29 +355,29 @@ function Wholesale() {
             <h1>
               {hero.heading}
               <br />
-              <span className="highlight-orange">{hero.headingAccent}</span>
+              <span className="highlight-orange">{hero.headingHighlight}</span>
             </h1>
             <p>{hero.description}</p>
             <div className="ws-hero-actions">
-              <a href={hero.primaryCta?.to ?? '#inquiry-form'} className="btn btn-secondary">
-                {hero.primaryCta?.label ?? 'Submit an Inquiry'}
+              <a href={hero.primaryCta?.to} className="btn btn-secondary">
+                {hero.primaryCta?.label}
               </a>
-              <a href={hero.secondaryCta?.to ?? '#how-it-works'} className="btn btn-outline-white">
-                {hero.secondaryCta?.label ?? 'How It Works'}
+              <a href={hero.secondaryCta?.to} className="btn btn-outline-white">
+                {hero.secondaryCta?.label}
               </a>
             </div>
             <div className="ws-hero-stats">
               <div className="ws-hero-stat">
-                <strong>50+</strong>
-                <span>Wholesale clients</span>
+                <strong>{hero.client_stat?.stat_number}</strong>
+                <span>{hero.client_stat?.stat_label}</span>
               </div>
               <div className="ws-hero-stat">
-                <strong>6</strong>
-                <span>Export destinations</span>
+                <strong>{hero.export_stat?.stat_number}</strong>
+                <span>{hero.export_stat?.stat_label}</span>
               </div>
               <div className="ws-hero-stat">
-                <strong>20+</strong>
-                <span>Product varieties</span>
+                <strong>{hero.product_stat?.stat_number}</strong>
+                <span>{hero.product_stat?.stat_label}</span>
               </div>
             </div>
           </div>
@@ -283,15 +386,14 @@ function Wholesale() {
         {/* ── Why Choose Us ── */}
         <section className="ws-benefits">
           <div className="ws-section-header">
-            <span className="section-tag">Why KainaFresh</span>
-            <h2>The Smart Choice for Bulk Buyers</h2>
+            <span className="section-tag">{wholesale_why.tag}</span>
+            <h2>{wholesale_why.heading}</h2>
             <p>
-              We make large-scale procurement simple, reliable, and
-              cost-effective.
+              {wholesale_why.paragraphs}
             </p>
           </div>
           <div className="benefits-grid">
-            {BENEFITS.map(({ icon: Icon, title, description }) => (
+            {values.map(({ icon: Icon, title, description }) => (
               <div key={title} className="benefit-card card">
                 <div className="benefit-icon">
                   <Icon
@@ -308,7 +410,7 @@ function Wholesale() {
         </section>
 
         {/* ── Products ── */}
-        <section className="ws-products">
+        {/* <section className="ws-products">
           <div className="ws-section-header">
             <span className="section-tag">What We Offer</span>
             <h2>Product Categories</h2>
@@ -330,25 +432,23 @@ function Wholesale() {
               </div>
             ))}
           </div>
-        </section>
+        </section> */}
 
         {/* ── Exports ── */}
         <section className="ws-exports">
           <div className="ws-exports-inner">
             <div className="ws-exports-text">
               <span className="section-tag section-tag-light">
-                Export Capabilities
+                {destinationcontent.tag}
               </span>
-              <h2>We Export Across East Africa & Beyond</h2>
+              <h2>{destinationcontent.heading}</h2>
               <p>
-                KainaFresh is certified for export and has established logistics
-                partnerships for cross-border deliveries. All export produce is
-                packed to international phytosanitary and food safety standards.
+                {destinationcontent.paragraphs}
               </p>
               <div className="export-destinations">
-                {EXPORT_DESTINATIONS.map((dest) => (
-                  <span key={dest} className="export-badge">
-                    <CheckCircle size={13} /> {dest}
+                {destinationVal.map((dest) => (
+                  <span key={dest.destination} className="export-badge">
+                    <CheckCircle size={13} /> {dest.destination}
                   </span>
                 ))}
               </div>
@@ -362,21 +462,21 @@ function Wholesale() {
         {/* ── How It Works ── */}
         <section className="ws-process" id="how-it-works">
           <div className="ws-section-header">
-            <span className="section-tag">The Process</span>
-            <h2>How It Works</h2>
+            <span className="section-tag">{progresscontent.tag}</span>
+            <h2>{progresscontent.heading}</h2>
             <p>
-              From first inquiry to delivery — a simple, transparent process.
+              {progresscontent.paragraphs}
             </p>
           </div>
           <div className="process-steps">
-            {PROCESS_STEPS.map((step, index) => (
+            {progressVal.map((step, index) => (
               <div key={step.number} className="process-step">
                 <div className="step-number">{step.number}</div>
                 <div
                   className="step-connector"
                   style={{
                     display:
-                      index < PROCESS_STEPS.length - 1 ? "block" : "none",
+                      index < progressVal.length - 1 ? "block" : "none",
                   }}
                 />
                 <div className="step-content">

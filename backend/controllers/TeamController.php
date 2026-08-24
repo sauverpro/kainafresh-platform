@@ -7,6 +7,9 @@ class TeamController extends BaseController {
         $this->team_model = new Team();
         $this->userModel = new User();
     }
+    public function test(){
+        $this->jsonResponse(['success'=>true,'message'=>'test passed!'],201);
+    }
     // get team
     public function index() {
         $data = $this->team_model->getTeams();

@@ -20,39 +20,37 @@ const ICON_MAP: Record<string, React.FC<{ size?: number; color?: string; strokeW
   Leaf, ShieldCheck, Users, Award,
 };
 
-
-
-const DEFAULT_TEAM = [
-  { name: 'Jean-Pierre Uwimana', role: 'Founder & Farm Director', initials: 'JU' },
-  { name: 'Amina Keza', role: 'Head of Operations', initials: 'AK' },
-  { name: 'David Mugisha', role: 'Export & Logistics Manager', initials: 'DM' },
-];
-
 // ── TypeScript shapes matching the CMS section content JSON ──
-interface HeroContent { 
-  location?: string; 
+interface HeroContent {
+  location?: string;
   heading?: string;
-   headingHighlight?: string; 
-   description?: string; 
-   cta?: { label: string; to: string } ;
-   stat_top?: {stat_number:number; stat_label:string};
-   stat_bottom?: {stat_number:number; stat_label:string};
-  }
+  headingHighlight?: string;
+  description?: string;
+  cta?: { label: string; to: string };
+  stat_top?: { stat_number: number; stat_label: string };
+  stat_bottom?: { stat_number: number; stat_label: string };
+}
 
 interface StatsContentItem { value?: string, label?: string }
 interface StatsContent { tag?: string; heading?: string; items?: StatsContentItem[] }
 
 interface StoryContent { tag?: string; heading?: string; paragraphs?: string[] }
 interface ValuesContentItem { icon: string; title: string; description: string; }
-interface ValuesContent { 
-  tag?: string; 
-  heading?: string; 
-  subheading?: string; 
-  vision?: string; 
-  mission?: string; 
-  items?: ValuesContentItem[]; 
+interface ValuesContent {
+  tag?: string;
+  heading?: string;
+  subheading?: string;
+  vision?: string;
+  mission?: string;
+  items?: ValuesContentItem[];
 }
-interface TeamContent {  name?: string; role?: string; initials?: string;phone_number?:string;email?:string }
+interface TeamContent {
+  name?: string;
+  role?: string;
+  initials?: string;
+  phone_number?: string;
+  email?: string
+}
 interface CtaContent { heading?: string; subheading?: string; primaryCta?: { label: string; to: string }; secondaryCta?: { label: string; to: string } }
 
 interface CmsSection { type: string; content: HeroContent & StatsContent & StoryContent & ValuesContent & TeamContent & CtaContent }
@@ -88,65 +86,79 @@ function About() {
   const [cmsStat, setCmsStat] = useState<StatsContent | null>(null);
   const [cmsStory, setCmsStory] = useState<StoryContent | null>(null);
   const [cmsMission, setCmsMission] = useState<ValuesContent | null>(null);
-  const [cmsTeam, setCmsTeam] = useState<TeamContent | null>(null);
+  const [cmsTeam, setCmsTeam] = useState<TeamContent[] | null>(null);
 
   // Lifecycle effect: Query MariaDB for 'about' page CMS sections on mount
   useEffect(() => {
+
+    async function loadData() {
+      try {
+        const teams = await apiGet<{ status: boolean; data: TeamContent[] }>('/api/team');
+        if (teams?.status && Array.isArray(teams?.data)) {
+          setCmsTeam(teams.data);
+        }
+
+
+      } catch (error) {
+        console.debug('Failed to load', error);
+        setCmsTeam([]);
+      }
+
+    }
     setLoading(true);
 
     apiGet<{ success: boolean; data: { sections: CmsSection[] } }>('/api/pages/slug/about')
       .then((res) => {
-        if (res.success && res.data?.sections) {
-          const sections = res.data.sections;
-          setSections(sections);
+        if (!res.success || !res.data?.sections) return;
+        const sections = res.data.sections;
+        const find = <T,>(type: string): T | null => {
+          const s = sections.find((sec) => sec.type === type);
+          return s ? (s.content as T) : null;
+        };
+        // check if section type is about-hero
+        setCmsAboutHero(find<HeroContent>('about-hero'));
+        // now let's check if section type is about-stats-bar
+        const stats_value = sections.find((sec) => sec.type === 'about-stats-bar');
 
-          const find = <T,>(type: string): T | null => {
-            const s = sections.find((sec) => sec.type === type);
-            return s ? (s.content as T) : null;
-          };
+        const StatValue = stats_value?.content;
+        setCmsStat(
+          Array.isArray(StatValue)
+            ? { items: StatValue as StatsContentItem[] } :
+            (StatValue as StatsContent) ?? null
+        );
+        // our story section
+        setCmsStory(find<StoryContent>('about-story'));
+        // mission and vission
+        const mission_content = sections.find((sec) => sec.type === 'about-values');
+        const missionValue = mission_content?.content;
 
-          const aboutHeroSec = sections.find((sec) => sec.type === 'about-hero');
-          if (aboutHeroSec) setCmsAboutHero(aboutHeroSec.content as HeroContent);
-
-          const statsValue = sections.find((sec) => sec.type === 'about-stats-bar')?.content;
-          setCmsStat(
-            Array.isArray(statsValue)
-              ? { items: statsValue as StatsContentItem[] }
-              : (statsValue as StatsContent) ?? null
-          );
-
-          setCmsStory(find<StoryContent>('about-story'));
-
-          const missionContent = sections.find((sec) => sec.type === 'about-values')?.content;
-          const missionValue = missionContent;
-
-          if (Array.isArray(missionValue)) {
-            setCmsMission({ items: missionValue as ValuesContentItem[] });
-          } else if (missionValue && typeof missionValue === 'object') {
-            if ('items' in missionValue && Array.isArray(missionValue.items)) {
-              setCmsMission(missionValue as ValuesContent);
-            } else {
-              setCmsMission({
-                tag: (missionValue as any).tag,
-                heading: (missionValue as any).heading,
-                subheading: (missionValue as any).subheading,
-                vision: (missionValue as any).vision,
-                mission: (missionValue as any).mission,
-                items: (missionValue as any).items || []
-              });
-            }
+        // Properly handle the values content
+        if (Array.isArray(missionValue)) {
+          // If it's an array, wrap it in an object with items
+          setCmsMission({ items: missionValue as ValuesContentItem[] });
+        } else if (missionValue && typeof missionValue === 'object') {
+          // If it's an object with items property
+          if ('items' in missionValue && Array.isArray(missionValue.items)) {
+            setCmsMission(missionValue as ValuesContent);
           } else {
-            setCmsMission(null);
+            // If it's an object but no items, treat it as the content with tag, heading, etc.
+            setCmsMission({
+              tag: (missionValue as any).tag,
+              heading: (missionValue as any).heading,
+              subheading: (missionValue as any).subheading,
+              vision: (missionValue as any).vision,
+              mission: (missionValue as any).mission,
+              items: (missionValue as any).items || []
+            });
           }
+        } else {
+          setCmsMission(null);
         }
-      })
-      .catch(() => {
-        // Fall back gracefully to hardcoded defaults
-      })
-      .finally(() => {
-        setLoading(false);
-      });
 
+      })
+      .catch(() => { /* silently fall back to hardcoded defaults */ })
+      .finally(() => { setLoading(false); });
+    loadData();
   }, []);
 
   // Helper method: Extracts specific CMS section content by type string
@@ -156,48 +168,41 @@ function About() {
   };
 
   // Hydrate from CMS or fall back to defaults
-  const heroFromSection = getSection<HeroContent>('hero');
   const hero: HeroContent = {
-    location: cmsAboutHero?.location ?? heroFromSection?.location ?? 'Musanze & Bugesera, Rwanda',
-    heading: cmsAboutHero?.heading ?? heroFromSection?.heading ?? 'Growing Fresh.',
-    headingHighlight: cmsAboutHero?.headingHighlight ?? heroFromSection?.headingHighlight ?? 'Building Community.',
-    description: cmsAboutHero?.description ?? heroFromSection?.description ?? 'KainaFresh is a Rwanda-based farm dedicated to producing premium, organic agricultural produce — from our fields directly to your table.',
-    cta: cmsAboutHero?.cta ?? heroFromSection?.cta ?? { label: 'Get in Touch', to: '/contact' },
-    stat_top: cmsAboutHero?.stat_top ?? heroFromSection?.stat_top ?? { stat_number: 50, stat_label: 'Hectares Farmed' },
-    stat_bottom: cmsAboutHero?.stat_bottom ?? heroFromSection?.stat_bottom ?? { stat_number: 100, stat_label: 'Organic Certified' },
-  };
+    location: cmsAboutHero?.location,
+    heading: cmsAboutHero?.heading,
+    headingHighlight: cmsAboutHero?.headingHighlight,
+    cta: cmsAboutHero?.cta,
+    stat_top: cmsAboutHero?.stat_top,
+    stat_bottom: cmsAboutHero?.stat_bottom,
+    description: cmsAboutHero?.description
+  }
 
-  const statsBar = getSection<StatsContent>('stats_bar');
-  const story = getSection<StoryContent>('story');
+
   const stories: StoryContent = {
-    tag: cmsStory?.tag ?? story?.tag,
-    heading: cmsStory?.heading ?? story?.heading,
-    paragraphs: cmsStory?.paragraphs ?? story?.paragraphs
-  };
+    tag: cmsStory?.tag,
+    heading: cmsStory?.heading,
+    paragraphs: cmsStory?.paragraphs
+  }
+  // console.log(stories);
+  const valuesContent = cmsMission || { items: [] };
 
-  const valuesSection = getSection<ValuesContent>('values');
-  const valuesContent = cmsMission ?? valuesSection ?? { items: [] };
+  // Map values to icons
+  const values = valuesContent?.items && valuesContent.items.length > 0
+    ? valuesContent.items.map((v) => ({
+      icon: ICON_MAP[v.icon] ?? Leaf,
+      title: v.title,
+      description: v.description,
+    }))
+    : [];
 
-  const teamSection = getSection<TeamContent>('team');
-  const ctaSection = getSection<CtaContent>('cta');
 
-  const teamSection = getSection<TeamContent>('team');
+
   const ctaSection = getSection<CtaContent>('cta');
   // stat action bar 
   const stats = cmsStat?.items;
 
-  const stats = cmsStat?.items ?? statsBar?.items ?? DEFAULT_STATS;
-  const values = valuesContent?.items && valuesContent.items.length > 0
-    ? valuesContent.items.map((v) => ({
-        icon: ICON_MAP[v.iconName ?? v.icon] ?? Leaf,
-        title: v.title,
-        description: v.description,
-      }))
-    : DEFAULT_VALUES;
-
-  const team = teamSection?.members ?? DEFAULT_TEAM;
-
-  const team = teamSection?.members ?? DEFAULT_TEAM;
+  const team = cmsTeam || [];
 
   // Render glassmorphic page loader overlay if data is fetching
   if (loading) {
@@ -217,11 +222,11 @@ function About() {
             </span>
             <h1>
               {hero?.heading ?? 'Growing Fresh.'}<br />
-              
+
             </h1>
-             <h2 className="text-2xl">
+            <h2 className="text-2xl">
               <span className="highlight-orange">{hero?.headingHighlight ?? 'Building Community.'}</span>
-             </h2>
+            </h2>
             <p>
               {hero?.description ?? 'KainaFresh is a Rwanda-based farm dedicated to producing premium, organic agricultural produce — from our fields directly to your table.'}
             </p>
@@ -256,7 +261,7 @@ function About() {
         <section className="about-story">
           <div className="about-story-text">
             <span className="section-tag">{stories?.tag}</span>
-            <h2>{stories?.heading }</h2>
+            <h2>{stories?.heading}</h2>
             <p>{stories.paragraphs}</p>
           </div>
           <div className="about-story-visual">
@@ -274,26 +279,26 @@ function About() {
         {/* ── Mission & Values ── */}
         <section className="about-values">
           <div className="about-values-header">
-            <span className="section-tag">{valuesContent?.tag }</span>
-            <h2>{valuesContent?.heading }</h2>
+            <span className="section-tag">{valuesContent?.tag}</span>
+            <h2>{valuesContent?.heading}</h2>
             <p>
-              {valuesContent?.subheading }
+              {valuesContent?.subheading}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center mb-3 pt-3">
-              <div className="value-card card">
-                <h2 className='text-3xl'>Our Vision</h2>
-                <p className='pt-3'>
-                  {valuesContent?.vision}
+            <div className="value-card card">
+              <h2 className='text-3xl'>Our Vision</h2>
+              <p className='pt-3'>
+                {valuesContent?.vision}
 
-                </p>
-              </div>
-              <div className="value-card card">
-                <h2 className='text-3xl'>Our Mission</h2>
-                <p className='pt-3'>
-                  {valuesContent.mission}
-                </p>
-              </div>
+              </p>
+            </div>
+            <div className="value-card card">
+              <h2 className='text-3xl'>Our Mission</h2>
+              <p className='pt-3'>
+                {valuesContent.mission}
+              </p>
+            </div>
 
           </div>
           <div className="values-grid">
@@ -312,8 +317,8 @@ function About() {
         {/* ── Team ── */}
         <section className="about-team">
           <div className="about-team-header">
-            <span className="section-tag">{teamSection?.tag ?? 'The People Behind the Farm'}</span>
-            <h2>{teamSection?.heading ?? 'Meet Our Team'}</h2>
+            <span className="section-tag">The People Behind the Farm</span>
+            <h2>Meet Our Team</h2>
           </div>
           <div className="team-grid">
             {team.map((member) => (
@@ -321,6 +326,8 @@ function About() {
                 <div className="team-avatar">{member.initials}</div>
                 <h3>{member.name}</h3>
                 <span className="team-role">{member.role}</span>
+                <p className='text-sm'>{member.email}</p>
+                <p className='text-sm'>{member.phone_number}</p>
               </div>
             ))}
           </div>
