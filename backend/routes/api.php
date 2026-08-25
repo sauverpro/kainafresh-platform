@@ -91,6 +91,7 @@ $router->addRoute('GET','/api/navlinks','NavLinkController@index');
 $router->addRoute('GET','/api/navlinks/nav','NavLinkController@navs');
 $router->addRoute('GET','/api/team','TeamController@index');
 $router->addRoute('GET','/api/team/test','TeamController@test');
+$router->addRoute('POST','/api/inquiry/create','ContactController@createInquiry');
 // middleware protected routes
 $router->addRoute('POST','/api/settings/create','SettingController@store','auth');
 
