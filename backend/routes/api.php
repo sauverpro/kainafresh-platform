@@ -246,3 +246,39 @@ $router->addRoute(
     '/api/customers/{id}',
     'CustomerController@destroy'
 );
+
+/*
+|--------------------------------------------------------------------------
+| Orders
+|--------------------------------------------------------------------------
+*/
+
+$router->addRoute(
+    'GET',
+    '/api/orders',
+    'OrderController@index'
+);
+
+$router->addRoute(
+    'GET',
+    '/api/orders/{id}',
+    'OrderController@show'
+);
+
+$router->addRoute(
+    'POST',
+    '/api/orders',
+    'OrderController@store'
+);
+
+$router->addRoute(
+    'PUT',
+    '/api/orders/{id}',
+    'OrderController@update'
+);
+
+$router->addRoute(
+    'DELETE',
+    '/api/orders/{id}',
+    'OrderController@destroy'
+);

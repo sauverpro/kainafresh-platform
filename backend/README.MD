@@ -44,13 +44,13 @@ The API is now available at `http://127.0.0.1:8000`. Routes are defined in [rout
 
 The connection config lives in [config/database.php](config/database.php#L1-L9) and reads from environment variables, falling back to defaults if unset:
 
-| Variable | Default |
-|---|---|
-| `DB_HOST` | `127.0.0.1` |
-| `DB_PORT` | `3306` |
-| `DB_NAME` | `kainafresh` |
-| `DB_USER` | `root` |
-| `DB_PASSWORD` | *(empty)* |
+| Variable      | Default      |
+| ------------- | ------------ |
+| `DB_HOST`     | `127.0.0.1`  |
+| `DB_PORT`     | `3306`       |
+| `DB_NAME`     | `kainafresh` |
+| `DB_USER`     | `root`       |
+| `DB_PASSWORD` | _(empty)_    |
 
 Create a `.env` file in `backend/` with the variable names above **exactly** — the config only reads `DB_NAME` / `DB_USER`, not `DB_DATABASE` / `DB_USERNAME`, so using those names will silently fall back to the defaults instead of erroring:
 
@@ -118,11 +118,11 @@ class Page extends Model
 
 Migration base classes and the CLI runner live in `migrations/`; individual migration files live in `migrations/migrations/`.
 
-| File | Purpose |
-|---|---|
-| [migrations/Migration.php](migrations/Migration.php) | Abstract base class. Implement `up()` / `down()`; use `createTable()`, `dropTable()`, `addColumn()`, `dropColumn()`. |
-| [migrations/MigrationGenerator.php](migrations/MigrationGenerator.php) | Scaffolds new migration files. |
-| [migrations/MigrationRunner.php](migrations/MigrationRunner.php) | CLI to create, run, roll back, and inspect migrations. |
+| File                                                                   | Purpose                                                                                                              |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| [migrations/Migration.php](migrations/Migration.php)                   | Abstract base class. Implement `up()` / `down()`; use `createTable()`, `dropTable()`, `addColumn()`, `dropColumn()`. |
+| [migrations/MigrationGenerator.php](migrations/MigrationGenerator.php) | Scaffolds new migration files.                                                                                       |
+| [migrations/MigrationRunner.php](migrations/MigrationRunner.php)       | CLI to create, run, roll back, and inspect migrations.                                                               |
 
 ```bash
 # Scaffold a new migration
@@ -169,11 +169,11 @@ Base URL: `http://127.0.0.1:8000`. All responses are JSON with a `success` boole
 
 ### Auth
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/health` | Health check |
-| POST | `/api/auth/register` | Register a user |
-| POST | `/api/auth/login` | Log in, returns a JWT |
+| Method | Endpoint             | Description           |
+| ------ | -------------------- | --------------------- |
+| GET    | `/api/health`        | Health check          |
+| POST   | `/api/auth/register` | Register a user       |
+| POST   | `/api/auth/login`    | Log in, returns a JWT |
 
 ### Pages & Page Sections (CMS)
 
@@ -217,20 +217,20 @@ For example, an About page might be composed of `hero`, `story`, `vision`, `miss
 
 #### Routes
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/pages` | List pages |
-| GET | `/api/pages/{id}` | Get a page by ID |
-| GET | `/api/pages/slug/{slug}` | Get a page (with sections) by slug |
-| POST | `/api/pages` | Create a page |
-| PUT | `/api/pages/{id}` | Update a page |
-| DELETE | `/api/pages/{id}` | Delete a page |
-| GET | `/api/pages/{pageId}/sections` | List sections for a page |
-| GET | `/api/pages/{pageId}/sections/{sectionId}` | Get a section |
-| POST | `/api/pages/{pageId}/sections` | Create a section |
-| PUT | `/api/pages/{pageId}/sections/{sectionId}` | Update a section |
-| DELETE | `/api/pages/{pageId}/sections/{sectionId}` | Delete a section |
-| PUT | `/api/pages/{pageId}/sections/reorder` | Reorder sections |
+| Method | Endpoint                                   | Description                        |
+| ------ | ------------------------------------------ | ---------------------------------- |
+| GET    | `/api/pages`                               | List pages                         |
+| GET    | `/api/pages/{id}`                          | Get a page by ID                   |
+| GET    | `/api/pages/slug/{slug}`                   | Get a page (with sections) by slug |
+| POST   | `/api/pages`                               | Create a page                      |
+| PUT    | `/api/pages/{id}`                          | Update a page                      |
+| DELETE | `/api/pages/{id}`                          | Delete a page                      |
+| GET    | `/api/pages/{pageId}/sections`             | List sections for a page           |
+| GET    | `/api/pages/{pageId}/sections/{sectionId}` | Get a section                      |
+| POST   | `/api/pages/{pageId}/sections`             | Create a section                   |
+| PUT    | `/api/pages/{pageId}/sections/{sectionId}` | Update a section                   |
+| DELETE | `/api/pages/{pageId}/sections/{sectionId}` | Delete a section                   |
+| PUT    | `/api/pages/{pageId}/sections/reorder`     | Reorder sections                   |
 
 > None of the Pages/Page Sections routes currently require auth — anyone can create, edit, or delete pages and sections. Consider protecting the write routes the same way Settings/NavLinks do.
 
@@ -253,7 +253,12 @@ Content-Type: application/json
 {
   "success": true,
   "message": "Page created successfully",
-  "data": { "id": 2, "title": "About Us", "slug": "about-us", "status": "draft" }
+  "data": {
+    "id": 2,
+    "title": "About Us",
+    "slug": "about-us",
+    "status": "draft"
+  }
 }
 ```
 
@@ -314,11 +319,11 @@ settings
 └── other_numbers          (nullable)
 ```
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/settings` | Get site settings |
-| POST | `/api/settings/create` 🔒 | Create/update settings (admin only) |
-| POST | `/api/settings/uploadlogo` 🔒 | Upload/replace the site logo (multipart `site_logo` file, admin only) |
+| Method | Endpoint                      | Description                                                           |
+| ------ | ----------------------------- | --------------------------------------------------------------------- |
+| GET    | `/api/settings`               | Get site settings                                                     |
+| POST   | `/api/settings/create` 🔒     | Create/update settings (admin only)                                   |
+| POST   | `/api/settings/uploadlogo` 🔒 | Upload/replace the site logo (multipart `site_logo` file, admin only) |
 
 `POST /api/settings/create` upserts: if a settings row already exists it's updated instead of duplicated. Required fields: `site_title`, `primary_email`, `address`, `primary_number`.
 
@@ -334,13 +339,13 @@ navlinks
 └── updated_at
 ```
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/navlinks` | List all nav links |
-| GET | `/api/navlinks/nav` | List only navigation-facing links |
-| POST | `/api/navlinks/create` 🔒 | Create a link (admin only) — requires `link`, `link_type`, `link_name` |
-| PUT | `/api/navlinks/update/{id}` 🔒 | Update a link (admin only) |
-| DELETE | `/api/navlinks/delete/{id}` 🔒 | Delete a link (admin only) |
+| Method | Endpoint                       | Description                                                            |
+| ------ | ------------------------------ | ---------------------------------------------------------------------- |
+| GET    | `/api/navlinks`                | List all nav links                                                     |
+| GET    | `/api/navlinks/nav`            | List only navigation-facing links                                      |
+| POST   | `/api/navlinks/create` 🔒      | Create a link (admin only) — requires `link`, `link_type`, `link_name` |
+| PUT    | `/api/navlinks/update/{id}` 🔒 | Update a link (admin only)                                             |
+| DELETE | `/api/navlinks/delete/{id}` 🔒 | Delete a link (admin only)                                             |
 
 ### Team
 
@@ -357,11 +362,11 @@ team
 └── updated_at
 ```
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/team` | List team members |
-| GET | `/api/team/test` | Health check for this controller |
-| POST | `/api/team/new` | Create a team member — requires `name`, `role`, `initials`, `phone_number`, `email` |
+| Method | Endpoint         | Description                                                                         |
+| ------ | ---------------- | ----------------------------------------------------------------------------------- |
+| GET    | `/api/team`      | List team members                                                                   |
+| GET    | `/api/team/test` | Health check for this controller                                                    |
+| POST   | `/api/team/new`  | Create a team member — requires `name`, `role`, `initials`, `phone_number`, `email` |
 
 ### Units
 
@@ -377,13 +382,13 @@ units
 └── updated_at
 ```
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/units` | List all units |
-| GET | `/api/units/{id}` | Get a unit |
-| POST | `/api/units` | Create a unit |
-| PUT | `/api/units/{id}` | Update a unit |
-| DELETE | `/api/units/{id}` | Delete a unit |
+| Method | Endpoint          | Description    |
+| ------ | ----------------- | -------------- |
+| GET    | `/api/units`      | List all units |
+| GET    | `/api/units/{id}` | Get a unit     |
+| POST   | `/api/units`      | Create a unit  |
+| PUT    | `/api/units/{id}` | Update a unit  |
+| DELETE | `/api/units/{id}` | Delete a unit  |
 
 #### Example: Create a unit
 
@@ -413,13 +418,13 @@ products
 └── updated_at
 ```
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/products` | List products (joined with unit info) |
-| GET | `/api/products/{id}` | Get a product (joined with unit info) |
-| POST | `/api/products` | Create a product |
-| PUT | `/api/products/{id}` | Update a product |
-| DELETE | `/api/products/{id}` | Delete a product |
+| Method | Endpoint             | Description                           |
+| ------ | -------------------- | ------------------------------------- |
+| GET    | `/api/products`      | List products (joined with unit info) |
+| GET    | `/api/products/{id}` | Get a product (joined with unit info) |
+| POST   | `/api/products`      | Create a product                      |
+| PUT    | `/api/products/{id}` | Update a product                      |
+| DELETE | `/api/products/{id}` | Delete a product                      |
 
 Create/update accept `multipart/form-data` when uploading `product_image`, or a plain JSON body otherwise. Required on create: `name`, `unit_id`, `shelf_life`, `price` — `unit_id` must reference an existing unit. If validation fails after an image was uploaded, the uploaded file is deleted automatically. On delete, the product's image file is removed after the database row.
 
@@ -455,12 +460,12 @@ stocks
 └── updated_at
 ```
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/stocks` | List stock entries |
-| GET | `/api/stocks/{id}` | Get a stock entry |
-| POST | `/api/stocks` | Create a stock entry |
-| PUT | `/api/stocks/{id}` | Update a stock entry |
+| Method | Endpoint           | Description          |
+| ------ | ------------------ | -------------------- |
+| GET    | `/api/stocks`      | List stock entries   |
+| GET    | `/api/stocks/{id}` | Get a stock entry    |
+| POST   | `/api/stocks`      | Create a stock entry |
+| PUT    | `/api/stocks/{id}` | Update a stock entry |
 | DELETE | `/api/stocks/{id}` | Delete a stock entry |
 
 > ⚠️ **Not yet implemented.** The `stocks` migration and the routes above exist, but there is no `StockController` or `Stock` model in `controllers/`/`models/` yet — calling these routes will currently fail. Follow the pattern in `ProductController`/`Product` (including the `productid` foreign-key existence check) when implementing.
@@ -475,3 +480,69 @@ If the schema has changed upstream, drop all existing tables in your local datab
 - The migration runner creates its own `migrations` tracking table in the configured database.
 - Changed DB credentials in `.env`? Restart the dev server — env vars are read at process start.
 - `.env` key names must match exactly what `config/database.php` reads (`DB_NAME`, `DB_USER`) — see [Configuration](#configuration).
+
+## Customers Management
+
+The `customers` module manages customer information for the IMS.
+
+### Structure
+
+```text
+controllers/
+└── ims/
+    └── CustomerController.php
+
+models/
+└── ims/
+    └── Customer.php
+
+Customers Table
+customers
+├── id
+├── first_name
+├── last_name
+├── phone
+├── email
+├── address
+├── created_at
+└── updated_at
+
+API Routes
+Method	Endpoint	Description
+GET	/api/customers	List all customers
+GET	/api/customers/{id}	Get a customer
+POST	/api/customers	Create a customer
+PUT	/api/customers/{id}	Update a customer
+DELETE	/api/customers/{id}	Delete a customer
+
+Create Customer
+POST /api/customers
+Content-Type: application/json
+
+{
+    "first_name": "Jean",
+    "last_name": "Mugisha",
+    "phone": "+250788123456",
+    "email": "jean@example.com",
+    "address": "Kigali, Rwanda"
+}
+
+Migration
+Create the migration:
+
+php migrations/MigrationRunner.php make create_customers_table
+
+Run migration:
+
+php migrations/MigrationRunner.php migrate
+
+Check migration status:
+
+php migrations/MigrationRunner.php status
+
+Notes
+first_name, last_name, and phone are required.
+email and address are optional.
+Customer model and controller are located inside the ims directories.
+The module uses the existing base Model, BaseController, router, and migration system.
+```
