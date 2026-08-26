@@ -137,3 +137,39 @@ $router->addRoute(
     '/api/units/{id}',
     'UnitController@destroy'
 );
+
+/*
+|--------------------------------------------------------------------------
+| Products
+|--------------------------------------------------------------------------
+*/
+
+$router->addRoute(
+    'GET',
+    '/api/products',
+    'ProductController@index'
+);
+
+$router->addRoute(
+    'GET',
+    '/api/products/{id}',
+    'ProductController@show'
+);
+
+$router->addRoute(
+    'POST',
+    '/api/products',
+    'ProductController@store'
+);
+
+$router->addRoute(
+    'PUT',
+    '/api/products/{id}',
+    'ProductController@update'
+);
+
+$router->addRoute(
+    'DELETE',
+    '/api/products/{id}',
+    'ProductController@destroy'
+);
