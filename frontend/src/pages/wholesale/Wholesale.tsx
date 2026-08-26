@@ -217,19 +217,17 @@ function Wholesale() {
     apiGet<{ success: boolean; data: { sections: { type: string; content: WholesaleHero }[] } }>('/api/pages/slug/wholesale')
       .then((res) => {
         if (!res.success || !res.data?.sections) return;
-        const heroSection = res.data.sections.find((s) => s.type === 'wholesale-hero');
+        const heroSection = res.data.sections.find((s) => s.type === 'hero' || s.type === 'wholesale-hero');
         if (heroSection) setCmsHero(heroSection.content);
         const Whysection = res.data.sections.find((s) => s.type === 'ws-benefits');
         const whycontents = Whysection?.content;
         if (Array.isArray(whycontents)) {
           setCmsWhy({ items: whycontents as WhyContentItem[] });
-
         }
         else if (whycontents && typeof whycontents === 'object') {
           if ('items' in whycontents && Array.isArray(whycontents.items)) {
             setCmsWhy(whycontents as WhyContent);
           } else {
-            // If it's an object but no items, treat it as the content with tag, heading, etc.
             const whyObj = whycontents as WhyContent;
             setCmsWhy({
               tag: whyObj.tag,
@@ -238,7 +236,6 @@ function Wholesale() {
               items: whyObj.items || []
             });
           }
-
         }
         const destinationSec = res.data.sections.find((sec) => sec.type === 'ws-exports');
         const destinationValue = destinationSec?.content;
@@ -269,7 +266,6 @@ function Wholesale() {
           setCmsProgress({ items: progressContent as ProgressItem[] });
         }
         else if (progressContent && typeof progressContent === 'object') {
-
           if ('items' in progressContent && Array.isArray(progressContent.items)) {
             setCmsProgress(progressContent as ProgressContent);
           }
@@ -293,38 +289,90 @@ function Wholesale() {
   }, []);
 
   // Merge CMS with defaults
-  const hero: WholesaleHero = {
-    badge: cmsHero?.badge,
-    heading: cmsHero?.heading,
-    headingHighlight: cmsHero?.headingHighlight,
-    description: cmsHero?.description,
-    primaryCta: cmsHero?.primaryCta,
-    secondaryCta: cmsHero?.secondaryCta,
-    client_stat: cmsHero?.client_stat,
-    export_stat: cmsHero?.export_stat,
-    product_stat: cmsHero?.product_stat
+  const hero = {
+    badge: cmsHero?.badge || 'B2B & Exports',
+    heading: cmsHero?.heading || 'Partner with ',
+    headingHighlight: cmsHero?.headingHighlight || (cmsHero as any)?.headingAccent || 'KainaFresh',
+    description: cmsHero?.description || 'We supply premium, organic produce in bulk to businesses, supermarkets, and international importers worldwide.',
+    primaryCta: {
+      label: cmsHero?.primaryCta?.label || 'Request a Quote',
+      to: cmsHero?.primaryCta?.to || '#inquiry-form'
+    },
+    secondaryCta: {
+      label: cmsHero?.secondaryCta?.label || 'How It Works',
+      to: cmsHero?.secondaryCta?.to || '#how-it-works'
+    },
+    client_stat: {
+      stat_number: cmsHero?.client_stat?.stat_number || '50+',
+      stat_label: cmsHero?.client_stat?.stat_label || 'B2B Partners'
+    },
+    export_stat: {
+      stat_number: cmsHero?.export_stat?.stat_number || '12+',
+      stat_label: cmsHero?.export_stat?.stat_label || 'Export Destinations'
+    },
+    product_stat: {
+      stat_number: cmsHero?.product_stat?.stat_number || '100%',
+      stat_label: cmsHero?.product_stat?.stat_label || 'Certified Organic'
+    }
   };
-  const wholesale_why = cmsWhy || { items: [] };
-  //  map value icons 
-  const values = wholesale_why?.items && wholesale_why.items.length > 0
+
+  const wholesale_why = {
+    tag: cmsWhy?.tag || 'Why Partner With Us',
+    heading: cmsWhy?.heading || 'Built for Scale, Quality & Reliability',
+    paragraphs: cmsWhy?.paragraphs || 'Whether you are a supermarket chain, hotel, food processor, or international distributor, KainaFresh offers end-to-end supply chain reliability.',
+    items: cmsWhy?.items || []
+  };
+
+  const values = wholesale_why.items.length > 0
     ? wholesale_why.items.map((v) => ({
       icon: ICON_MAP[v.icon] ?? Package,
       title: v.title,
       description: v.description,
     }))
-    : [];
-  const destinationcontent = cmsDestination || { items: [] };
-  const destinationVal = destinationcontent?.items && destinationcontent.items.length > 0
+    : [
+      { icon: Package, title: 'Bulk Tiered Pricing', description: 'Competitive volume-based pricing structures tailored for wholesale buyers.' },
+      { icon: Truck, title: 'Cold-Chain Delivery', description: 'Temperature-controlled logistics guaranteeing fresh farm arrival.' },
+      { icon: Globe, title: 'Global Export Ready', description: 'Certified phytosanitary and international export documentation compliance.' },
+      { icon: TrendingUp, title: 'Consistent Harvest Supply', description: 'Year-round planting cycles ensuring stable supply security.' },
+      { icon: Handshake, title: 'Dedicated Manager', description: 'Personal B2B account support for custom orders and logistics.' },
+      { icon: CheckCircle, title: 'Organic Certification', description: 'Full organic auditing, origin traceability, and quality grading.' }
+    ];
+
+  const destinationcontent = {
+    tag: cmsDestination?.tag || 'Global Reach',
+    heading: cmsDestination?.heading || 'Exporting Organic Quality Worldwide',
+    paragraphs: cmsDestination?.paragraphs || 'Our cold-chain logistics network connects Rwandan organic farms with premium markets across Africa, Europe, and the Middle East.',
+    items: cmsDestination?.items || []
+  };
+
+  const destinationVal = destinationcontent.items.length > 0
     ? destinationcontent.items.map((v) => ({
       destination: v.destination
-    })) : [];
-  const progresscontent = cmsProgress || { items: [] };
-  const progressVal = progresscontent?.items && progresscontent.items.length > 0
+    })) : [
+      { destination: 'European Union (EU)' },
+      { destination: 'United Kingdom (UK)' },
+      { destination: 'United Arab Emirates (UAE)' },
+      { destination: 'East African Community (EAC)' }
+    ];
+
+  const progresscontent = {
+    tag: cmsProgress?.tag || 'Simple Process',
+    heading: cmsProgress?.heading || 'Four Steps to Wholesale Partnership',
+    paragraphs: cmsProgress?.paragraphs || 'Getting started with KainaFresh bulk supply is fast, transparent, and hassle-free.',
+    items: cmsProgress?.items || []
+  };
+
+  const progressVal = progresscontent.items.length > 0
     ? progresscontent.items.map((v) => ({
       number: v.number,
       title: v.title,
       description: v.description
-    })) : [];
+    })) : [
+      { number: '01', title: 'Submit an Inquiry', description: 'Fill in the B2B form below with your required produce, volume, and schedule.' },
+      { number: '02', title: 'Receive Custom Quote', description: 'Our commercial team prepares a competitive tiered proposal within 24 hours.' },
+      { number: '03', title: 'Confirm Supply Agreement', description: 'Finalize order details, packaging preferences, and delivery schedules.' },
+      { number: '04', title: 'Harvest & Dispatch', description: 'Produce is freshly harvested, quality graded, packed, and delivered.' }
+    ];
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
