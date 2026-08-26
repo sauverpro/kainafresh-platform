@@ -210,3 +210,39 @@ $router->addRoute(
     '/api/stocks/{id}',
     'StockController@destroy'
 );
+
+/*
+|--------------------------------------------------------------------------
+| IMS - Customers
+|--------------------------------------------------------------------------
+*/
+
+$router->addRoute(
+    'GET',
+    '/api/customers',
+    'CustomerController@index'
+);
+
+$router->addRoute(
+    'GET',
+    '/api/customers/{id}',
+    'CustomerController@show'
+);
+
+$router->addRoute(
+    'POST',
+    '/api/customers',
+    'CustomerController@store'
+);
+
+$router->addRoute(
+    'PUT',
+    '/api/customers/{id}',
+    'CustomerController@update'
+);
+
+$router->addRoute(
+    'DELETE',
+    '/api/customers/{id}',
+    'CustomerController@destroy'
+);

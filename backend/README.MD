@@ -1,17 +1,60 @@
-**Project Overview**
+# Kaina Fresh — Backend API
 
-- **Backend:** Minimal PHP API layer using a small router and a lightweight migration system.
+A minimal, dependency-free PHP API: a small custom router, `mysqli` for the database, a lightweight migration system, and JWT-based auth for protected routes. No framework, no Composer packages.
 
-**Requirements**
+## Table of Contents
 
-- **PHP:** 7.4+ with `mysqli` extension enabled.
-- **Database:** MySQL / MariaDB.
+- [Requirements](#requirements)
+- [Getting Started](#getting-started)
+- [Configuration](#configuration)
+- [Architecture](#architecture)
+- [Migrations](#migrations)
+- [API Reference](#api-reference)
+  - [Auth](#auth)
+  - [Pages & Page Sections (CMS)](#pages--page-sections-cms)
+  - [Settings](#settings)
+  - [Navigation Links](#navigation-links)
+  - [Team](#team)
+  - [Units](#units)
+  - [Products](#products)
+  - [Stocks](#stocks)
+- [Database Import Notes](#database-import-notes)
+- [Troubleshooting](#troubleshooting)
 
-**Configuration**
+## Requirements
 
-- **Database config:** See [config/database.php](config/database.php#L1-L9). The code loads values from environment variables if present (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`). You can create a `.env` file in the `backend/` folder with those variables, e.g.:
+- PHP 7.4+ with the `mysqli` extension enabled
+- MySQL / MariaDB
 
+## Getting Started
+
+Run PHP's built-in dev server from the `backend/` directory:
+
+```bash
+php -S 127.0.0.1:8000
 ```
+
+The API is now available at `http://127.0.0.1:8000`. Routes are defined in [routes/api.php](routes/api.php); `index.php` is the entrypoint — it autoloads classes, sets CORS headers, and dispatches the router.
+
+> The frontend's `VITE_API_BASE_URL` must point at this address for local development.
+
+## Configuration
+
+### Database
+
+The connection config lives in [config/database.php](config/database.php#L1-L9) and reads from environment variables, falling back to defaults if unset:
+
+| Variable | Default |
+|---|---|
+| `DB_HOST` | `127.0.0.1` |
+| `DB_PORT` | `3306` |
+| `DB_NAME` | `kainafresh` |
+| `DB_USER` | `root` |
+| `DB_PASSWORD` | *(empty)* |
+
+Create a `.env` file in `backend/` with the variable names above **exactly** — the config only reads `DB_NAME` / `DB_USER`, not `DB_DATABASE` / `DB_USERNAME`, so using those names will silently fall back to the defaults instead of erroring:
+
+```env
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_NAME=kainafresh
@@ -19,537 +62,416 @@ DB_USER=root
 DB_PASSWORD=
 ```
 
-**JWT Secret**
+The database itself (not just its tables) is created by running:
 
-- The project uses `core/JWT.php`, which reads the secret from the `JWT_SECRET` environment variable (falls back to a default string if not set). For production, generate a strong secret and add it to your `.env` file:
+```bash
+php create_db.php
+```
 
-Examples (generate 32 random bytes, hex encoded):
+### JWT Secret
+
+[core/JWT.php](core/JWT.php) reads its signing secret from the `JWT_SECRET` environment variable (falls back to a default string if unset — fine for local dev, **not** for production).
+
+Generate a strong secret:
 
 ```bash
 php -r "echo bin2hex(random_bytes(32));"
-```
-
-or using OpenSSL:
-
-```bash
+# or
 openssl rand -hex 32
 ```
 
-Add the generated value to `.env`:
+Add it to `.env`:
 
-```
+```env
 JWT_SECRET=your_generated_secret_here
 ```
 
-- Restart your development server after updating `.env`. For production, store the secret in a secure secret manager or environment configuration (do not commit it to source control).
+Restart the dev server after changing `.env`. In production, store the secret in a proper secret manager — never commit it.
 
-**Migrations**
-
-- **Location:** migration base classes and runner are in `migrations/`; user migration files live in `migrations/migrations/`.
-- **Key files:**
-  - [migrations/Migration.php](migrations/Migration.php#L1-L70): abstract base class. Implement `up()` and `down()` and use helper methods such as `createTable()`, `dropTable()`, `addColumn()`, `dropColumn()`.
-  - [migrations/MigrationGenerator.php](migrations/MigrationGenerator.php#L1-L146): helper to scaffold migration files.
-  - [migrations/MigrationRunner.php](migrations/MigrationRunner.php#L1-L260): CLI runner to create, run, rollback and inspect migrations.
-
-- **Create a migration (scaffold):**
+## Architecture
 
 ```
-php migrations/MigrationRunner.php make migration_name
+backend/
+├── config/          Database config
+├── core/             Router, Request, Database (mysqli wrapper), JWT, UploadHelper
+├── middleware/        AuthMiddleware (JWT bearer-token check)
+├── controllers/       HTTP request handlers
+├── models/            Model.php (base ActiveRecord-style class) + entity models
+├── migrations/         Migration system (base class, generator, CLI runner, migration files)
+├── routes/api.php     All route definitions
+├── uploads/            Uploaded files (logos, product images, ...)
+└── index.php           Entrypoint: autoload, CORS, dispatch
 ```
 
-Examples:
+**Models** extend a base `Model` class that provides `all()`, `find()`, `create()`, `update()`, `delete()`:
 
+```php
+class Page extends Model
+{
+    protected $table = 'pages';
+}
 ```
+
+**Controllers** handle HTTP requests and return JSON. Routes with a 4th `'auth'` argument in `routes/api.php` are protected — they run through `AuthMiddleware` and require a valid `Authorization: Bearer <token>` header.
+
+## Migrations
+
+Migration base classes and the CLI runner live in `migrations/`; individual migration files live in `migrations/migrations/`.
+
+| File | Purpose |
+|---|---|
+| [migrations/Migration.php](migrations/Migration.php) | Abstract base class. Implement `up()` / `down()`; use `createTable()`, `dropTable()`, `addColumn()`, `dropColumn()`. |
+| [migrations/MigrationGenerator.php](migrations/MigrationGenerator.php) | Scaffolds new migration files. |
+| [migrations/MigrationRunner.php](migrations/MigrationRunner.php) | CLI to create, run, roll back, and inspect migrations. |
+
+```bash
+# Scaffold a new migration
 php migrations/MigrationRunner.php make create_users_table
 php migrations/MigrationRunner.php make add_phone_to_users_table alter
-```
 
-- **Run pending migrations:**
-
-```
+# Run pending migrations
 php migrations/MigrationRunner.php migrate
-```
 
-- **Rollback migrations:**
-
-```
+# Roll back (default: last batch)
 php migrations/MigrationRunner.php rollback [steps]
-```
 
-Default `steps` is `1` (roll back the latest batch). The runner keeps a `migrations` table to track executed files and batches.
-
-- **Status:**
-
-```
+# Check status
 php migrations/MigrationRunner.php status
 ```
 
-**Migration authoring notes**
+The runner tracks executed files/batches in a `migrations` table it creates automatically.
 
-- A migration class extends `Migration` and must implement `up()` and `down()`.
-- Use the helper methods provided by `Migration` to build SQL safely:
-  - `createTable($name, $columns)` — create a table from a column definition array.
-  - `dropTable($name)` — drop the table.
-  - `addColumn($table, $column)` — add a column with the same column definition format.
-  - `dropColumn($table, $columnName)` — drop a column.
-- See existing examples in `migrations/migrations/` such as `20260816093909_create_users_table.php` and `20260816094423_create_auth_tokens_table.php` for structure and column examples.
+A migration class extends `Migration` and implements `up()`/`down()`:
 
-**Running the server (development)**
-
-- From the `backend/` directory you can run PHP's built-in web server for development:
-
-```
-php -S 127.0.0.1:8000
-```
-
-Then open `http://127.0.0.1:8000` (routes are defined in `routes/api.php`). The entrypoint `index.php` autoloads classes and reads a `.env` file if present.
-
-**Notes & troubleshooting**
-
-- Ensure the `migrations/migrations/` directory is writable by the user running PHP when generating migrations.
-- The migration runner will create a `migrations` table in the configured database to track applied migrations.
-- If you change DB credentials, update `.env` or `config/database.php` accordingly and restart the server (if applicable).
-
-**Useful commands summary**
-
-- Create scaffolded migration: `php migrations/MigrationRunner.php make create_users_table`
-- Run migrations: `php migrations/MigrationRunner.php migrate`
-- Rollback: `php migrations/MigrationRunner.php rollback 1`
-- Check status: `php migrations/MigrationRunner.php status`
-- Start dev server: `php -S 127.0.0.1:8000`
-
-# CMS Management Implementations
-
-The pages table represents website pages.
-
-Current structure:
-
-pages
-├── id
-├── title
-├── slug
-├── status
-├── seo_title
-├── seo_description
-├── seo_image_id
-├── created_at
-└── updated_at
-Page status
-
-A page can have:
-
-draft
-published
-
-Draft pages can be edited without being publicly available.
-
-Published pages are intended for the public website.
-
-8. Page Sections
-
-The page_sections table provides the foundation for the Kaina Fresh CMS/page-builder architecture.
-
-Structure:
-
-page_sections
-├── id
-├── page_id
-├── type
-├── title
-├── content
-├── settings
-├── position
-├── status
-├── created_at
-└── updated_at
-
-Relationship:
-
-pages.id
-│
-└──────── page_sections.page_id
-
-The foreign key uses:
-
-ON DELETE CASCADE
-
-Therefore, deleting a page also removes its associated sections.
-
-9. Dynamic Page Architecture
-
-Instead of hard-coding every website page into PHP, the backend stores sections dynamically.
-
-For example, the Kaina Fresh About page can conceptually contain:
-
-About Us
-│
-├── Hero
-├── Our Story
-├── Image
-├── Vision
-├── Mission
-├── Team
-└── Partners
-
-These become records in page_sections.
-
-Example:
-
-{
-"type": "hero",
-"title": "About Us",
-"content": {
-"heading": "ABOUT US",
-"subheading": "Bridging Rwanda’s fertile land with global markets."
-},
-"settings": {
-"alignment": "center"
-},
-"position": 0,
-"status": "active"
-}
-
-The important distinction is:
-
-content
-
-Stores the actual section content.
-
-settings
-
-Stores presentation/configuration information.
-
-position
-
-Controls the order of sections.
-
-type
-
-Tells the frontend which component should render the section.
-
-10. Page Ordering
-
-Sections can be reordered without modifying the page itself.
-
-Example:
-
-Before:
-
-Hero
-Story
-Vision
-Mission
-Partners
-
-After:
-
-Hero
-Vision
-Story
-Mission
-Partners
-
-The position values determine the order.
-
-The backend provides a reorder endpoint so the frontend/admin interface can support drag-and-drop page editing.
-
-11. Models
-
-The project uses a base Model class.
-
-abstract class Model
-
-The base model provides common operations such as:
-
-all()
-find()
-create()
-update()
-delete()
-
-Models extend this class.
-
-Example:
-
-class Page extends Model
-{
-protected $table = 'pages';
-}
-
-The Page model additionally handles retrieving pages together with their sections.
-
-12. Controllers
-
-Controllers handle HTTP requests and return JSON responses.
-
-Current controllers include:
-
-AuthController
-PageController
-PageSectionController
-AuthController
-
-Handles authentication operations such as:
-
-register
-login
-PageController
-
-Handles page operations:
-
-list pages
-get page
-get page by slug
-create page
-update page
-delete page
-PageSectionController
-
-Handles section operations:
-
-list sections
-get section
-create section
-update section
-delete section
-reorder sections 13. API Routes
-Authentication
-POST /api/auth/register
-POST /api/auth/login
-
-Health check:
-
-GET /api/health
-Pages
-
-List pages:
-
-GET /api/pages
-
-Get a page:
-
-GET /api/pages/{id}
-
-Get page by slug:
-
-GET /api/pages/slug/{slug}
-
-Create page:
-
-POST /api/pages
-
-Update page:
-
-PUT /api/pages/{id}
-
-Delete page:
-
-DELETE /api/pages/{id}
-
-Page Sections
-
-List sections:
-
-GET /api/pages/{pageId}/sections
-
-Get a section:
-
-GET /api/pages/{pageId}/sections/{sectionId}
-
-Create a section:
-
-POST /api/pages/{pageId}/sections
-
-Update a section:
-
-PUT /api/pages/{pageId}/sections/{sectionId}
-
-Delete a section:
-
-DELETE /api/pages/{pageId}/sections/{sectionId}
-
-Reorder sections:
-
-PUT /api/pages/{pageId}/sections/reorder 14. Example: Create a Page
-
-Request:
-
-POST /api/pages
-Content-Type: application/json
-
-Body:
-
-{
-"title": "About Us",
-"slug": "about-us-2",
-"status": "draft",
-"seo_title": "About Kaina Fresh",
-"seo_description": "Learn more about Kaina Fresh."
-}
-
-Successful response:
-
-{
-"success": true,
-"message": "Page created successfully",
-"data": {
-"id": 2,
-"title": "About Us",
-"slug": "about-us-2",
-"status": "draft"
-}
-}
-
-## 1Example: Create a Page Section
-
-POST /api/pages/2/sections
-Content-Type: application/json
-
-Example body:
-
-{
-"type": "hero",
-"title": "About Us",
-"content": {
-"heading": "ABOUT US",
-"subheading": "Bridging Rwanda’s fertile land with global markets."
-},
-"settings": {
-"alignment": "center"
-},
-"position": 0,
-"status": "active"
-} 16. Example: Reorder Sections
-
-Request:
-
-PUT /api/pages/2/sections/reorder
-Content-Type: application/json
-
-Body:
-
-{
-"sections": [
-{
-"id": 5,
-"position": 0
-},
-{
-"id": 3,
-"position": 1
-},
-{
-"id": 7,
-"position": 2
-}
-]
-}
-
-The backend verifies that the submitted sections belong to the requested page before updating their positions.
-
-The operation is performed inside a database transaction so that a failed update can be rolled back.
-
-## Migration System
-
-The project includes a lightweight migration system.
-
-Migration files are located at:
-
-migrations/migrations/
-
-A migration extends:
-
-Migration
-
-and implements:
-
-up()
-down()
-
-Example:
-
+```php
 class CreatePagesTable extends Migration
 {
-public function up()
-{
-// create table
-}
+    public function up()
+    {
+        $this->createTable('pages', [
+            ['name' => 'title', 'type' => 'VARCHAR', 'length' => 255],
+            // ...
+        ]);
+    }
 
     public function down()
     {
-        // rollback
+        $this->dropTable('pages');
     }
-
 }
+```
 
-## Dynamic Page Rendering
+See `migrations/migrations/` for real examples, including foreign-key constraints added via raw SQL after `createTable()` (e.g. `products.unit_id → units.id`, `stocks.productid → products.id`).
 
-The frontend can render sections based on their type.
+## API Reference
 
-For example:
+Base URL: `http://127.0.0.1:8000`. All responses are JSON with a `success` boolean. Routes marked **🔒 Auth** require `Authorization: Bearer <token>`.
 
-type = hero
-↓
-Hero component
+### Auth
 
-type = story
-↓
-Story component
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/health` | Health check |
+| POST | `/api/auth/register` | Register a user |
+| POST | `/api/auth/login` | Log in, returns a JWT |
 
-type = vision
-↓
-Vision component
+### Pages & Page Sections (CMS)
 
-type = team
-↓
-Team component
+The CMS is built on two tables: `pages` and `page_sections`, related one-to-many (`page_sections.page_id → pages.id`, `ON DELETE CASCADE`).
 
-type = partners
-↓
-Partners component
+```
+pages                          page_sections
+├── id                         ├── id
+├── title                      ├── page_id  (FK → pages.id)
+├── slug           ────────┐   ├── type
+├── status                 └──►├── title
+├── seo_title                  ├── content   (JSON)
+├── seo_description            ├── settings  (JSON)
+├── seo_image_id                ├── position
+├── created_at                  ├── status
+└── updated_at                  ├── created_at
+                                 └── updated_at
+```
 
-This allows the backend to control page structure while the frontend controls visual presentation.
+**Page status**: `draft` (editable, not public) or `published` (live).
 
-## update database
+**Dynamic page architecture**: rather than hard-coding each page, content is stored as an ordered list of sections. `type` tells the frontend which component to render, `content` holds the actual copy, `settings` holds presentation config, and `position` controls order:
 
-use the provided sql file from folder name db and drop all tables from your local db you already have and import the newly provided sql file.
+```json
+{
+  "type": "hero",
+  "title": "About Us",
+  "content": {
+    "heading": "ABOUT US",
+    "subheading": "Bridging Rwanda's fertile land with global markets."
+  },
+  "settings": {
+    "alignment": "center"
+  },
+  "position": 0,
+  "status": "active"
+}
+```
 
-## Units Management
+For example, an About page might be composed of `hero`, `story`, `vision`, `mission`, `team`, and `partners` sections — each a separate `page_sections` row, reorderable independently of the page itself.
 
-The `units` module manages measurement units used by the application.
+#### Routes
 
-### Units Structure
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/pages` | List pages |
+| GET | `/api/pages/{id}` | Get a page by ID |
+| GET | `/api/pages/slug/{slug}` | Get a page (with sections) by slug |
+| POST | `/api/pages` | Create a page |
+| PUT | `/api/pages/{id}` | Update a page |
+| DELETE | `/api/pages/{id}` | Delete a page |
+| GET | `/api/pages/{pageId}/sections` | List sections for a page |
+| GET | `/api/pages/{pageId}/sections/{sectionId}` | Get a section |
+| POST | `/api/pages/{pageId}/sections` | Create a section |
+| PUT | `/api/pages/{pageId}/sections/{sectionId}` | Update a section |
+| DELETE | `/api/pages/{pageId}/sections/{sectionId}` | Delete a section |
+| PUT | `/api/pages/{pageId}/sections/reorder` | Reorder sections |
 
-```text
+> None of the Pages/Page Sections routes currently require auth — anyone can create, edit, or delete pages and sections. Consider protecting the write routes the same way Settings/NavLinks do.
+
+#### Example: Create a page
+
+```
+POST /api/pages
+Content-Type: application/json
+
+{
+  "title": "About Us",
+  "slug": "about-us",
+  "status": "draft",
+  "seo_title": "About Kaina Fresh",
+  "seo_description": "Learn more about Kaina Fresh."
+}
+```
+
+```json
+{
+  "success": true,
+  "message": "Page created successfully",
+  "data": { "id": 2, "title": "About Us", "slug": "about-us", "status": "draft" }
+}
+```
+
+#### Example: Create a page section
+
+```
+POST /api/pages/2/sections
+Content-Type: application/json
+
+{
+  "type": "hero",
+  "title": "About Us",
+  "content": {
+    "heading": "ABOUT US",
+    "subheading": "Bridging Rwanda's fertile land with global markets."
+  },
+  "settings": { "alignment": "center" },
+  "position": 0,
+  "status": "active"
+}
+```
+
+> `PUT .../sections/{id}` replaces `content`/`settings` wholesale — it does not deep-merge. Always send the full object back, not just the changed key.
+
+#### Example: Reorder sections
+
+```
+PUT /api/pages/2/sections/reorder
+Content-Type: application/json
+
+{
+  "sections": [
+    { "id": 5, "position": 0 },
+    { "id": 3, "position": 1 },
+    { "id": 7, "position": 2 }
+  ]
+}
+```
+
+The backend verifies every submitted section belongs to the target page before applying positions, and performs the update inside a database transaction (rolled back on any failure).
+
+### Settings
+
+Single-row table holding site-wide configuration (contact info, social links, logo).
+
+```
+settings
+├── id
+├── site_title
+├── site_logo
+├── primary_email
+├── secondary_email        (nullable)
+├── other_email            (nullable)
+├── facebook / instagram / tiktok / linkedin / youtube   (nullable)
+├── address                (nullable)
+├── primary_number         (nullable)
+├── secondary_number       (nullable)
+└── other_numbers          (nullable)
+```
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/settings` | Get site settings |
+| POST | `/api/settings/create` 🔒 | Create/update settings (admin only) |
+| POST | `/api/settings/uploadlogo` 🔒 | Upload/replace the site logo (multipart `site_logo` file, admin only) |
+
+`POST /api/settings/create` upserts: if a settings row already exists it's updated instead of duplicated. Required fields: `site_title`, `primary_email`, `address`, `primary_number`.
+
+### Navigation Links
+
+```
+navlinks
+├── id
+├── link_name    (unique)
+├── link         (unique)
+├── link_type    (default: 'main_nav')
+├── created_at
+└── updated_at
+```
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/navlinks` | List all nav links |
+| GET | `/api/navlinks/nav` | List only navigation-facing links |
+| POST | `/api/navlinks/create` 🔒 | Create a link (admin only) — requires `link`, `link_type`, `link_name` |
+| PUT | `/api/navlinks/update/{id}` 🔒 | Update a link (admin only) |
+| DELETE | `/api/navlinks/delete/{id}` 🔒 | Delete a link (admin only) |
+
+### Team
+
+```
+team
+├── id
+├── name
+├── role
+├── initials
+├── phone_number   (nullable)
+├── email          (nullable)
+├── status         (default: 'active')
+├── created_at
+└── updated_at
+```
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/team` | List team members |
+| GET | `/api/team/test` | Health check for this controller |
+| POST | `/api/team/new` | Create a team member — requires `name`, `role`, `initials`, `phone_number`, `email` |
+
+### Units
+
+Measurement units used by products (e.g. kg, g, piece).
+
+```
 units
 ├── id
-├── code
+├── code      (unique)
 ├── name
 ├── symbol
 ├── created_at
 └── updated_at
+```
 
-Example units:
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/units` | List all units |
+| GET | `/api/units/{id}` | Get a unit |
+| POST | `/api/units` | Create a unit |
+| PUT | `/api/units/{id}` | Update a unit |
+| DELETE | `/api/units/{id}` | Delete a unit |
 
-1 | kg | Kilogram  | kg
-2 | g  | Gram      | g
-3 | mg | Milligram | mg
-4 | lb | Pound     | lb
-5 | oz | Ounce     | oz
-API Routes
-Method	Endpoint	Description
-GET	/api/units	List all units
-GET	/api/units/{id}	Get a unit
-POST	/api/units	Create a unit
-PUT	/api/units/{id}	Update a unit
-DELETE	/api/units/{id}	Delete a unit
-Create Unit
+#### Example: Create a unit
 
-POST /api/units
-
+```json
 {
-    "code": "kg",
-    "name": "Kilogram",
-    "symbol": "kg"
+  "code": "kg",
+  "name": "Kilogram",
+  "symbol": "kg"
 }
 ```
+
+Example seed values: `kg`/Kilogram, `g`/Gram, `mg`/Milligram, `lb`/Pound, `oz`/Ounce.
+
+### Products
+
+```
+products
+├── id
+├── name
+├── description      (nullable)
+├── product_image     (nullable — file path)
+├── unit_id           (FK → units.id, ON DELETE RESTRICT)
+├── shelf_life         (days)
+├── price              (decimal 12,2, default 0.00)
+├── status             ('active' | 'inactive', default 'active')
+├── created_at
+└── updated_at
+```
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/products` | List products (joined with unit info) |
+| GET | `/api/products/{id}` | Get a product (joined with unit info) |
+| POST | `/api/products` | Create a product |
+| PUT | `/api/products/{id}` | Update a product |
+| DELETE | `/api/products/{id}` | Delete a product |
+
+Create/update accept `multipart/form-data` when uploading `product_image`, or a plain JSON body otherwise. Required on create: `name`, `unit_id`, `shelf_life`, `price` — `unit_id` must reference an existing unit. If validation fails after an image was uploaded, the uploaded file is deleted automatically. On delete, the product's image file is removed after the database row.
+
+#### Example: Create a product
+
+```
+POST /api/products
+Content-Type: application/json
+
+{
+  "name": "Fresh Tomatoes",
+  "description": "Farm-grown tomatoes",
+  "unit_id": 1,
+  "shelf_life": 7,
+  "price": 1500,
+  "status": "active"
+}
+```
+
+### Stocks
+
+```
+stocks
+├── id
+├── productid     (FK → products.id, ON DELETE RESTRICT)
+├── variety        (nullable)
+├── grade          (nullable)
+├── quantity        (decimal 12,3, default 0.000)
+├── farm_plot       (nullable)
+├── harvest_date     (nullable)
+├── pack_date        (nullable)
+├── created_at
+└── updated_at
+```
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/stocks` | List stock entries |
+| GET | `/api/stocks/{id}` | Get a stock entry |
+| POST | `/api/stocks` | Create a stock entry |
+| PUT | `/api/stocks/{id}` | Update a stock entry |
+| DELETE | `/api/stocks/{id}` | Delete a stock entry |
+
+> ⚠️ **Not yet implemented.** The `stocks` migration and the routes above exist, but there is no `StockController` or `Stock` model in `controllers/`/`models/` yet — calling these routes will currently fail. Follow the pattern in `ProductController`/`Product` (including the `productid` foreign-key existence check) when implementing.
+
+## Database Import Notes
+
+If the schema has changed upstream, drop all existing tables in your local database and import the current SQL dump from the `db/` folder rather than trying to reconcile migrations manually.
+
+## Troubleshooting
+
+- `migrations/migrations/` must be writable by the PHP process when generating new migrations.
+- The migration runner creates its own `migrations` tracking table in the configured database.
+- Changed DB credentials in `.env`? Restart the dev server — env vars are read at process start.
+- `.env` key names must match exactly what `config/database.php` reads (`DB_NAME`, `DB_USER`) — see [Configuration](#configuration).
