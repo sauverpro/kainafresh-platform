@@ -546,3 +546,292 @@ email and address are optional.
 Customer model and controller are located inside the ims directories.
 The module uses the existing base Model, BaseController, router, and migration system.
 ```
+
+ChatGPT said:
+Orders Module
+The orders module manages customer orders within the IMS.
+
+Orders Structure
+orders
+├── id
+├── user_id
+├── customer_id
+├── order_date
+├── status
+├── total
+├── order_source
+├── created_at
+└── updated_at
+
+Relationships
+users.id
+│
+└── orders.user_id
+
+customers.id
+│
+└── orders.customer_id
+
+user_id is required and references the users table.
+customer_id is optional and references the customers table.
+If a customer is deleted, customer_id is set to NULL.
+Order Source
+Supported values:
+
+ecommerce
+externalorder
+
+Default:
+
+ecommerce
+
+Order Status
+The default order status is:
+
+pending
+
+Other statuses can be added later as the order workflow is defined.
+
+Models and Controllers
+The module uses the IMS structure:
+
+models/
+└── ims/
+└── Order.php
+
+controllers/
+└── ims/
+└── OrderController.php
+
+The Order model provides order operations and retrieves related user and customer information.
+
+The OrderController handles creating, reading, updating, and deleting orders.
+
+API Routes
+Method Endpoint Description
+GET /api/orders List all orders
+GET /api/orders/{id} Get a single order
+POST /api/orders Create an order
+PUT /api/orders/{id} Update an order
+DELETE /api/orders/{id} Delete an order
+
+Create Order
+POST /api/orders
+
+Example:
+
+{
+"user_id": 1,
+"customer_id": 1,
+"order_date": "2026-08-26 14:00:00",
+"status": "pending",
+"total": 30000,
+"order_source": "ecommerce"
+}
+
+customer_id is optional:
+
+{
+"user_id": 1,
+"total": 30000,
+"order_source": "externalorder"
+}
+
+Example Response
+{
+"success": true,
+"message": "Order created successfully",
+"data": {
+"id": 1,
+"user_id": 1,
+"customer_id": 1,
+"order_date": "2026-08-26 14:00:00",
+"status": "pending",
+"total": "30000.00",
+"order_source": "ecommerce"
+}
+}
+
+Validation
+When creating or updating an order:
+
+user_id must reference an existing user.
+customer_id must reference an existing customer when provided.
+total must be a valid non-negative number.
+order_source must be ecommerce or externalorder.
+customer_id can be NULL for orders without a registered customer.
+Migration
+The migration is located in:
+
+migrations/migrations/
+
+Run pending migrations with:
+
+php migrations/MigrationRunner.php migrate
+
+Rollback the latest migration with:
+
+php migrations/MigrationRunner.php rollback 1
+
+# Order Items Module
+
+The `order_items` module manages the products included in customer orders.
+
+## Order Items Structure
+
+```text
+order_items
+├── id
+├── order_id
+├── product_id
+├── quantity
+├── unit_price
+├── subtotal
+├── created_at
+└── updated_at
+
+Relationships
+orders.id
+    │
+    └── order_items.order_id
+
+products.id
+    │
+    └── order_items.product_id
+
+Each order can contain multiple order items.
+Each order item belongs to one order.
+Each order item references one product.
+Deleting an order also deletes its order items.
+Products cannot be deleted while they are referenced by an order item.
+Fields
+Field	Description
+id	Order item ID
+order_id	ID of the order
+product_id	ID of the product
+quantity	Quantity ordered
+unit_price	Product price at the time of the order
+subtotal	quantity × unit_price
+created_at	Creation date
+updated_at	Last update date
+
+API Routes
+Method	Endpoint	Description
+GET	/api/order-items	List all order items
+GET	/api/order-items/{id}	Get an order item
+GET	/api/orders/{orderId}/items	List items for an order
+POST	/api/orders/{orderId}/items	Add an item to an order
+PUT	/api/order-items/{id}	Update an order item
+DELETE	/api/order-items/{id}	Delete an order item
+
+Create Order Item
+POST /api/orders/{orderId}/items
+Content-Type: application/json
+
+Example:
+
+{
+    "product_id": 2,
+    "quantity": 10
+}
+
+The backend automatically gets the product price and calculates the subtotal.
+
+Example:
+
+quantity   = 10
+unit_price = 30000
+subtotal   = 300000
+
+unit_price and subtotal should not be supplied by the frontend.
+
+Example Response
+{
+    "success": true,
+    "message": "Order item created successfully",
+    "data": {
+        "id": 1,
+        "order_id": 1,
+        "product_id": 2,
+        "quantity": "10.000",
+        "unit_price": "30000.00",
+        "subtotal": "300000.00",
+        "product_name": "Avocado",
+        "unit_code": "kg",
+        "unit_name": "Kilogram",
+        "unit_symbol": "kg"
+    }
+}
+
+Update Order Item
+PUT /api/order-items/{id}
+Content-Type: application/json
+
+Example:
+
+{
+    "product_id": 2,
+    "quantity": 15
+}
+
+The backend recalculates:
+
+unit_price
+subtotal
+
+when the item is updated.
+
+Delete Order Item
+DELETE /api/order-items/{id}
+
+Deleting an order item removes it from the order.
+
+Migration
+Create the migration:
+
+php migrations/MigrationRunner.php make create_order_items_table
+
+Run migrations:
+
+php migrations/MigrationRunner.php migrate
+
+Check migration status:
+
+php migrations/MigrationRunner.php status
+
+Module Location
+The module follows the IMS structure:
+
+controllers/
+└── ims/
+    └── OrderItemController.php
+
+models/
+└── ims/
+    └── OrderItem.php
+
+migrations/
+└── migrations/
+    └── *_create_order_items_table.php
+
+Order Structure
+Orders and order items work together:
+
+Order
+│
+├── customer
+├── order_date
+├── status
+├── order_source
+├── total
+│
+└── Order Items
+    ├── Product
+    ├── Quantity
+    ├── Unit Price
+    └── Subtotal
+
+The order total should be calculated from the order items:
+
+orders.total = SUM(order_items.subtotal)
+```
