@@ -173,3 +173,40 @@ $router->addRoute(
     '/api/products/{id}',
     'ProductController@destroy'
 );
+
+
+/*
+|--------------------------------------------------------------------------
+| Stocks
+|--------------------------------------------------------------------------
+*/
+
+$router->addRoute(
+    'GET',
+    '/api/stocks',
+    'StockController@index'
+);
+
+$router->addRoute(
+    'GET',
+    '/api/stocks/{id}',
+    'StockController@show'
+);
+
+$router->addRoute(
+    'POST',
+    '/api/stocks',
+    'StockController@store'
+);
+
+$router->addRoute(
+    'PUT',
+    '/api/stocks/{id}',
+    'StockController@update'
+);
+
+$router->addRoute(
+    'DELETE',
+    '/api/stocks/{id}',
+    'StockController@destroy'
+);
