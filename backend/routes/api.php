@@ -102,3 +102,226 @@ $router->addRoute('PUT','/api/navlinks/update/{id}','NavLinkController@update','
 $router->addRoute('DELETE','/api/navlinks/delete/{id}','NavLinkController@delete','auth');
 // create team
 $router->addRoute('POST','/api/team/new','TeamController@create');
+
+/*
+|--------------------------------------------------------------------------
+| Units
+|--------------------------------------------------------------------------
+*/
+
+$router->addRoute(
+    'GET',
+    '/api/units',
+    'UnitController@index'
+);
+
+$router->addRoute(
+    'GET',
+    '/api/units/{id}',
+    'UnitController@show'
+);
+
+$router->addRoute(
+    'POST',
+    '/api/units',
+    'UnitController@store'
+);
+
+$router->addRoute(
+    'PUT',
+    '/api/units/{id}',
+    'UnitController@update'
+);
+
+$router->addRoute(
+    'DELETE',
+    '/api/units/{id}',
+    'UnitController@destroy'
+);
+
+/*
+|--------------------------------------------------------------------------
+| Products
+|--------------------------------------------------------------------------
+*/
+
+$router->addRoute(
+    'GET',
+    '/api/products',
+    'ProductController@index'
+);
+
+$router->addRoute(
+    'GET',
+    '/api/products/{id}',
+    'ProductController@show'
+);
+
+$router->addRoute(
+    'POST',
+    '/api/products',
+    'ProductController@store'
+);
+
+$router->addRoute(
+    'PUT',
+    '/api/products/{id}',
+    'ProductController@update'
+);
+
+$router->addRoute(
+    'DELETE',
+    '/api/products/{id}',
+    'ProductController@destroy'
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| Stocks
+|--------------------------------------------------------------------------
+*/
+
+$router->addRoute(
+    'GET',
+    '/api/stocks',
+    'StockController@index'
+);
+
+$router->addRoute(
+    'GET',
+    '/api/stocks/{id}',
+    'StockController@show'
+);
+
+$router->addRoute(
+    'POST',
+    '/api/stocks',
+    'StockController@store'
+);
+
+$router->addRoute(
+    'PUT',
+    '/api/stocks/{id}',
+    'StockController@update'
+);
+
+$router->addRoute(
+    'DELETE',
+    '/api/stocks/{id}',
+    'StockController@destroy'
+);
+
+/*
+|--------------------------------------------------------------------------
+| IMS - Customers
+|--------------------------------------------------------------------------
+*/
+
+$router->addRoute(
+    'GET',
+    '/api/customers',
+    'CustomerController@index'
+);
+
+$router->addRoute(
+    'GET',
+    '/api/customers/{id}',
+    'CustomerController@show'
+);
+
+$router->addRoute(
+    'POST',
+    '/api/customers',
+    'CustomerController@store'
+);
+
+$router->addRoute(
+    'PUT',
+    '/api/customers/{id}',
+    'CustomerController@update'
+);
+
+$router->addRoute(
+    'DELETE',
+    '/api/customers/{id}',
+    'CustomerController@destroy'
+);
+
+/*
+|--------------------------------------------------------------------------
+| Orders
+|--------------------------------------------------------------------------
+*/
+
+$router->addRoute(
+    'GET',
+    '/api/orders',
+    'OrderController@index'
+);
+
+$router->addRoute(
+    'GET',
+    '/api/orders/{id}',
+    'OrderController@show'
+);
+
+$router->addRoute(
+    'POST',
+    '/api/orders',
+    'OrderController@store'
+);
+
+$router->addRoute(
+    'PUT',
+    '/api/orders/{id}',
+    'OrderController@update'
+);
+
+$router->addRoute(
+    'DELETE',
+    '/api/orders/{id}',
+    'OrderController@destroy'
+);
+
+/*
+|--------------------------------------------------------------------------
+| Order Items
+|--------------------------------------------------------------------------
+*/
+
+$router->addRoute(
+    'GET',
+    '/api/order-items',
+    'OrderItemController@index'
+);
+
+$router->addRoute(
+    'GET',
+    '/api/order-items/{id}',
+    'OrderItemController@show'
+);
+
+$router->addRoute(
+    'GET',
+    '/api/orders/{orderId}/items',
+    'OrderItemController@indexByOrder'
+);
+
+$router->addRoute(
+    'POST',
+    '/api/orders/{orderId}/items',
+    'OrderItemController@store'
+);
+
+$router->addRoute(
+    'PUT',
+    '/api/order-items/{id}',
+    'OrderItemController@update'
+);
+
+$router->addRoute(
+    'DELETE',
+    '/api/order-items/{id}',
+    'OrderItemController@destroy'
+);

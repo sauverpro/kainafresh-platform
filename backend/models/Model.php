@@ -11,6 +11,7 @@ abstract class Model {
         $this->db = Database::getInstance();
     }
     
+
     public function all() {
         $sql = "SELECT * FROM `{$this->table}`";
         $result = $this->db->query($sql);
