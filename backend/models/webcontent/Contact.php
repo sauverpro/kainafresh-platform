@@ -11,7 +11,7 @@ class Contact extends Model {
     return !empty($all) ? $all[0] : [];
     }
 
-    public function create($data){
+    public function createContact($data){
         return $this->create($data);
     }
 }

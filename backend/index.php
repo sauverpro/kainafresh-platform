@@ -7,11 +7,15 @@ ini_set('display_errors', 1);
 spl_autoload_register(function ($class) {
     $paths = [
         __DIR__ . '/core/',
-        __DIR__ . '/controllers/',
+        __DIR__ . '/controllers/webcontent/',
         __DIR__ . '/controllers/ims/',
         __DIR__ . '/models/',
         __DIR__ . '/models/ims/',
+         __DIR__ . '/models/webcontent/',
+          __DIR__ . '/models/authentication/',
         __DIR__ . '/middleware/',
+        __DIR__ .'/controllers/authentication/',
+        __DIR__ .'/controllers/',
     ];
     
     foreach ($paths as $path) {

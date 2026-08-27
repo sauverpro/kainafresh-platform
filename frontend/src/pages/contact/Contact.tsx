@@ -3,7 +3,7 @@ import { MapPin, Phone, Mail, Globe, Send, CheckCircle, Clock } from 'lucide-rea
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import PageLoader from '../../components/PageLoader/PageLoader';
-import { apiGet } from '../../api/client';
+import { apiGet,apiPost } from '../../api/client';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import './Contact.css';
 
@@ -30,9 +30,14 @@ interface SiteSettings {
 }
 
 interface HeroContent {
-  badge?: string;
+  tag?: string;
   heading?: string;
   subheading?: string;
+  headingAccesnt?: string;
+  feedbackHeading?: string;
+  feedbackMessage?: string;
+  contactheading?: string;
+  contactformsub?: string;
 }
 
 interface ContactForm {
@@ -87,7 +92,7 @@ function Contact() {
       apiGet<{ success: boolean; data: { sections: { type: string; content: HeroContent }[] } }>('/api/pages/slug/contact')
         .then((res) => {
           if (res.success && res.data?.sections) {
-            const heroSection = res.data.sections.find((s) => s.type === 'hero');
+            const heroSection = res.data.sections.find((s) => s.type === 'contact-hero');
             if (heroSection) setHero(heroSection.content);
           }
         })
@@ -117,7 +122,17 @@ function Contact() {
     e.preventDefault();
     setIsLoading(true);
     // POST /api/contact is not yet implemented — using mock
-    console.log('Contact form submission (mock):', form);
+    try {
+      const sendData = apiPost('/api/contact/create',{
+           name: form.name,
+           email: form.email,
+           phone: form.phone,
+           subject: form.subject,
+           message: form.message
+      })
+    } catch (error) {
+      console.debug("Failed", error);
+    }
     setTimeout(() => {
       setIsLoading(false);
       setSubmitted(true);
@@ -145,7 +160,7 @@ function Contact() {
         <section className="contact-hero">
           <div className="contact-hero-inner">
             <span className="contact-tag">
-              <Mail size={14} /> {hero.badge ?? 'Contact KainaFresh'}
+              <Mail size={14} /> {hero.tag ?? 'Contact KainaFresh'}
             </span>
             <h1>
               {hero.heading ?? 'Get in'}{' '}
@@ -238,16 +253,16 @@ function Contact() {
               {submitted ? (
                 <div className="contact-success">
                   <CheckCircle size={52} color="var(--color-primary)" />
-                  <h3>Message Sent!</h3>
-                  <p>Thank you for reaching out. Our team will get back to you within 24 business hours.</p>
+                  <h3>{ hero.feedbackHeading}</h3>
+                  <p>{hero.feedbackMessage}</p>
                   <button className="btn btn-primary" onClick={() => { setSubmitted(false); setForm({ name: '', email: '', phone: '', subject: '', message: '' }); }}>
                     Send Another Message
                   </button>
                 </div>
               ) : (
                 <form className="contact-form" onSubmit={handleSubmit} noValidate>
-                  <h2 className="contact-form-heading">Send Us a Message</h2>
-                  <p className="contact-form-sub">Fill in the form below and we'll get back to you promptly.</p>
+                  <h2 className="contact-form-heading">{hero.contactheading}</h2>
+                  <p className="contact-form-sub">{hero.contactformsub}</p>
 
                   <div className="contact-form-row">
                     <div className="form-group">

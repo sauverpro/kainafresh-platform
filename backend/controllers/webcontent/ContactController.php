@@ -36,4 +36,29 @@ $data = $this->getRequestData();
 
 }
 
+// create contact
+public function createContact(){
+    //$this->jsonResponse(["status"=>true,'message'=>"hello"],201);
+$data = $this->getRequestData();
+
+ $validation = $this->validateRequired($data,['name','email','phone','subject','message']);
+ if ($validation) {
+    $this->jsonResponse([
+            'success' => false,
+            'message' => $validation
+            ], 422);
+    }
+ $createddata = $this->contact_model->create( $data );
+ if($createddata){
+    $this->jsonResponse([
+        'success'=> true,
+        'data'=>$data
+    ],201);
+ }
+ else
+    {
+            $this->jsonResponse(['message'=> 'Something went wrong!'],500);
+    }
+
+}
 }
