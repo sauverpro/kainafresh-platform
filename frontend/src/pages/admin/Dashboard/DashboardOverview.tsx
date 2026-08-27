@@ -1,12 +1,33 @@
-import React, { useState } from 'react';
+/**
+ * ============================================================================
+ * KainaFresh Organic Platform — Bento Card Composition Dashboard Overview
+ * ============================================================================
+ * 
+ * Layout Architecture:
+ * 1. 2x2 Metric Card Palette: Total Orders, Monthly Sales, Active Clients, Delivered Weight.
+ * 2. Target Progress SVG Ring Chart: Circular dual-gradient progress indicator (#076935 to #F39927).
+ * 3. Calendar Day Strip Widget: Interactive day picker.
+ * 4. Recent Orders Table: Status pill indicators with Lucide vector icons.
+ * 5. Sage Green Action CTA Card: Inventory restock reminder.
+ */
+
+// Import React library and state hooks
+// Import React state hooks
+import { useState } from 'react';
+
+// Import Lucide vector icons for dashboard composition
 import { 
   Search, ChevronDown, CheckCircle, Clock, ArrowRight, Shield, 
-  Package, ShoppingBag, Users, DollarSign, Calendar, Eye, Trash2,
-  ChevronLeft, ChevronRight, Activity, Leaf, Truck
+  Package, ShoppingBag, Users, DollarSign, Eye,
+  ChevronLeft, ChevronRight, Leaf, Truck
 } from 'lucide-react';
+
+// Import Bento grid dashboard stylesheet
 import './DashboardOverview.css';
 
-// Mock Recent Orders Data
+/**
+ * Mock Recent Orders Dataset representing order transactions.
+ */
 const RECENT_ORDERS = [
   { id: 'ORD-8439', customer: 'Kris Payer', date: '26.08.2026', total: 130.50, status: 'delivered' },
   { id: 'ORD-8440', customer: 'Alice Smith', date: '26.08.2026', total: 45.00, status: 'processing' },
@@ -15,10 +36,17 @@ const RECENT_ORDERS = [
   { id: 'ORD-8443', customer: 'Michael Brown', date: '24.08.2026', total: 35.50, status: 'delivered' },
 ];
 
+/**
+ * DashboardOverview Functional Component.
+ */
 function DashboardOverview() {
+  // Calendar day selector active index state
   const [activeDay, setActiveDay] = useState(19);
 
-  const renderStatus = (status) => {
+  /**
+   * Helper function to render styled status badge pills with Lucide icons.
+   */
+  const renderStatus = (status: string) => {
     switch (status) {
       case 'delivered':
         return <span className="dash-badge delivered">Delivered <CheckCircle size={12} /></span>;

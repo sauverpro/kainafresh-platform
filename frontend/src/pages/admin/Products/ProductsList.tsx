@@ -1,10 +1,44 @@
-import React, { useState } from 'react';
+/**
+ * ============================================================================
+ * KainaFresh Organic Platform — Products Catalog Management Component
+ * ============================================================================
+ * 
+ * Features:
+ * 1. Multi-select table row checkboxes for batch actions.
+ * 2. Status badge pills with Lucide icons (active, draft, low stock).
+ * 3. Slide-over slide-in creation/edit side drawer (`ProductPanel`).
+ * 4. Search and category filter controls.
+ */
+
+// Import React library and state hooks
+import { useState } from 'react';
+
+// Import Lucide vector icons for table badges and actions
 import { Search, Upload, SlidersHorizontal, Plus, MoreHorizontal, Check, Clock, AlertTriangle } from 'lucide-react';
+
+// Import slide-over product creation panel drawer component
 import ProductPanel from './ProductPanel';
+
+// Import Product Management stylesheet
 import './ProductsList.css';
 
-// Mock Data
-const MOCK_PRODUCTS = [
+/**
+ * Interface definition representing a single product catalog item.
+ */
+interface ProductItem {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  date: string;
+  status: 'active' | 'draft' | 'low stock';
+  stock: number;
+}
+
+/**
+ * Mock Product Catalog Dataset.
+ */
+const MOCK_PRODUCTS: ProductItem[] = [
   { id: '10041', name: 'Organic Avocados', category: 'Fruits', price: 4.99, date: '26.07.2024', status: 'active', stock: 45 },
   { id: '10042', name: 'Fresh Carrots Bundle', category: 'Vegetables', price: 2.50, date: '26.07.2024', status: 'active', stock: 120 },
   { id: '10043', name: 'Raw Honey Jar', category: 'Pantry', price: 12.00, date: '25.07.2024', status: 'draft', stock: 0 },
@@ -13,11 +47,18 @@ const MOCK_PRODUCTS = [
   { id: '10046', name: 'Sweet Potatoes', category: 'Vegetables', price: 2.80, date: '24.07.2024', status: 'active', stock: 200 },
 ];
 
+/**
+ * ProductsList Main Functional Component.
+ */
 function ProductsList() {
-  const [selectedIds, setSelectedIds] = useState([]);
+  // Selected table row IDs array state for batch actions
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Slide-over product creation panel open/close state
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
-  const toggleSelect = (id) => {
+  // Toggle individual row selection checkbox
+  const toggleSelect = (id: string) => {
     if (selectedIds.includes(id)) {
       setSelectedIds(selectedIds.filter(item => item !== id));
     } else {
@@ -25,6 +66,7 @@ function ProductsList() {
     }
   };
 
+  // Select/deselect all table rows
   const toggleAll = () => {
     if (selectedIds.length === MOCK_PRODUCTS.length) {
       setSelectedIds([]);
@@ -33,8 +75,10 @@ function ProductsList() {
     }
   };
 
-  // Status badge styling helper
-  const renderStatus = (status) => {
+  /**
+   * Helper function to render status badges with Lucide icons.
+   */
+  const renderStatus = (status: string) => {
     switch (status) {
       case 'active':
         return <span className="status-badge-table active">active <Check size={12} /></span>;

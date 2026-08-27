@@ -1,9 +1,41 @@
-import React, { useState } from 'react';
-import { Search, Upload, SlidersHorizontal, Plus, MoreHorizontal, AlertTriangle, CheckCircle, PackageSearch } from 'lucide-react';
+/**
+ * ============================================================================
+ * KainaFresh Organic Platform — Warehouse Inventory Management Component
+ * ============================================================================
+ * 
+ * Features:
+ * 1. Summary Cards: Total Items, Low Stock Alerts, Out of Stock, Total Inventory Value.
+ * 2. SKU Warehouse Stock Location Tracking (Zones & Shelves).
+ * 3. Reorder level warning indicators with status badge pills.
+ * 4. Multi-select SKU table row selection.
+ */
+
+// Import React library and state hooks
+import { useState } from 'react';
+
+// Import Lucide vector icons for inventory badges and toolbar actions
+import { Search, Upload, AlertTriangle, CheckCircle, PackageSearch } from 'lucide-react';
+
+// Import Inventory stylesheet
 import './InventoryList.css';
 
-// Mock Data for Inventory
-const MOCK_INVENTORY = [
+/**
+ * Interface definition representing a single warehouse inventory item.
+ */
+interface InventoryItem {
+  sku: string;
+  name: string;
+  category: string;
+  location: string;
+  qty: number;
+  reorder: number;
+  status: 'in stock' | 'out of stock' | 'low stock';
+}
+
+/**
+ * Mock Inventory Dataset.
+ */
+const MOCK_INVENTORY: InventoryItem[] = [
   { sku: 'ORG-AVO-001', name: 'Organic Avocados', category: 'Fruits', location: 'Zone A - Shelf 12', qty: 45, reorder: 50, status: 'low stock' },
   { sku: 'FR-CAR-002', name: 'Fresh Carrots Bundle', category: 'Vegetables', location: 'Zone B - Shelf 04', qty: 120, reorder: 40, status: 'in stock' },
   { sku: 'RAW-HON-003', name: 'Raw Honey Jar', category: 'Pantry', location: 'Zone C - Shelf 01', qty: 0, reorder: 20, status: 'out of stock' },
@@ -11,10 +43,15 @@ const MOCK_INVENTORY = [
   { sku: 'ORG-TOM-005', name: 'Organic Tomatoes', category: 'Vegetables', location: 'Zone A - Shelf 08', qty: 80, reorder: 30, status: 'in stock' },
 ];
 
+/**
+ * InventoryList Functional Component.
+ */
 function InventoryList() {
-  const [selectedSkus, setSelectedSkus] = useState([]);
+  // Selected SKU IDs array state
+  const [selectedSkus, setSelectedSkus] = useState<string[]>([]);
 
-  const toggleSelect = (sku) => {
+  // Toggle individual SKU row selection
+  const toggleSelect = (sku: string) => {
     if (selectedSkus.includes(sku)) {
       setSelectedSkus(selectedSkus.filter(item => item !== sku));
     } else {
@@ -22,6 +59,7 @@ function InventoryList() {
     }
   };
 
+  // Toggle all row check boxes
   const toggleAll = () => {
     if (selectedSkus.length === MOCK_INVENTORY.length) {
       setSelectedSkus([]);
@@ -30,7 +68,10 @@ function InventoryList() {
     }
   };
 
-  const renderStatus = (status) => {
+  /**
+   * Helper function to render inventory status badge pills.
+   */
+  const renderStatus = (status: string) => {
     switch (status) {
       case 'in stock':
         return <span className="inv-badge in-stock">In Stock <CheckCircle size={12} /></span>;

@@ -43,17 +43,46 @@ interface ContactForm {
   message: string;
 }
 
+/**
+ * ============================================================================
+ * KainaFresh Organic Platform — Customer Contact & Inquiry Component
+ * ============================================================================
+ * 
+ * Features:
+ * 1. Parallel database fetching for global contact settings and CMS hero details.
+ * 2. Customer inquiry form with name, email, phone, subject, and message.
+ * 3. Interactive map location, phone support, email channels, and operating hours.
+ * 4. Integrated glassmorphic page loading overlay while data retrieves.
+ */
+
+/**
+ * Contact Functional Component.
+ */
 function Contact() {
+  // Set SEO document page title
   usePageTitle('contact', 'Contact');
+
+  // Dynamic site settings state retrieved from MariaDB (/api/settings)
   const [settings, setSettings] = useState<SiteSettings>({});
+
+  // Dynamic CMS hero section content state
   const [hero, setHero] = useState<HeroContent>({});
+
+  // Page loading overlay state indicator
   const [pageLoading, setPageLoading] = useState(true);
+
+  // Customer contact form input values state
   const [form, setForm] = useState<ContactForm>({ name: '', email: '', phone: '', subject: '', message: '' });
+
+  // Form submission success banner toggle
   const [submitted, setSubmitted] = useState(false);
+
+  // Form submitting button spinner indicator state
   const [isLoading, setIsLoading] = useState(false);
 
+  // Lifecycle effect: Query MariaDB for CMS sections and site settings on mount
   useEffect(() => {
-    setPageLoading(true);
+    // Perform parallel async fetch for both contact hero content and global settings
     Promise.all([
       apiGet<{ success: boolean; data: { sections: { type: string; content: HeroContent }[] } }>('/api/pages/slug/contact')
         .then((res) => {
@@ -62,15 +91,20 @@ function Contact() {
             if (heroSection) setHero(heroSection.content);
           }
         })
-        .catch(() => { /* silently fall back */ }),
+        .catch(() => { 
+          // Silently fall back to default copy
+        }),
 
-      apiGet<any>('/api/settings')
+      apiGet<{ data?: SiteSettings }>('/api/settings')
         .then((res) => {
           if (res?.data) setSettings(res.data);
           else if (Array.isArray(res) && res[1]) setSettings(res[1]);
         })
-        .catch(() => { /* silently fall back */ })
+        .catch(() => { 
+          // Silently fall back
+        })
     ]).finally(() => {
+      // Complete loading phase
       setPageLoading(false);
     });
   }, []);

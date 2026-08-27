@@ -1,12 +1,42 @@
+/**
+ * ============================================================================
+ * KainaFresh Organic Platform — Progressive 3-Step User Registration Page
+ * ============================================================================
+ * 
+ * Features:
+ * 1. Multi-step progressive form flow (Step 1: Personal, Step 2: Contact, Step 3: Security).
+ * 2. Real-time dynamic password strength evaluation engine (Weak, Fair, Good, Strong).
+ * 3. Step-by-step field verification guards before advancing (`validateStep`).
+ * 4. Automatic post-registration authentication and automatic login redirect.
+ */
+
+// Import React state hooks
 import { useState } from 'react';
+
+// Import TypeScript form event types
 import type { ChangeEvent, FormEvent } from 'react';
+
+// Import React Router navigation components
 import { Link, useNavigate } from 'react-router-dom';
+
+// Import Lucide vector icons for progressive step navigation and form inputs
 import { Eye, EyeOff, ArrowRight, ArrowLeft, Mail, Phone, Lock, User, AtSign, Truck, Clock } from 'lucide-react';
+
+// Import API client helpers for user registration and JWT token storage
 import { apiPost, setToken } from '../../api/client';
+
+// Import hook to dynamically update HTML title tag
 import { usePageTitle } from '../../hooks/usePageTitle';
+
+// Import tractor asset image
 import tractorImg from '../../assets/images/tractor.png';
+
+// Import Auth component stylesheet
 import './Auth.css';
 
+/**
+ * Interface representing all registration form fields.
+ */
 interface FormState {
   full_name: string;
   username: string;
@@ -16,6 +46,9 @@ interface FormState {
   confirmPassword: string;
 }
 
+/**
+ * Interface representing per-field error messages.
+ */
 interface FieldErrors {
   full_name?: string;
   username?: string;
@@ -25,6 +58,9 @@ interface FieldErrors {
   confirmPassword?: string;
 }
 
+/**
+ * Interface definition for API Login response payload structure.
+ */
 interface LoginResponse {
   data: {
     token: string;
@@ -32,14 +68,19 @@ interface LoginResponse {
 }
 
 /**
- * Signup Page — Progressive Multi-Step Form
- * Split-screen design with heavy branding.
+ * Signup Page Component.
  */
 function Signup() {
+  // Set SEO document page title
   usePageTitle('signup', 'Sign Up');
+
+  // Imperative navigation hook
   const navigate = useNavigate();
+
+  // Current active step index state (Step 1, 2, or 3)
   const [step, setStep] = useState<number>(1);
 
+  // Registration form values state container
   const [form, setForm] = useState<FormState>({
     full_name: '',
     username: '',
@@ -48,13 +89,26 @@ function Signup() {
     password: '',
     confirmPassword: '',
   });
+
+  // Password visibility toggle state
   const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  // Confirm password visibility toggle state
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+
+  // Field validation errors state dictionary
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
+  // Server error message state string
   const [serverError, setServerError] = useState<string>('');
+
+  // Form submission loading spinner state
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Password strength checking engine
+  /**
+   * Evaluates password strength score (0 to 4).
+   * Checks length, uppercase, numbers, and special characters.
+   */
   const getPasswordStrength = (pw: string): number => {
     if (!pw) return 0;
     let score = 0;
@@ -65,18 +119,31 @@ function Signup() {
     return score;
   };
 
+  // Strength score label mapping
   const strengthLabel = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+
+  // Strength score CSS class mapping
   const strengthClass = ['', 'strength-weak', 'strength-fair', 'strength-good', 'strength-strong'];
+
+  // Compute current password strength score
   const pwStrength = getPasswordStrength(form.password);
 
+  // Form input field change handler
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    
+    // Clear error message for current input
     setFieldErrors((prev) => ({ ...prev, [name]: '' }));
     setServerError('');
+
+    // Update state key matching input name attribute
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Per-step structural verification
+  /**
+   * Per-step input validation rules.
+   * Ensures user cannot advance to the next step without valid data.
+   */
   const validateStep = (): FieldErrors => {
     const errors: FieldErrors = {};
     if (step === 1) {
@@ -98,20 +165,29 @@ function Signup() {
     return errors;
   };
 
+  // Advance to next step handler
   const goNext = () => {
     const errors = validateStep();
     if (Object.keys(errors).length > 0) return setFieldErrors(errors);
     setStep((s) => s + 1);
   };
 
+  // Step back to previous step handler
   const goBack = () => {
     setFieldErrors({});
     setServerError('');
     setStep((s) => s - 1);
   };
 
+  /**
+   * Final multi-step form submission handler.
+   * Registers account via POST /api/auth/register and automatically logs user in.
+   */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    // Prevent standard form submission reload
     e.preventDefault();
+
+    // Verify step 3 inputs
     const errors = validateStep();
     if (Object.keys(errors).length > 0) return setFieldErrors(errors);
 
@@ -119,6 +195,7 @@ function Signup() {
     setServerError('');
 
     try {
+      // 1. Submit user registration payload to backend
       await apiPost('/api/auth/register', {
         full_name: form.full_name.trim(),
         username: form.username.trim(),
@@ -127,13 +204,17 @@ function Signup() {
         password: form.password,
       });
 
+      // 2. Automatically log user in after successful registration
       const loginData = await apiPost<LoginResponse>('/api/auth/login', {
         email: form.email.trim(),
         password: form.password,
       });
 
+      // Store JWT token string in browser localStorage
       const { token } = loginData.data;
       setToken(token);
+
+      // Redirect user to home landing page
       navigate('/');
     } catch (err: unknown) {
       setServerError(err instanceof Error ? err.message : 'Registration failed. Please try again.');

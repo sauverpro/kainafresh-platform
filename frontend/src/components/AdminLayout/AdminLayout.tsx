@@ -1,13 +1,27 @@
+/**
+ * ============================================================================
+ * KainaFresh Organic Platform — Admin Dashboard Layout Shell Component
+ * ============================================================================
+ * 
+ * Features:
+ * 1. Collapsible Accordion Navigation Sidebar (Content CMS, Shop Management, System).
+ * 2. Dynamic CMS Page items fetching from MariaDB (/api/pages) into the CMS dropdown.
+ * 3. Active route highlight logic and automatic dropdown expansion.
+ * 4. Desktop green header topbar with search & notification badges.
+ * 5. Mobile responsive hamburger drawer layout.
+ */
+
+// Import React hooks for managing state and lifecycle effects
 import React, { useState, useEffect } from 'react';
-import { useLocation, Link, useNavigate } from 'react-router-dom';
+
+// Import React Router DOM components for navigation and location tracking
+import { useLocation, Link } from 'react-router-dom';
+
+// Import Lucide vector icons for navigation menus and topbar actions
 import { 
   LayoutDashboard, 
   FileText, 
   Package, 
-  Box,
-  ShoppingCart,
-  BarChart2,
-  Users, 
   Settings,
   LogOut,
   ChevronDown,
@@ -18,41 +32,88 @@ import {
   User,
   Bell
 } from 'lucide-react';
+
+// Import API client for dynamic page fetching
 import { apiGet } from '../../api/client';
+
+// Import Admin Layout stylesheet
 import './AdminLayout.css';
 
-function AdminLayout({ children }) {
+/**
+ * Interface definition for AdminLayout component props.
+ */
+interface AdminLayoutProps {
+  children: React.ReactNode;
+}
+
+/**
+ * Interface representing a page record returned from MariaDB.
+ */
+interface PageItem {
+  id: number;
+  title: string;
+  slug: string;
+}
+
+interface DropdownItem {
+  id?: number | string;
+  name: string;
+  path: string;
+}
+
+/**
+ * AdminLayout Functional Component.
+ */
+function AdminLayout({ children }: AdminLayoutProps) {
+  // Access current URL location state
   const location = useLocation();
-  const navigate = useNavigate();
-  const [pages, setPages] = useState([]);
-  const [openDropdown, setOpenDropdown] = useState(null);
+
+  // Dynamic CMS pages list array fetched from MariaDB
+  const [pages, setPages] = useState<PageItem[]>([]);
+
+  // Helper method: Determines default dropdown key based on current path
+  const getAutoDropdown = (pathname: string): string | null => {
+    if (pathname.startsWith('/admin/content')) return 'Content CMS';
+    if (['/admin/products', '/admin/inventory', '/admin/orders', '/admin/customers', '/admin/reports'].some(path => pathname.startsWith(path))) return 'Shop Management';
+    if (['/admin/settings', '/admin/users'].some(path => pathname.startsWith(path))) return 'System';
+    return null;
+  };
+
+  // Currently open dropdown submenu title key (user override state)
+  const [manualDropdown, setManualDropdown] = useState<{ path: string; name: string | null } | null>(null);
+
+  // Compute active open dropdown title
+  const openDropdown = (manualDropdown && manualDropdown.path === location.pathname) 
+    ? manualDropdown.name 
+    : getAutoDropdown(location.pathname);
+
+  // Function to toggle dropdown
+  const toggleDropdown = (name: string) => {
+    const isCurrentlyOpen = openDropdown === name;
+    setManualDropdown({ path: location.pathname, name: isCurrentlyOpen ? null : name });
+  };
+
+  // Mobile sidebar drawer open/close toggle state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Lifecycle effect: Query MariaDB for page list on mount
   useEffect(() => {
     const fetchPages = async () => {
       try {
-        const res = await apiGet('/api/pages');
-        if (res.success) setPages(res.data);
+        const res = await apiGet<{ success?: boolean; data?: PageItem[] }>('/api/pages');
+        if (res?.success && Array.isArray(res.data)) {
+          setPages(res.data);
+        }
       } catch (err) {
         console.error('Failed to fetch pages', err);
       }
     };
-    fetchPages();
-    
-    // Auto-open corresponding dropdown based on current route
-    if (location.pathname.startsWith('/admin/content')) {
-      setOpenDropdown('Content CMS');
-    } else if (['/admin/products', '/admin/inventory', '/admin/orders', '/admin/customers', '/admin/reports'].some(path => location.pathname.startsWith(path))) {
-      setOpenDropdown('Shop Management');
-    } else if (['/admin/settings', '/admin/users'].some(path => location.pathname.startsWith(path))) {
-      setOpenDropdown('System');
-    } else {
-      setOpenDropdown(null);
-    }
-  }, [location.pathname]);
 
-  // Helper to determine if a path is active
-  const isActive = (path) => {
+    fetchPages();
+  }, []);
+
+  // Helper method: Determines if a given route path matches the current browser URL
+  const isActive = (path: string) => {
     if (path === '/admin' && location.pathname === '/admin') return true;
     if (path !== '/admin' && location.pathname === path) return true;
     return false;
@@ -105,7 +166,7 @@ function AdminLayout({ children }) {
 
         <nav className="admin-nav">
           <ul>
-            {navLinks.map((link, index) => {
+            {navLinks.map((link) => {
               const Icon = link.icon;
               
               if (link.isDropdown) {
@@ -121,7 +182,7 @@ function AdminLayout({ children }) {
                 }
 
                 // Prepare children array
-                let dropdownItems = [];
+                let dropdownItems: DropdownItem[] = [];
                 if (link.isDynamicCMS) {
                   dropdownItems = pages.map(page => ({
                     id: page.id,
@@ -136,7 +197,7 @@ function AdminLayout({ children }) {
                   <li key={link.name} className={`admin-nav-item dropdown-parent ${isOpen ? 'expanded' : ''} ${isAnyChildActive && !isOpen ? 'active' : ''}`}>
                     <div 
                       className="admin-nav-link" 
-                      onClick={() => setOpenDropdown(isOpen ? null : link.name)}
+                      onClick={() => toggleDropdown(link.name)}
                       style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -166,15 +227,15 @@ function AdminLayout({ children }) {
               }
 
               // Force standard links to visually lose their active state if their parent dropdown is not relevant but another dropdown is open
-              const active = isActive(link.path) && !openDropdown;
+              const active = isActive(link.path ?? '') && !openDropdown;
               
               return (
                 <li key={link.name} className={`admin-nav-item ${active ? 'active' : ''}`}>
                   <Link 
-                    to={link.path} 
+                    to={link.path ?? '#'} 
                     className="admin-nav-link" 
                     onClick={() => {
-                      setOpenDropdown(null);
+                      setManualDropdown({ path: location.pathname, name: null });
                       setIsMobileMenuOpen(false); // Close sidebar on mobile nav
                     }}
                   >
