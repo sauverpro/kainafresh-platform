@@ -10,7 +10,7 @@ import Signup from "./pages/auth/Signup";
 import About from "./pages/about/About";
 import Contact from "./pages/contact/Contact";
 import Wholesale from "./pages/wholesale/Wholesale";
-import EcommerceDashboard from "./pages/dashboard/EcommerceDashboard";
+import Dashboard from "./pages/dashboard";
 import CrmPage from "./pages/crm/CrmPage";
 import ProductsList from "./pages/admin/Products/ProductsList";
 import InventoryList from "./pages/admin/Inventory/InventoryList";
@@ -70,12 +70,12 @@ function App() {
           {/* Authenticated Dashboard */}
           <Route
             element={
-              <ProtectedRoute>
+             <ProtectedRoute>
                 <AppLayout />
-              </ProtectedRoute>
+             </ProtectedRoute>
             }
           >
-            <Route path="/dashboard" element={<EcommerceDashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/crm/settings" element={<GlobalSettings />} />
             <Route path="/crm/:slug" element={<CrmPage />} />
             <Route path="/products" element={<ProductsList />} />
