@@ -3,7 +3,7 @@ import { MapPin, Phone, Mail, Globe, Send, CheckCircle, Clock } from 'lucide-rea
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import Loader from '../../components/Loader/Loader';
-import { apiGet } from '../../api/client';
+import { apiGet, apiPost } from '../../api/client';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import './Contact.css';
 
