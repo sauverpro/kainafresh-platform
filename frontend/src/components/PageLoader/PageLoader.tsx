@@ -10,7 +10,7 @@
  */
 
 // Import CSS stylesheet for animations and glassmorphism overlay
-import './PageLoader.css';
+// import './PageLoader.css';
 
 /**
  * Props definition interface for PageLoader component.
