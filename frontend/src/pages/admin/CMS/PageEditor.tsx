@@ -355,7 +355,7 @@ function PageEditor() {
       setError('');
       try {
         // Query GET /api/pages/slug/:slug
-        const res = await apiGet<ApiResponse<CmsPageData>>(`/api/pages/slug/${slug}`);
+        const res = await apiGet<ApiResponse<CmsPageData>>(`/api/pages/slug/${encodeURIComponent(slug ?? "")}`);
         if (res.success && res.data) {
           setPage(res.data);
           
