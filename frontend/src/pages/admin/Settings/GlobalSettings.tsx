@@ -16,11 +16,14 @@ import React, { useState, useEffect } from 'react';
 // Import Lucide vector icons for UI tabs, notifications, and buttons
 import { 
   Globe, Image as ImageIcon, Phone, Share2, 
-  Save, Upload, CheckCircle2, AlertCircle, RefreshCw 
+  Save, Upload, CheckCircle2, AlertCircle 
 } from 'lucide-react';
 
 // Import HTTP API client utilities for CRUD calls
 import { apiGet, apiPost, apiPostFormData, apiDelete } from '../../../api/client';
+
+// Import custom centered page loading indicator
+import Loader from '../../../components/Loader/Loader';
 
 // Import Global Settings tab stylesheet
 import './GlobalSettings.css';
@@ -287,12 +290,7 @@ export default function GlobalSettings() {
   };
 
   if (loading) {
-    return (
-      <div className="settings-dashboard" style={{ textAlign: 'center', padding: '4rem' }}>
-        <RefreshCw size={32} className="spin-icon" style={{ color: '#076935' }} />
-        <p style={{ marginTop: '1rem', color: '#6B7280' }}>Loading system settings...</p>
-      </div>
-    );
+    return <Loader text="Loading system settings..." />;
   }
 
   return (

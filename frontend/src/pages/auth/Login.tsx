@@ -115,9 +115,9 @@ function Login() {
       // Store JWT token string in browser localStorage
       setToken(token);
 
-      // Route admin users to Dashboard, and customers to Home page
+      // Route admin users to the Dashboard, and customers to Home page
       if (user?.role === 'admin') {
-        navigate('/admin');
+        navigate('/dashboard');
       } else {
         navigate('/');
       }

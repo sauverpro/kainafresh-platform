@@ -4,8 +4,6 @@
 
 .page-editor {
   max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 1rem 4rem 1rem;
   font-family: var(--font-body);
 }
 

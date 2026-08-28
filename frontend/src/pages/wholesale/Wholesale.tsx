@@ -166,7 +166,19 @@ const PRODUCT_CATEGORIES = [
 //   },
 // ];
 
-import PageLoader from "../../components/PageLoader/PageLoader";
+/**
+ * ============================================================================
+ * KainaFresh Organic Platform — Wholesale B2B & Export Program Component
+ * ============================================================================
+ * 
+ * Features:
+ * 1. B2B Wholesale inquiry form with country, product interest, and volume specs.
+ * 2. Export capabilities showcase, cold-chain logistics specs, and certifications.
+ * 3. Integrated glassmorphic page loading screen during database fetch.
+ */
+
+// Import PageLoader component for database retrieval loading overlay
+import Loader from "../../components/Loader/Loader";
 
 
 
@@ -359,7 +371,14 @@ function Wholesale() {
   };
 
   if (pageLoading) {
-    return <PageLoader text="Loading wholesale catalog and export details..." />;
+    return (
+      <>
+        <Navbar />
+        <main className="wholesale-page">
+          <Loader text="Loading wholesale catalog and export details..." />
+        </main>
+      </>
+    );
   }
 
   return (

@@ -66,8 +66,8 @@ interface CmsSection { type: string; content: HeroContent & StatsContent & Story
  * 3. Integrated glassmorphic page loading screen during database fetch.
  */
 
-// Import PageLoader overlay component
-import PageLoader from '../../components/PageLoader/PageLoader';
+// Import centered page loader component
+import Loader from '../../components/Loader/Loader';
 
 /**
  * About Functional Component.
@@ -205,9 +205,16 @@ function About() {
 
   const team = cmsTeam || [];
 
-  // Render glassmorphic page loader overlay if data is fetching
+  // Render a stable page shell (header) with a centered loader while fetching
   if (loading) {
-    return <PageLoader text="Loading farm story and credentials from database..." />;
+    return (
+      <>
+        <Navbar />
+        <main className="about-page">
+          <Loader text="Loading farm story and credentials from database..." />
+        </main>
+      </>
+    );
   }
 
   return (
