@@ -1,0 +1,14 @@
+[36mvite v8.2.1 [32mbuilding client environment for production...[36m[39m
+[2Ktransforming...✓ 1849 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                            0.47 kB │ gzip:   0.31 kB
+dist/assets/placeholder-CxTkwyWF.png     666.25 kB
+dist/assets/cta-bg-BM70c_qM.png        1,151.87 kB
+dist/assets/tractor-ePFgR7CE.png       1,570.64 kB
+dist/assets/hero-farmers-Dz7eW1dp.png  1,588.86 kB
+dist/assets/pepper-Mg-62fjx.png        2,948.56 kB
+dist/assets/index-h2HZAHPP.css            98.90 kB │ gzip:  17.61 kB
+dist/assets/index-fSyOfYBF.js            360.04 kB │ gzip: 103.85 kB
+
+[32m✓ built in 1.37s[39m

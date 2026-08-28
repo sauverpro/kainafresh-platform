@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
-import type { NavItem } from "../../data/sideNavData.types";
+import type { NavItem } from "../../assets/data/sideNavData.types";
 import { useSidebar } from "../../context/SidebarContext";
 
 interface Props {
