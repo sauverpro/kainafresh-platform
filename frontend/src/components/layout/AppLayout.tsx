@@ -27,7 +27,7 @@ export default function AppLayout() {
         ].join(" ")}
       >
         <Header />
-        <main className="p-4 lg:p-6">
+        <main className="px-6 py-4 lg:px-8 lg:py-6">
           <Outlet />
         </main>
       </div>

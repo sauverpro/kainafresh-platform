@@ -181,7 +181,7 @@ function Navbar() {
       linkName === 'our farm' || linkName === 'about' || linkPath === '/about' || linkPath === '/farm' ||
       linkName === 'wholesale' || linkPath === '/wholesale' ||
       linkName === 'contact' || linkPath === '/contact' ||
-      linkName === 'admin' || linkPath === '/admin'
+      linkName === 'dashboard' || linkPath === '/dashboard'
     );
   };
 
@@ -242,10 +242,10 @@ function Navbar() {
               </NavLink>
             ))}
 
-          {/* Render Admin Panel Shortcut Link if User is Authenticated */}
+          {/* Render Dashboard Shortcut Link if User is Authenticated */}
           {loggedIn && (
-            <NavLink to="/admin" onClick={closeMenu} className="nav-icon-link">
-              <Shield size={16} /> <span>Admin</span>
+            <NavLink to="/dashboard" onClick={closeMenu} className="nav-icon-link">
+              <Shield size={16} /> <span>Dashboard</span>
             </NavLink>
           )}
         </div>

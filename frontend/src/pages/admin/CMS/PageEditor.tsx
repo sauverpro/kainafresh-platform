@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiGet, apiPut } from '../../../api/client';
-import PageLoader from '../../../components/PageLoader/PageLoader';
+import Loader from '../../../components/Loader/Loader';
 
 interface ApiResponse<T = unknown> {
   success?: boolean;
@@ -377,8 +377,8 @@ function PageEditor() {
     fetchPageData();
   }, [slug]);
 
-  // Display glassmorphic brand page loader if schema is loading
-  if (loading) return <PageLoader text="Loading CMS page schema & sections from database..." />;
+  // Display the custom centered page loader while the schema is loading
+  if (loading) return <Loader text="Loading CMS page schema & sections from database..." />;
   if (error) return <div className="cms-error"><AlertCircle /> {error}</div>;
   if (!page) return <div className="cms-error">Page not found.</div>;
 

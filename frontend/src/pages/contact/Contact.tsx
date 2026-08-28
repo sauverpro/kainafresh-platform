@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { MapPin, Phone, Mail, Globe, Send, CheckCircle, Clock } from 'lucide-react';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
-import PageLoader from '../../components/PageLoader/PageLoader';
-import { apiGet,apiPost } from '../../api/client';
+import Loader from '../../components/Loader/Loader';
+import { apiGet } from '../../api/client';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import './Contact.css';
 
@@ -148,7 +148,14 @@ function Contact() {
   ].filter((s) => s.url);
 
   if (pageLoading) {
-    return <PageLoader text="Retrieving contact information from database..." />;
+    return (
+      <>
+        <Navbar />
+        <main className="contact-page">
+          <Loader text="Retrieving contact information from database..." />
+        </main>
+      </>
+    );
   }
 
   return (

@@ -14,7 +14,7 @@ import type { NavSection } from "./sideNavData.types";
 export const sideNavData: NavSection[] = [
   {
     id: "menu",
-    title: "Menu",
+    title: "",
     items: [
       {
         id: "dashboard",

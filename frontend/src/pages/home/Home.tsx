@@ -181,8 +181,8 @@ const FEATURED_PRODUCTS = [
  * 5. Full glassmorphic page loading overlay while data retrieves.
  */
 
-// Import PageLoader overlay for smooth database retrieval loading states
-import PageLoader from "../../components/PageLoader/PageLoader";
+// Import centered page loader for smooth database retrieval loading states
+import Loader from "../../components/Loader/Loader";
 
 /**
  * Main Home Landing Page Functional Component.
@@ -292,9 +292,16 @@ function Home() {
         { id: 3, question: 'How do I know produce is organic?', answer: 'KainaFresh is certified organic with regular farm inspections.' },
       ];
 
-  // Display glassmorphic brand page loader if data is currently fetching
+  // Render a stable page shell (header) with a centered loader while fetching
   if (loading) {
-    return <PageLoader text="Fetching fresh produce data from database..." />;
+    return (
+      <>
+        <Navbar />
+        <main className="home-page">
+          <Loader text="Fetching fresh produce data from database..." />
+        </main>
+      </>
+    );
   }
 
   return (

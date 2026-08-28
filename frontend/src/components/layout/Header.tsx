@@ -1,19 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { Menu, Search, Bell, Moon, Sun, ChevronDown, X } from "lucide-react";
+import { Menu, Search, Bell, ChevronDown, X } from "lucide-react";
 import { useSidebar } from "../../context/SidebarContext";
 
-const USER_NAME = "Musharof";
+const USER_NAME = "Alice";
 const INITIALS = USER_NAME.slice(0, 2).toUpperCase();
 
 export default function Header() {
   const { toggleSidebar, toggleMobileSidebar, isMobileOpen } = useSidebar();
-  const [isDark, setIsDark] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDark);
-  }, [isDark]);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -49,21 +44,21 @@ export default function Header() {
           placeholder="Search or type command..."
           className="h-11 w-full rounded-lg border border-gray-200 bg-white pl-10 pr-14 text-sm text-gray-700 placeholder:text-gray-400 outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-white/10 dark:bg-gray-900 dark:text-gray-200"
         />
-        <kbd className="absolute right-3 top-1/2 -translate-y-1/2 rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[11px] font-medium text-gray-400 dark:border-white/10 dark:bg-white/5">
-          ⌘K
+        <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[11px] font-medium text-gray-400 dark:border-white/10 dark:bg-white/5">
+          Search
         </kbd>
       </div>
 
       <div className="ml-auto flex items-center gap-2.5">
         {/* Theme toggle */}
-        <button
+        {/* <button
           type="button"
           onClick={() => setIsDark((d) => !d)}
           aria-label="Toggle dark mode"
           className="flex h-11 w-11 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
         >
           {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-        </button>
+        </button> */}
 
         {/* Notifications */}
         <button

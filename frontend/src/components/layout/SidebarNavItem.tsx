@@ -108,7 +108,7 @@ export default function SidebarNavItem({ item }: Props) {
           style={{ maxHeight: isRailExpanded ? maxHeight : "0px" }}
           className="overflow-hidden transition-[max-height] duration-300 ease-in-out"
         >
-          <ul className="mt-1 ml-[34px] space-y-1 border-l border-gray-200 pl-3 dark:border-white/10">
+          <ul className="mt-1 ml-2 space-y-1 border-l border-gray-200 pl-3 dark:border-white/10">
             {item.subItems!.map((sub) => {
               if (sub.otherSub?.length) {
                 const isGroupOpen =
@@ -121,7 +121,12 @@ export default function SidebarNavItem({ item }: Props) {
                       onClick={() =>
                         setOpenOtherSub(isGroupOpen ? null : sub.label)
                       }
-                      className="flex w-full items-center justify-between rounded-md px-2.5 py-2 text-sm text-gray-500 transition-colors hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"
+                      className={[
+                        "flex w-full items-center justify-between rounded-md px-2.5 py-2 text-sm transition-colors hover:text-gray-800 dark:hover:text-white",
+                        isGroupOpen
+                          ? "text-brand-600 font-medium dark:text-brand-300"
+                          : "text-gray-500 dark:text-gray-400",
+                      ].join(" ")}
                     >
                       <span>{sub.label}</span>
                       <ChevronDown
@@ -132,7 +137,7 @@ export default function SidebarNavItem({ item }: Props) {
                       />
                     </button>
                     {isGroupOpen && (
-                      <ul className="ml-2 mt-0.5 space-y-0.5 border-l border-gray-200 pl-2 dark:border-white/10">
+                      <ul className="ml-1 mt-0.5 space-y-0.5 px-1 ">
                         {sub.otherSub.map((child) =>
                           child.path ? (
                             <li key={child.path}>
@@ -142,7 +147,7 @@ export default function SidebarNavItem({ item }: Props) {
                                   [
                                     "block rounded-md px-2.5 py-1.5 text-[13px] transition-colors",
                                     isActive
-                                      ? "text-brand-600 font-medium dark:text-brand-300"
+                                      ? "bg-brand-50 font-medium text-brand-600 dark:bg-brand-500/10 dark:text-brand-300"
                                       : "text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-white",
                                   ].join(" ")
                                 }
@@ -166,7 +171,7 @@ export default function SidebarNavItem({ item }: Props) {
                       [
                         "block rounded-md px-2.5 py-2 text-sm transition-colors duration-150",
                         isActive
-                          ? "text-brand-600 font-medium dark:text-brand-300"
+                          ? "bg-brand-50 font-medium text-brand-600 dark:bg-brand-500/10 dark:text-brand-300"
                           : "text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white",
                       ].join(" ")
                     }
