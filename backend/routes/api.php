@@ -93,17 +93,18 @@ $router->addRoute('GET','/api/team','TeamController@index');
 $router->addRoute('GET','/api/team/test','TeamController@test');
 $router->addRoute('POST','/api/inquiry/create','ContactController@createInquiry');
 $router->addRoute('POST','/api/contact/create','ContactController@createContact');
+$router->addRoute('GET','/api/partners','PartnerController@index');
 // middleware protected routes
 $router->addRoute('POST','/api/settings/create','SettingController@store','auth');
 
-// upload site logo
+// upload site logorouter
 $router->addRoute('POST','/api/settings/uploadlogo','SettingController@uploadlogo','auth');
 $router->addRoute('POST','/api/navlinks/create','NavLinkController@store','auth');
 $router->addRoute('PUT','/api/navlinks/update/{id}','NavLinkController@update','auth');
 $router->addRoute('DELETE','/api/navlinks/delete/{id}','NavLinkController@delete','auth');
 // create team
 $router->addRoute('POST','/api/team/new','TeamController@create');
-
+$router->addRoute('POST','/api/partners/new','PartnerController@store','auth');
 /*
 |--------------------------------------------------------------------------
 | Units
