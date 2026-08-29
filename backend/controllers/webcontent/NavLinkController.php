@@ -55,7 +55,7 @@ class NavLinkController extends BaseController {
                 ],400);
         }
         $data = $this->getRequestData();
-        $updated = $this->nav_link_model->updateNavLink($id,$data);
+        $updated = $this->nav_link_model->updateNavLink($data,$id);
         if($updated){
             $this->jsonResponse(['success'=> true,'data'=>$updated],201);
         }
