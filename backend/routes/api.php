@@ -105,6 +105,8 @@ $router->addRoute('DELETE','/api/navlinks/delete/{id}','NavLinkController@delete
 // create team
 $router->addRoute('POST','/api/team/new','TeamController@create');
 $router->addRoute('POST','/api/partners/new','PartnerController@store','auth');
+$router->addRoute('POST','/api/partners/edit/{id}','PartnerController@partner','auth');
+$router->addRoute('DELETE','/api/partners/delete/{id}','PartnerController@destroy','auth');
 /*
 |--------------------------------------------------------------------------
 | Units

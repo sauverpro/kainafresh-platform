@@ -1,5 +1,4 @@
 <?php
-// controllers/Controller.php
 
 class BaseController {
     protected function jsonResponse($data, $statusCode = 200) {
@@ -9,9 +8,32 @@ class BaseController {
         exit;
     }
     
+    /**
+     * Get request data (handles both JSON and form-data)
+     */
     protected function getRequestData() {
-        $input = file_get_contents('php://input');
-        return json_decode($input, true) ?: [];
+        $data = [];
+        
+        // 1. Get JSON data from php://input
+        $rawInput = file_get_contents('php://input');
+        if (!empty($rawInput)) {
+            $jsonData = json_decode($rawInput, true);
+            if (is_array($jsonData)) {
+                $data = array_merge($data, $jsonData);
+            }
+        }
+        
+        // 2. Get form-data from $_POST
+        if (!empty($_POST)) {
+            $data = array_merge($data, $_POST);
+        }
+        
+        // 3. Also check $_REQUEST as fallback
+        if (!empty($_REQUEST)) {
+            $data = array_merge($data, $_REQUEST);
+        }
+        
+        return $data;
     }
     
     protected function validateRequired($data, $fields) {
@@ -22,6 +44,7 @@ class BaseController {
         }
         return null;
     }
+    
     protected function getHeaders() {
         $headers = [];
         foreach ($_SERVER as $key => $value) {
@@ -34,10 +57,9 @@ class BaseController {
     }
     
     protected function getAuthenticatedUserId() {
-        return AuthMiddleware::getUserId();
-    }
-    
-    protected function getAuthenticatedUser() {
-        return AuthMiddleware::getUser();
+        if (class_exists('AuthMiddleware')) {
+            return AuthMiddleware::getUserId();
+        }
+        return null;
     }
 }

@@ -1,58 +1,158 @@
-<?php 
+<?php
 
-class PartnerController extends BaseController{
-  private $partner;
-  private $user_model;
-  public function __construct( ){
-    $this->user_model = new User();
-    $this->partner = new Partner();
+class PartnerController extends BaseController {
+    private $partner;
+    private $user_model;
+    
+    public function __construct() {
+        $this->user_model = new User();
+        $this->partner = new Partner();
+    }
+
+  public function index() {
+    $data = $this->partner->getPartners();
+    return $this->jsonResponse(['status'=>true,'data'=>$data]);
   }
+ 
 
-//   get partners
-public function index(){
-
-$parners = $this->partner->getPartners();
-if($parners){
-    return $this->jsonResponse(['status'=>true,'data'=>$parners],200);
-}
-else{
-    return $this->jsonResponse(['status'=>false,'message'=>'Unable to load data'],500);
-}
-}
-
-// create partner with admin authorization
-public function store(){
-    $userid = $this->getAuthenticatedUserId();
-
-    if(!$userid){
-        return $this->jsonResponse(['status'=>false,'message'=> 'Token Expired! Login again!'], 403);
+    public function partner($id) {
+        try { 
+            
+            // Check authentication
+            $userId = $this->getAuthenticatedUserId();
+            if (!$userId) {
+                return $this->jsonResponse([
+                    'success' => false, 
+                    'message' => 'You must Login'
+                ], 401);
+            }
+            
+            // Check admin role
+            $user = $this->user_model->findByUserId($userId);
+            if ($user['role'] !== 'admin') {
+                return $this->jsonResponse([
+                    'success' => false,
+                    'message' => 'Unauthorized access'
+                ], 403);
+            }
+            
+            // Check if partner exists
+            $existingPartner = $this->partner->find($id);
+            if (!$existingPartner) {
+                return $this->jsonResponse([
+                    'success' => false,
+                    'message' => 'Partner not found with ID: ' . $id
+                ], 404);
+            }
+            
+            // Get data from $_POST directly (form-data)
+            $data = [];
+            
+            // Check if we have POST data
+            if (!empty($_POST)) {
+                $data = $_POST;
+                error_log("Data from POST: " . print_r($data, true));
+            }
+            
+            // Also check for JSON data
+            $rawInput = file_get_contents('php://input');
+            if (!empty($rawInput)) {
+                $jsonData = json_decode($rawInput, true);
+                if (is_array($jsonData) && !empty($jsonData)) {
+                    $data = array_merge($data, $jsonData);
+                    error_log("Data from JSON: " . print_r($jsonData, true));
+                }
+            }
+            
+            // If still no data, try $_REQUEST
+            if (empty($data) && !empty($_REQUEST)) {
+                $data = $_REQUEST;
+                error_log("Data from REQUEST: " . print_r($data, true));
+            }
+            
+            // Debug: Log the final data
+            error_log("Final data: " . print_r($data, true));
+            
+            if (empty($data)) {
+                return $this->jsonResponse([
+                    'success' => false,
+                    'message' => 'No data provided for update. Please check your request body.'
+                ], 422);
+            }
+            
+            // Handle logo upload if provided
+            if (isset($_FILES['partner_logo']) && $_FILES['partner_logo']['error'] !== UPLOAD_ERR_NO_FILE) {
+                error_log("Logo file detected: " . print_r($_FILES['partner_logo'], true));
+                try {
+                    $uploadHelper = new UploadHelper();
+                    $uploadResult = $uploadHelper->uploadLogo($_FILES['partner_logo']);
+                    $data['partner_logo'] = $uploadResult['path'];
+                    error_log("Logo uploaded: " . $uploadResult['path']);
+                } catch (Exception $e) {
+                    error_log("Logo upload error: " . $e->getMessage());
+                    return $this->jsonResponse([
+                        'success' => false, 
+                        'message' => 'Logo upload failed: ' . $e->getMessage()
+                    ], 422);
+                }
+            }
+            // Update partner
+            $updated = $this->partner->updatePartner($id, $data);
+            
+            if ($updated) {
+                return $this->jsonResponse([
+                    'success' => true, 
+                    'data' => $updated,
+                    'message' => 'Partner updated successfully'
+                ], 200);
+            } else {
+                return $this->jsonResponse([
+                    'success' => false, 
+                    'message' => 'Failed to update partner. Please check the data and try again.'
+                ], 500);
+            }
+        } catch (Exception $e) {
+            // error_log("Edit error: " . $e->getMessage());
+            // error_log("Edit trace: " . $e->getTraceAsString());
+            return $this->jsonResponse([
+                'success' => false,
+                'message' => 'Server error: ' . $e->getMessage()
+            ], 500);
+        }
     }
-    $users = $this->user_model->findByUserId($userid);
-    if($users['role'] !== 'admin'){
-        return $this->jsonResponse(['status'=>false,'message'=> 'unauthorized Access'],403);
+ public function destroy($id) {
+        try {
+            $userId = $this->getAuthenticatedUserId();
+            if (!$userId) {
+                return $this->jsonResponse(['success' => false, 'message' => 'You must Login'], 401);
+            }
+            
+            $user = $this->user_model->findByUserId($userId);
+            if ($user['role'] !== 'admin') {
+                return $this->jsonResponse([
+                    'success' => false,
+                    'message' => 'Unauthorized access'
+                ], 403);
+            }
+            
+            $deleted = $this->partner->deletePartner($id);
+            if ($deleted) {
+                return $this->jsonResponse([
+                    'success' => true, 
+                    'message' => 'Partner deleted successfully'
+                ], 200);
+            } else {
+                return $this->jsonResponse([
+                    'success' => false, 
+                    'message' => 'Failed to delete partner'
+                ], 500);
+            }
+        } catch (Exception $e) {
+            // error_log("Delete error: " . $e->getMessage());
+            return $this->jsonResponse([
+                'success' => false,
+                'message' => 'Server error: ' . $e->getMessage()
+            ], 500);
+        }
     }
-    $data = array_merge($this->getRequestData(),$_POST);
-
-    if (!isset($_FILES['partner_logo'])) {
-        $this->jsonResponse([
-            'success' => false,
-            'message' => 'The partner_logo file is required.'
-        ], 422);
-    }
-    try {
-    $uploadHelper = new UploadHelper();
-    $uploadResult = $uploadHelper->uploadLogo($_FILES['partner_logo']);
-    // store the public/path value expected by DB (Partner::$fillable includes partner_logo)
-    $data['partner_logo'] = $uploadResult['path'];
-} catch (Exception $e) {
-    return $this->jsonResponse(['success' => false, 'message' => $e->getMessage()], 422);
-}
-    $createdata = $this->partner->create($data);
-    if($createdata){
-        return $this->jsonResponse(['status'=>true,'data'=>$createdata],200);
-    }
-    else{
-        return $this->jsonResponse(['status'=>false,'message'=> 'SOmething went wrong'],500);
-    }
-}
 }
