@@ -123,13 +123,14 @@ function Contact() {
     setIsLoading(true);
     // POST /api/contact is not yet implemented — using mock
     try {
-      const sendData = apiPost('/api/contact/create',{
+      const sendData = await apiPost('/api/contact/create',{
            name: form.name,
            email: form.email,
            phone: form.phone,
            subject: form.subject,
            message: form.message
       })
+      console.debug("Contact created", sendData);
     } catch (error) {
       console.debug("Failed", error);
     }
