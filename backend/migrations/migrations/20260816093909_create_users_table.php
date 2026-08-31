@@ -14,7 +14,7 @@ class CreateUsersTable extends Migration
             ['name' => 'email', 'type' => 'VARCHAR', 'length' => 100, 'unique' => true],
             ['name' => 'password', 'type' => 'VARCHAR', 'length' => 255],
             ['name' => 'full_name', 'type' => 'VARCHAR', 'length' => 50],
-            ['name' => 'role', 'type' => 'VARCHAR', 'length' => 20, 'default' => 'sales_manager'],
+            ['name' => 'role', 'type' => 'VARCHAR', 'length' => 20, 'default' => 'customer'],
             ['name' => 'status', 'type' => 'VARCHAR', 'length' => 20, 'default' => 'active'],
             ['name' => 'phone_number', 'type' => 'VARCHAR', 'length' => 15, 'nullable' => true],
             

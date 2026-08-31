@@ -43,12 +43,7 @@ private $tokenModel;
         
        
         $user = $this->userModel->create($data);
-        
-        
-       
-        
-        
-        $this->jsonResponse([
+           $this->jsonResponse([
             'success' => true,
             'message' => 'User registered successfully',
             'data' => [
@@ -115,5 +110,170 @@ private $tokenModel;
             ]
         ]);
     }
+// list all user for admin
+public function users(){
+    $userId = $this->getAuthenticatedUserId();
+    if( ! $userId ){
+        $this->jsonResponse([
+            'success'=> false,
+            'message'=> 'You must Login!'
+        ],400);
+    }
+    $users = $this->userModel->findByUserId($userId);
+    if ($users['role'] !== 'admin'){
+        return $this->jsonResponse([
+            'success'=> false,
+            'message'=> 'Unauthorized access'
+        ], 403);
+    }
+    $userdata = $this->userModel->getAllUsers();
+    $this->jsonResponse([
+        'success'=> true,
+        'data'=> $userdata
+    ],201);
+}
 
+// create sales manager or admin users by admin only
+public function createuser(){
+    $userId = $this->getAuthenticatedUserId();
+    if( !$userId ){
+        $this->jsonResponse([
+            'success'=> false,
+            'message'=> 'Login first'
+        ],400);
+    }
+    $user = $this->userModel->findByUserId($userId);
+    if ($user['role'] !=='admin'){
+        return $this->jsonResponse([
+            'success'=> false,
+            'message'=> 'Unauthorized access'
+        ],403);
+    }
+$data = $this->getRequestData();
+        
+        // Validate required fields
+        $validation = $this->validateRequired($data, ['username', 'email', 'password','phone_number','full_name','role']);
+        if ($validation) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => $validation
+            ], 422);
+        }
+        // Check if email already exists
+        if ($this->userModel->findByEmail($data['email'])) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Email already exists'
+            ], 422);
+        }
+        
+        // Check if username already exists
+        if ($this->userModel->findByUsername($data['username'])) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Username already exists'
+            ], 422);
+        }
+        $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+        
+       
+        $newuser = $this->userModel->createUser($data);
+           $this->jsonResponse([
+            'success' => true,
+            'message' => 'User registered successfully',
+            'data' => [
+                'user' => $newuser,
+            ]
+        ], 201);
+}
+// get all customers by both admin and sales manager
+public function customers(){
+    $userId = $this->getAuthenticatedUserId();
+    if( ! $userId ){
+        $this->jsonResponse([
+            'success'=> false,
+            'message'=> 'You must Login!'
+        ],400);
+    }
+    $users = $this->userModel->findByUserId($userId);
+    if ($users['role'] !== 'admin' && $users['role'] !=='sales_manager'){
+        return $this->jsonResponse([
+            'success'=> false,
+            'message'=> 'Unauthorized access'
+        ], 403);
+    }
+    $userdata = $this->userModel->findCustomers();
+    $this->jsonResponse([
+        'success'=> true,
+        'data'=> $userdata
+    ],201);
+}
+// update user
+public function updateuser($id){
+   $userId = $this->getAuthenticatedUserId();
+    if( !$userId ){
+        $this->jsonResponse([
+            'success'=> false,
+            'message'=> 'Login first'
+        ],400);
+    }
+    $user = $this->userModel->findByUserId($userId);
+    if ($user['role'] !=='admin'){
+        return $this->jsonResponse([
+            'success'=> false,
+            'message'=> 'Unauthorized access'
+        ],403);
+    }
+$data = $this->getRequestData();
+        
+        // Validate required fields
+        $validation = $this->validateRequired($data, ['username', 'email','phone_number','full_name','role']);
+        if ($validation) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => $validation
+            ], 422);
+        }
+      
+       
+        $newuser = $this->userModel->updateUser($id,$data);
+           $this->jsonResponse([
+            'success' => true,
+            'message' => 'User updated successfully',
+            'data' => [
+                'user' => $newuser,
+            ]
+        ], 201);
+
+}
+// delete user function
+public function destroy($id){
+    $userId = $this->getAuthenticatedUserId();
+    if( !$userId ){
+        $this->jsonResponse([
+            'success'=> false,
+            'message'=> 'Login first'
+        ],400);
+    }
+    $user = $this->userModel->findByUserId($userId);
+    if ($user['role'] !=='admin'){
+        return $this->jsonResponse([
+            'success'=> false,
+            'message'=> 'Unauthorized access'
+        ],403);
+    }
+
+    $deleteduser = $this->userModel->deleteUser($id);
+    if($deleteduser){
+        $this->jsonResponse([
+            'success'=> false,
+            'message'=> 'User Deleted!'
+        ],201);
+    }
+    $this->jsonResponse([
+            'success'=> false,
+            'message'=> 'Something went wrong'
+        ],500);
+
+}
 }

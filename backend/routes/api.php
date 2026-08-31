@@ -107,6 +107,11 @@ $router->addRoute('POST','/api/team/new','TeamController@create');
 $router->addRoute('POST','/api/partners/new','PartnerController@store','auth');
 $router->addRoute('POST','/api/partners/edit/{id}','PartnerController@partner','auth');
 $router->addRoute('DELETE','/api/partners/delete/{id}','PartnerController@destroy','auth');
+$router->addRoute('GET','/api/admin/users','AuthController@users','auth');
+$router->addRoute('POST','/api/admin/users/new','AuthController@createuser','auth');
+$router->addRoute('GET','/api/customers','AuthController@customers','auth');
+$router->addRoute('PUT','/api/admin/users/update/{id}','AuthController@updateuser','auth');
+$router->addRoute('DELETE','/api/admin/users/delete/{id}','AuthController@destroy','auth');
 /*
 |--------------------------------------------------------------------------
 | Units
