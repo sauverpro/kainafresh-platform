@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "./context/SidebarContext";
+import { Toaster } from "sonner";
 import AppLayout from "./components/layout/AppLayout";
 import Placeholder from "./pages/Placeholder";
 import Loader from "./components/Loader/Loader";
@@ -19,7 +20,11 @@ const Wholesale = lazy(() => import("./pages/wholesale/Wholesale"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 const CrmPage = lazy(() => import("./pages/crm/CrmPage"));
 const ProductsList = lazy(() => import("./pages/admin/Products/ProductsList"));
+const ProductDetail = lazy(
+  () => import("./components/products/ProductDetail"),
+);
 const InventoryList = lazy(() => import("./pages/admin/Inventory/InventoryList"));
+const StockDetail = lazy(() => import("./components/stock/StockDetail"));
 const GlobalSettings = lazy(
   () => import("./pages/admin/Settings/GlobalSettings"),
 );
@@ -66,6 +71,7 @@ const routes = sideNavData
 function App() {
   return (
     <BrowserRouter>
+      <Toaster position="top-right" richColors />
       <SidebarProvider>
         <Suspense
           fallback={
@@ -95,7 +101,9 @@ function App() {
               <Route path="/crm/settings" element={<GlobalSettings />} />
               <Route path="/crm/:slug" element={<CrmPage />} />
               <Route path="/products" element={<ProductsList />} />
+              <Route path="/products/:id" element={<ProductDetail />} />
               <Route path="/inventory" element={<InventoryList />} />
+              <Route path="/inventory/:id" element={<StockDetail />} />
               {routes.map((route) => (
                 <Route
                   key={route.path}
