@@ -23,7 +23,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight, ArrowLeft, Mail, Phone, Lock, User, AtSign, Truck, Clock } from 'lucide-react';
 
 // Import API client helpers for user registration and JWT token storage
-import { apiPost, setToken } from '../../api/client';
+import { apiPost, setToken, setCurrentUser } from '../../api/client';
 
 // Import hook to dynamically update HTML title tag
 import { usePageTitle } from '../../hooks/usePageTitle';
@@ -64,6 +64,14 @@ interface FieldErrors {
 interface LoginResponse {
   data: {
     token: string;
+    user: {
+      id: number;
+      username: string;
+      email: string;
+      full_name: string;
+      role: string;
+      phone_number?: string;
+    };
   };
 }
 
@@ -211,8 +219,12 @@ function Signup() {
       });
 
       // Store JWT token string in browser localStorage
-      const { token } = loginData.data;
+      const { token, user } = loginData.data;
       setToken(token);
+
+      // Persist the signed-in user's profile for use across the app
+      // (e.g. pre-filling checkout with the user's account details).
+      if (user) setCurrentUser(user);
 
       // Redirect user to home landing page
       navigate('/');

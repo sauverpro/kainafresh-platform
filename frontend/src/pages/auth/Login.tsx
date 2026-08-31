@@ -23,7 +23,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, Leaf, ShieldCheck } from 'lucide-react';
 
 // Import API client helpers for authentication
-import { apiPost, setToken } from '../../api/client';
+import { apiPost, setToken, setCurrentUser } from '../../api/client';
 
 // Import hook to dynamically update HTML document title
 import { usePageTitle } from '../../hooks/usePageTitle';
@@ -114,6 +114,10 @@ function Login() {
 
       // Store JWT token string in browser localStorage
       setToken(token);
+
+      // Persist the signed-in user's profile for use across the app
+      // (e.g. pre-filling checkout with the user's account details).
+      if (user) setCurrentUser(user);
 
       // Route admin users to the Dashboard, and customers to Home page
       if (user?.role === 'admin') {

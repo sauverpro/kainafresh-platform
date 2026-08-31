@@ -1,13 +1,13 @@
 import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "./context/SidebarContext";
-import { Toaster } from "sonner";
 import AppLayout from "./components/layout/AppLayout";
 import Placeholder from "./pages/Placeholder";
 import Loader from "./components/Loader/Loader";
 import { isAuthenticated } from "./api/client";
 import { sideNavData } from "./assets/data/sideNavData";
 import type { NavItem } from "./assets/data/sideNavData.types";
+import { Toaster } from "sonner";
 
 // Code-split pages so only the active view's chunk is fetched, with a
 // centered loader shown while each chunk loads during navigation.
@@ -17,6 +17,11 @@ const Signup = lazy(() => import("./pages/auth/Signup"));
 const About = lazy(() => import("./pages/about/About"));
 const Contact = lazy(() => import("./pages/contact/Contact"));
 const Wholesale = lazy(() => import("./pages/wholesale/Wholesale"));
+const Shop = lazy(() => import("./pages/shop/Products"));
+const ShopProductDetail = lazy(() => import("./pages/shop/ProductDetail"));
+const CartPage = lazy(() => import("./pages/checkout/CartPage"));
+const CheckoutPage = lazy(() => import("./pages/checkout/CheckoutPage"));
+const OrderSuccess = lazy(() => import("./pages/checkout/OrderSuccess"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 const CrmPage = lazy(() => import("./pages/crm/CrmPage"));
 const ProductsList = lazy(() => import("./pages/admin/Products/ProductsList"));
@@ -88,6 +93,11 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/wholesale" element={<Wholesale />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/shop/:id" element={<ShopProductDetail />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/order-confirmation/:orderId" element={<OrderSuccess />} />
 
             {/* Authenticated Dashboard */}
             <Route

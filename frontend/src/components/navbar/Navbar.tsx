@@ -18,13 +18,16 @@ import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 
 // Import Lucide vector icons for navigation items
-import { Home, Sprout, Package, Mail, Shield, LogOut, LogIn, UserPlus, ShoppingBag, Globe } from 'lucide-react';
+import { Home, Sprout, Package, Mail, Shield, LogOut, LogIn, UserPlus, ShoppingBag, Globe, ShoppingCart } from 'lucide-react';
 
 // Import Navbar component styles
 import './Navbar.css';
 
+// Import cart store
+import { useCartStore, selectCartCount } from '../../store/useCartStore';
+
 // Import API client helpers and authentication utilities
-import { isAuthenticated, removeToken, apiGet } from '../../api/client';
+import { isAuthenticated, removeToken, removeCurrentUser, apiGet } from '../../api/client';
 
 /**
  * Interface representing dynamic navigation link items returned from database.
@@ -68,6 +71,10 @@ function Navbar() {
 
   // Check if current user is logged in with active JWT token
   const loggedIn = isAuthenticated();
+
+  // Cart badge count
+  const cartItems = useCartStore((s) => s.items);
+  const cartCount = selectCartCount(cartItems);
 
   /**
    * Helper function to match dynamic DB links to appropriate Lucide UI icons.
@@ -158,8 +165,9 @@ function Navbar() {
 
   // Handler for user logout action
   const handleLogout = () => {
-    // Clear JWT token from localStorage
+    // Clear JWT token and user profile from localStorage
     removeToken();
+    removeCurrentUser();
 
     // Redirect to login page
     navigate('/login');
@@ -180,6 +188,7 @@ function Navbar() {
       linkName === 'home' || linkPath === '/' || linkPath === '/home' || linkPath === 'home' || linkPath === '' ||
       linkName === 'our farm' || linkName === 'about' || linkPath === '/about' || linkPath === '/farm' ||
       linkName === 'wholesale' || linkPath === '/wholesale' ||
+      linkName === 'products' || linkName === 'shop' || linkPath === '/shop' ||
       linkName === 'contact' || linkPath === '/contact' ||
       linkName === 'dashboard' || linkPath === '/dashboard'
     );
@@ -221,6 +230,10 @@ function Navbar() {
             <Home size={16} /> <span>Home</span>
           </NavLink>
 
+          <NavLink to="/shop" onClick={closeMenu} className="nav-icon-link">
+            <ShoppingBag size={16} /> <span>Products</span>
+          </NavLink>
+
           <NavLink to="/about" onClick={closeMenu} className="nav-icon-link">
             <Sprout size={16} /> <span>Our Farm</span>
           </NavLink>
@@ -252,6 +265,40 @@ function Navbar() {
 
         {/* User Authentication Action Buttons */}
         <div className="navbar-actions">
+          <NavLink
+            to="/cart"
+            onClick={closeMenu}
+            className="nav-icon-link"
+            aria-label="View cart"
+            style={{ position: 'relative' }}
+          >
+            <ShoppingCart size={16} /> <span>Cart</span>
+            {cartCount > 0 && (
+              <span
+                className="cart-badge"
+                style={{
+                  position: 'absolute',
+                  top: -6,
+                  right: -6,
+                  minWidth: 18,
+                  height: 18,
+                  padding: '0 4px',
+                  borderRadius: 999,
+                  background: '#E11D48',
+                  color: '#fff',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  lineHeight: 1,
+                }}
+              >
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
+          </NavLink>
+
           {loggedIn ? (
             // Render Logout Button if Authenticated
             <button className="btn btn-logout" onClick={handleLogout}>

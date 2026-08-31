@@ -68,11 +68,53 @@ export const setToken = (token: string): void => localStorage.setItem(TOKEN_KEY,
  */
 export const removeToken = (): void => localStorage.removeItem(TOKEN_KEY);
 
-/** 
+/**
  * Checks whether an active user session token exists in client storage.
  * @returns boolean - true if logged in, false if unauthenticated
  */
 export const isAuthenticated = (): boolean => Boolean(getToken());
+
+// ---------------------------------------------------------------------------
+// Current User Profile Persistence
+// ---------------------------------------------------------------------------
+
+/** LocalStorage key for the currently signed-in user's profile. */
+const USER_KEY = 'kainafresh_user';
+
+/**
+ * Profile of the signed-in user returned by the backend auth endpoints.
+ */
+export interface UserProfile {
+  id: number;
+  username?: string;
+  email?: string;
+  full_name?: string;
+  role?: string;
+  phone_number?: string;
+}
+
+/**
+ * Persist the signed-in user's profile to localStorage.
+ */
+export const setCurrentUser = (user: UserProfile): void =>
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+
+/**
+ * Retrieve the persisted signed-in user profile, or null if none stored.
+ */
+export const getCurrentUser = (): UserProfile | null => {
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? (JSON.parse(raw) as UserProfile) : null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Remove the stored user profile (on logout).
+ */
+export const removeCurrentUser = (): void => localStorage.removeItem(USER_KEY);
 
 // ---------------------------------------------------------------------------
 // Core Internal HTTP Fetch Engine Wrapper

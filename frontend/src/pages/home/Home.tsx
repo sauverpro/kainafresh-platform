@@ -258,14 +258,14 @@ function Home() {
     headingAccent: cmsHero?.headingAccent ?? 'Delivered Direct',
     headingAccentSecondary: cmsHero?.headingAccentSecondary ?? 'to You.',
     subheading: cmsHero?.subheading ?? 'We grow it. We pack it. We deliver it — fresh, certified, and straight from our fields to your table.',
-    primaryCta: { label: cmsHero?.primaryCta?.label ?? 'Our Products', to: cmsHero?.primaryCta?.to ?? '/products' },
+    primaryCta: { label: cmsHero?.primaryCta?.label ?? 'Our Products', to: cmsHero?.primaryCta?.to ?? '/shop' },
     secondaryCta: { label: cmsHero?.secondaryCta?.label ?? 'Wholesale & Exports', to: cmsHero?.secondaryCta?.to ?? '/wholesale' },
   };
 
   const homeCTA = {
     heading: cmsHomeCta?.heading ?? 'Fresh Food, Direct to You',
     paragraph: cmsHomeCta?.paragraph ?? 'Ready to taste the difference of real organic farming? Order today.',
-    primary_cta: { label: cmsHomeCta?.primary_cta?.label ?? 'Order Now', to: cmsHomeCta?.primary_cta?.to ?? '/products' },
+    primary_cta: { label: cmsHomeCta?.primary_cta?.label ?? 'Order Now', to: cmsHomeCta?.primary_cta?.to ?? '/shop' },
     secondary_cta: { label: cmsHomeCta?.secondary_cta?.label ?? 'Contact Sales', to: cmsHomeCta?.secondary_cta?.to ?? '/contact' }
   };
 
@@ -394,7 +394,7 @@ function Home() {
               <h2>Featured Products</h2>
               <p>Directly from our farm, available for order today.</p>
             </div>
-            <Link to="/products" className="btn btn-outline-green fp-see-all">
+            <Link to="/shop" className="btn btn-outline-green fp-see-all">
               View All Products <ArrowRight size={15} />
             </Link>
           </div>
@@ -482,7 +482,7 @@ function Home() {
               {homeCTA.paragraph}
             </p>
             <div className="home-cta-buttons">
-              <Link to={homeCTA.primary_cta.to || '/products'} className="btn btn-primary">
+              <Link to={homeCTA.primary_cta.to || '/shop'} className="btn btn-primary">
                 {homeCTA.primary_cta.label}
               </Link>
               <Link to={homeCTA.secondary_cta.to || '/contact'} className="btn btn-secondary">

@@ -28,6 +28,29 @@ export const removeToken = () => localStorage.removeItem(TOKEN_KEY);
 export const isAuthenticated = () => Boolean(getToken());
 
 // ---------------------------------------------------------------------------
+// Current User Profile Persistence
+// ---------------------------------------------------------------------------
+
+/** LocalStorage key for the currently signed-in user's profile. */
+const USER_KEY = 'kainafresh_user';
+
+/** Persist the signed-in user's profile to localStorage. */
+export const setCurrentUser = (user) => localStorage.setItem(USER_KEY, JSON.stringify(user));
+
+/** Retrieve the persisted signed-in user profile, or null if none stored. */
+export const getCurrentUser = () => {
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+/** Remove the stored user profile (on logout). */
+export const removeCurrentUser = () => localStorage.removeItem(USER_KEY);
+
+// ---------------------------------------------------------------------------
 // Internal fetch wrapper
 // ---------------------------------------------------------------------------
 
