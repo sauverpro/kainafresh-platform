@@ -15,6 +15,7 @@ import productPlaceholder from "../../assets/images/placeholder.png";
 import "./Home.css";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
+import PartnersSection from "../../components/partners/PartnersSection";
 import { apiGet } from "../../api/client";
 import { usePageTitle } from "../../hooks/usePageTitle";
 
@@ -514,6 +515,9 @@ function Home() {
             </div>
           </div>
         </section>
+
+        {/* ── Partners Showcase ── */}
+        <PartnersSection />
 
         {/* ── FAQs ── */}
         <section className="faqs">
