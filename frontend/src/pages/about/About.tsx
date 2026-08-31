@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Leaf, Users, ShieldCheck, Award, ArrowRight, MapPin } from 'lucide-react';
+import { Leaf, Users, ShieldCheck, Award, ArrowRight, MapPin, Target, Eye, Sparkles } from 'lucide-react';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
+import PartnersSection from '../../components/partners/PartnersSection';
 import pepperImage from '../../assets/images/pepper.png';
 import { apiGet } from '../../api/client';
 import { usePageTitle } from '../../hooks/usePageTitle';
@@ -285,40 +286,88 @@ function About() {
         </section>
 
         {/* ── Mission & Values ── */}
-        <section className="about-values">
-          <div className="about-values-header">
-            <span className="section-tag">{valuesContent?.tag}</span>
-            <h2>{valuesContent?.heading}</h2>
-            <p>
-              {valuesContent?.subheading}
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center mb-3 pt-3">
-            <div className="value-card card">
-              <h2 className='text-3xl'>Our Vision</h2>
-              <p className='pt-3'>
-                {valuesContent?.vision}
-
-              </p>
-            </div>
-            <div className="value-card card">
-              <h2 className='text-3xl'>Our Mission</h2>
-              <p className='pt-3'>
-                {valuesContent.mission}
+        <section className="about-values bg-[#FFFDF9] py-20 px-6 md:px-[5%]">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="text-center max-w-2xl mx-auto mb-14">
+              <span className="inline-flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider text-[#F39927] bg-[#F39927]/10 px-4 py-1.5 rounded-full mb-3" style={{ fontFamily: 'var(--font-heading)' }}>
+                <Sparkles size={14} /> {valuesContent?.tag || 'Purpose & Principles'}
+              </span>
+              <h2 className="text-3xl md:text-5xl font-bold text-[#076935] mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
+                {valuesContent?.heading || 'Guided by Vision, Driven by Quality'}
+              </h2>
+              <p className="text-gray-600 text-base md:text-lg leading-relaxed">
+                {valuesContent?.subheading || 'At KainaFresh, every harvest is rooted in our commitment to sustainable farming, community empowerment, and uncompromised food safety.'}
               </p>
             </div>
 
-          </div>
-          <div className="values-grid">
-            {values.map(({ icon: Icon, title, description }) => (
-              <div key={title} className="value-card card">
-                <div className="value-icon-wrap">
-                  <Icon size={28} color="var(--color-primary)" strokeWidth={1.8} />
+            {/* Premium Vision & Mission Highlight Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+              {/* Vision Card */}
+              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#076935] via-[#06582d] to-[#044020] p-8 md:p-10 text-white shadow-xl flex flex-col justify-between group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all" />
+                <div>
+                  <div className="inline-flex items-center gap-2.5 bg-white/20 backdrop-blur-md px-6 py-2.5 rounded-full text-sm md:text-base font-bold uppercase tracking-wider mb-6 text-white shadow-sm border border-white/20" style={{ fontFamily: 'var(--font-heading)' }}>
+                    <Eye size={20} className="text-[#F39927]" /> Our Vision
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-bold text-white mb-4 leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
+                    Leading East Africa's Sustainable Harvest
+                  </h3>
+                  <p className="text-white/85 text-base md:text-lg leading-relaxed font-sans">
+                    {valuesContent?.vision || 'To be a leading East African producer and exporter of fresh, high-quality horticultural products, recognized for our sustainable practices and unwavering commitment to excellence.'}
+                  </p>
                 </div>
-                <h3>{title}</h3>
-                <p>{description}</p>
+                <div className="mt-8 pt-6 border-t border-white/15 flex items-center gap-2 text-xs font-semibold text-white/70">
+
+                </div>
               </div>
-            ))}
+
+              {/* Mission Card */}
+              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#F39927] via-[#e58a1c] to-[#d8821a] p-8 md:p-10 text-white shadow-xl flex flex-col justify-between group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all" />
+                <div>
+                  <div className="inline-flex items-center gap-2.5 bg-white/25 backdrop-blur-md px-6 py-2.5 rounded-full text-sm md:text-base font-bold uppercase tracking-wider mb-6 text-white shadow-sm border border-white/20" style={{ fontFamily: 'var(--font-heading)' }}>
+                    <Target size={20} className="text-white" /> Our Mission
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-bold text-white mb-4 leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
+                    Cultivating Trust from Farm to Door
+                  </h3>
+                  <p className="text-white/90 text-base md:text-lg leading-relaxed font-sans">
+                    {valuesContent?.mission || 'To consistently cultivate and supply premium, safe, and healthy produce to local and international markets while fostering sustainable agriculture and empowering our local community.'}
+                  </p>
+                </div>
+                <div className="mt-8 pt-6 border-t border-white/20 flex items-center gap-2 text-xs font-semibold text-white/80">
+
+                </div>
+              </div>
+            </div>
+
+            {/* Core Values Section Subheader */}
+            <div className="text-center mb-10">
+              <h3 className="text-2xl font-bold text-[#076935]" style={{ fontFamily: 'var(--font-heading)' }}>
+                Our Core Pillars & Values
+              </h3>
+            </div>
+
+            {/* Values Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {values.map(({ icon: Icon, title, description }) => (
+                <div
+                  key={title}
+                  className="group bg-white p-7 rounded-3xl border border-[#076935]/10 shadow-xs hover:shadow-xl hover:border-[#076935]/30 hover:-translate-y-1 transition-all duration-300 flex flex-col text-left"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-[#076935]/10 flex items-center justify-center mb-5 text-[#076935] group-hover:bg-[#076935] group-hover:text-white transition-colors duration-300">
+                    <Icon size={26} />
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-[#076935] transition-colors" style={{ fontFamily: 'var(--font-heading)' }}>
+                    {title}
+                  </h4>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    {description}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -340,6 +389,9 @@ function About() {
             ))}
           </div>
         </section>
+
+        {/* ── Partners Showcase ── */}
+        <PartnersSection title="Our Strategic Partners & Cooperatives" />
 
         {/* ── CTA ── */}
         <section className="about-cta">

@@ -209,26 +209,27 @@ function Wholesale() {
   useEffect(() => {
     async function loadData(){
       try {
-        const settings = await apiGet<any>('/api/settings/');
-                const settingsPayload = settings?.data ?? settings ?? {};
+        const settings = await apiGet<Record<string, unknown>>('/api/settings/');
+                const settingsPayload = (settings as { data?: unknown })?.data ?? settings ?? {};
         
+                const payloadAsObj = settingsPayload as Record<string, unknown>;
                 const settingData = Array.isArray(settingsPayload)
                   ? settingsPayload[0] ?? null
-                  : Array.isArray(settingsPayload?.results)
-                    ? settingsPayload.results[0] ?? null
-                    : settingsPayload?.settings && typeof settingsPayload.settings === 'object'
-                      ? settingsPayload.settings
+                  : Array.isArray(payloadAsObj?.results)
+                    ? payloadAsObj.results[0] ?? null
+                    : payloadAsObj?.settings && typeof payloadAsObj.settings === 'object'
+                      ? payloadAsObj.settings
                       : settingsPayload ?? null;
-                  setPrimaryEmail(settingData.primary_email ?? null);
-                  setSecondaryEmail(settingData.secondary_email ?? null);
-                  setPrimaryNumber(settingData.primary_number ?? null);
-                  setSecondaryNumber(settingData.secondary_nummber ?? null);
+                  const finalData = (settingData || {}) as Record<string, string>;
+                  setPrimaryEmail(finalData.primary_email ?? null);
+                  setSecondaryEmail(finalData.secondary_email ?? null);
+                  setPrimaryNumber(finalData.primary_number ?? null);
+                  setSecondaryNumber(finalData.secondary_nummber ?? null);
 
       } catch (error) {
         console.debug("Failed to load data", error);
       }
     }
-    setPageLoading(true);
     apiGet<{ success: boolean; data: { sections: { type: string; content: WholesaleHero }[] } }>('/api/pages/slug/wholesale')
       .then((res) => {
         if (!res.success || !res.data?.sections) return;
@@ -245,11 +246,12 @@ function Wholesale() {
             setCmsWhy(whycontents as WhyContent);
           } else {
             // If it's an object but no items, treat it as the content with tag, heading, etc.
+            const obj = whycontents as Partial<WhyContent>;
             setCmsWhy({
-              tag: (whycontents as any).tag,
-              heading: (whycontents as any).heading,
-              paragraphs: (whycontents as any).paragraphs,
-              items: (whycontents as any).items || []
+              tag: obj.tag,
+              heading: obj.heading,
+              paragraphs: obj.paragraphs,
+              items: obj.items || []
             });
           }
 
@@ -264,11 +266,12 @@ function Wholesale() {
             setCmsDestination(destinationValue as DestinationContent);
           }
           else{
+            const obj = destinationValue as Partial<DestinationContent>;
             setCmsDestination({
-              tag: (destinationValue as any).tag,
-               heading: (destinationValue as any).heading,
-              paragraphs: (destinationValue as any).paragraphs,
-              items: (destinationValue as any).items || []
+              tag: obj.tag,
+               heading: obj.heading,
+              paragraphs: obj.paragraphs,
+              items: obj.items || []
             });
           }
         }
@@ -287,11 +290,12 @@ function Wholesale() {
             setCmsProgress(progressContent as ProgressContent);
           }
           else{
+            const obj = progressContent as Partial<ProgressContent>;
             setCmsProgress({
-              tag: (progressContent as any).tag,
-               heading: (progressContent as any).heading,
-              paragraphs: (progressContent as any).paragraphs,
-              items: (progressContent as any).items || []
+              tag: obj.tag,
+               heading: obj.heading,
+              paragraphs: obj.paragraphs,
+              items: obj.items || []
             });
           }
         }

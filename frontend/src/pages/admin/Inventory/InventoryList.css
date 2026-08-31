@@ -283,3 +283,228 @@
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   Stock module shared utilities (list / form / detail)
+   ========================================================================== */
+
+.total-text {
+  font-size: 0.9rem;
+  color: var(--color-text-light);
+  white-space: nowrap;
+}
+
+.btn-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: transparent;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.btn-more:hover {
+  background: #f3f4f6;
+}
+
+.product-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.product-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  color: #9ca3af;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.btn-outline-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: transparent;
+  color: #374151;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.btn-outline-dark:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+.btn-outline-dark:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.auth-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.auth-error-icon { font-weight: 700; }
+
+/* -- Form (modal body) -- */
+.panel-form { width: 100%; }
+.panel-body { background: transparent; }
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+.form-group label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-dark);
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.panel-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #111827;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.panel-input:focus {
+  border-color: var(--brand-color, #059669);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+}
+.panel-textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+.panel-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+}
+
+/* -- Stock detail card -- */
+.stock-detail-card {
+  display: flex;
+  gap: 1.75rem;
+  padding: 1.5rem;
+  background: #fff;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  max-width: 720px;
+}
+.stock-detail-left img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 14px;
+}
+.stock-detail-image-placeholder {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  border-radius: 14px;
+  color: #9ca3af;
+}
+.stock-detail-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.stock-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.5rem;
+}
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.detail-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9ca3af;
+}
+.detail-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  display: inline-flex;
+  align-items: center;
+}
+.stock-detail-desc {
+  margin-top: 1.25rem;
+  color: #4b5563;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.btn-danger-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border: 1px solid #dc2626;
+  border-radius: 10px;
+  background: transparent;
+  color: #dc2626;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.btn-danger-outline:hover {
+  background: #dc2626;
+  color: #fff;
+}
+
+.unit-readonly {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: default;
+}

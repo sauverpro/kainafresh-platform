@@ -15,6 +15,7 @@ import productPlaceholder from "../../assets/images/placeholder.png";
 import "./Home.css";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
+import PartnersSection from "../../components/partners/PartnersSection";
 import { apiGet } from "../../api/client";
 import { usePageTitle } from "../../hooks/usePageTitle";
 
@@ -371,18 +372,59 @@ function Home() {
           </div>
           <div className="vp-grid">
             {valueProps.map(({ icon: Icon, title, description }) => (
-              <div key={title} className="vp-card card">
-                <div className="vp-icon">
-                  <Icon
-                    size={26}
-                    strokeWidth={1.8}
-                    color="var(--color-primary)"
-                  />
+              <div key={title} className="vp-card card flex flex-col justify-between">
+                <div>
+                  <div className="vp-icon">
+                    <Icon
+                      size={26}
+                      strokeWidth={1.8}
+                      color="var(--color-primary)"
+                    />
+                  </div>
+                  <h3>{title}</h3>
+                  <p>{description}</p>
                 </div>
-                <h3>{title}</h3>
-                <p>{description}</p>
+                <Link to="/about" className="vp-read-more-btn mt-4 inline-flex items-center justify-center gap-1 text-sm font-semibold text-[#076935] hover:text-[#F39927] transition-colors">
+                  Learn More <ArrowRight size={14} />
+                </Link>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* ── Story Spotlight Teaser ── */}
+        <section className="story-spotlight">
+          <div className="story-spotlight-inner">
+            <div className="story-spotlight-text">
+              <span className="home-tag">Our Sustainable Farm</span>
+              <h2>Cultivating Organic Goodness Direct From Soil to Table</h2>
+              <p>
+                At KainaFresh, we believe high quality food starts with healthy soil and chemical-free agriculture. 
+                We work directly with certified organic farmers to deliver produce picked at peak ripeness.
+              </p>
+              <div className="story-metrics">
+                <div className="story-metric-item">
+                  <strong>100%</strong>
+                  <span>Organic Certified</span>
+                </div>
+                <div className="story-metric-item">
+                  <strong>50+</strong>
+                  <span>Partner Farms</span>
+                </div>
+                <div className="story-metric-item">
+                  <strong>24h</strong>
+                  <span>Farm to Door</span>
+                </div>
+              </div>
+              <div className="story-cta-wrap">
+                <Link to="/about" className="btn btn-primary story-btn">
+                  Read Our Full Story <ArrowRight size={16} />
+                </Link>
+                <Link to="/wholesale" className="btn btn-outline-green">
+                  Learn About Bulk Supply
+                </Link>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -433,19 +475,57 @@ function Home() {
                       Order
                     </button>
                   </div>
+                  <div className="mt-3 pt-3 border-t border-gray-100 text-right">
+                    <Link to="/products" className="text-xs font-semibold text-[#076935] hover:text-[#F39927] inline-flex items-center gap-1">
+                      View Product Details <ArrowRight size={12} />
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
+
+          {/* Prompt to View More Products */}
+          <div className="fp-bottom-prompt mt-12 text-center p-8 bg-white rounded-2xl border border-[#076935]/10 shadow-xs max-w-3xl mx-auto">
+            <h3 className="font-heading text-xl text-[#076935] mb-2 font-bold">Looking for More Varieties?</h3>
+            <p className="text-gray-600 text-sm mb-5">Explore our complete catalog of organic root crops, seasonal fruits, leafy greens, and farm produce.</p>
+            <Link to="/products" className="btn btn-primary">
+              View Complete Product Catalog <ArrowRight size={16} />
+            </Link>
+          </div>
         </section>
+
+        {/* ── Wholesale & Export Banner ── */}
+        <section className="wholesale-banner">
+          <div className="wholesale-banner-inner">
+            <div className="wholesale-banner-content">
+              <span className="home-tag orange">Wholesale & Export Solutions</span>
+              <h2>Bulk Supply for Supermarkets, Hotels & International Importers</h2>
+              <p>
+                Whether you need consistent bulk orders for your restaurant chain or high-quality produce for international markets, KainaFresh delivers grade-A crops with guaranteed cold-chain reliability.
+              </p>
+              <div className="wholesale-banner-ctas">
+                <Link to="/wholesale" className="btn btn-secondary">
+                  View Wholesale Offerings <ArrowRight size={16} />
+                </Link>
+                <Link to="/contact" className="btn btn-outline-white">
+                  Request Custom Quote
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Partners Showcase ── */}
+        <PartnersSection />
 
         {/* ── FAQs ── */}
         <section className="faqs">
           <div className="faq-inner">
             <div className="faq-header">
-              <span className="home-tag">{cmsFaqs?.tag ?? ''}</span>
-              <h2>{cmsFaqs?.heading ?? ''}</h2>
-              <p>{cmsFaqs?.subheading ?? ''}</p>
+              <span className="home-tag">{cmsFaqs?.tag ?? 'Got Questions?'}</span>
+              <h2>{cmsFaqs?.heading ?? 'Frequently Asked Questions'}</h2>
+              <p>{cmsFaqs?.subheading ?? 'Everything you need to know about our organic produce, delivery, and orders.'}</p>
             </div>
             <div className="faq-list">
               {faqs.map((faq) => (
@@ -470,6 +550,14 @@ function Home() {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Prompt to Read More FAQs / Contact Support */}
+            <div className="faq-prompt mt-10 text-center p-6 bg-[#076935]/5 rounded-2xl border border-[#076935]/15">
+              <p className="text-gray-700 text-sm font-medium mb-3">Have specific questions about custom deliveries or bulk orders?</p>
+              <Link to="/contact" className="btn btn-outline-green inline-flex items-center gap-2">
+                Contact Customer Support <ArrowRight size={15} />
+              </Link>
             </div>
           </div>
         </section>

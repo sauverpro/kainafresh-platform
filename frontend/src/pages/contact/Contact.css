@@ -222,14 +222,29 @@ a.contact-info-value:hover {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.form-label-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.25rem;
 }
 
 .contact-form label {
   font-family: var(--font-heading);
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   font-weight: 600;
   color: var(--color-text-dark);
+}
+
+.form-guide-hint {
+  font-size: 0.73rem;
+  color: var(--color-primary);
+  font-weight: 500;
+  opacity: 0.9;
 }
 
 .contact-form input,
