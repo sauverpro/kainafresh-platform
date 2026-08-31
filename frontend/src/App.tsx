@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "./context/SidebarContext";
+import { Toaster } from "sonner";
 import AppLayout from "./components/layout/AppLayout";
 import Placeholder from "./pages/Placeholder";
 import Loader from "./components/Loader/Loader";
@@ -70,6 +71,7 @@ const routes = sideNavData
 function App() {
   return (
     <BrowserRouter>
+      <Toaster position="top-right" richColors />
       <SidebarProvider>
         <Suspense
           fallback={

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Search, Plus, Eye, Trash2, ImageOff, Pencil } from "lucide-react";
+import { toast } from "sonner";
 import { useProductStore, type Product } from "../../store/useProductStore";
 import Loader from "../Loader/Loader";
 import ConfirmDeleteModal from "../ui/ConfirmDeleteModal";
@@ -40,7 +41,14 @@ export default function ProductTable({
     setDeleting(true);
     const ok = await deleteProduct(deleteTarget.id);
     setDeleting(false);
-    if (ok) setDeleteTarget(null);
+    if (ok) {
+      toast.success(`Product "${deleteTarget.name}" deleted successfully`);
+      setDeleteTarget(null);
+    } else {
+      toast.error(
+        useProductStore.getState().error ?? "Failed to delete product",
+      );
+    }
   };
 
   const imageSrc = (p: { product_image?: string | null }) =>

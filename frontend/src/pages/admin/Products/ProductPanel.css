@@ -256,3 +256,21 @@
   align-self: flex-start;
   padding: 0.5rem 1.1rem;
 }
+
+.unit-add-codelabel {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: #6b7280;
+  display: inline-block;
+}
+.unit-add-codelabel em {
+  font-style: italic;
+  font-weight: 400;
+  color: #9ca3af;
+}
+.unit-add-code {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: default;
+}

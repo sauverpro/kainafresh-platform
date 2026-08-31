@@ -9,6 +9,7 @@ import {
   Calendar,
   Boxes,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useProductStore } from "../../store/useProductStore";
 import Loader from "../Loader/Loader";
 import Modal from "../ui/Modal";
@@ -49,8 +50,13 @@ export default function ProductDetail() {
     const ok = await deleteProduct(id);
     setDeleting(false);
     if (ok) {
+      toast.success(`Product "${selected?.name}" deleted successfully`);
       setDeleteOpen(false);
       goBack();
+    } else {
+      toast.error(
+        useProductStore.getState().error ?? "Failed to delete product",
+      );
     }
   };
 

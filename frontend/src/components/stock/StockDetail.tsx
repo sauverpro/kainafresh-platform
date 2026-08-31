@@ -10,6 +10,7 @@ import {
   Boxes,
   MapPin,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useStockStore } from "../../store/useStockStore";
 import Loader from "../Loader/Loader";
 import Modal from "../ui/Modal";
@@ -57,8 +58,11 @@ export default function StockDetail() {
     const ok = await deleteStock(id);
     setDeleting(false);
     if (ok) {
+      toast.success("Stock record deleted successfully");
       setDeleteOpen(false);
       goBack();
+    } else {
+      toast.error(useStockStore.getState().error ?? "Failed to delete stock");
     }
   };
 

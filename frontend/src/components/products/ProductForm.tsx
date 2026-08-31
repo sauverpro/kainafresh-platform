@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Save, Upload, X, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { useProductStore, type Product } from "../../store/useProductStore";
 import { useUnitStore } from "../../store/useUnitStore";
 
@@ -83,9 +84,14 @@ export default function ProductForm({
     if (!name || !symbol) return;
     const created = await createUnit({ code: unitCode, name, symbol });
     if (created) {
+      toast.success(`Unit "${created.name}" added successfully`);
       setForm((prev) => ({ ...prev, unit_id: created.id }));
       setNewUnit({ name: "", symbol: "" });
       setShowAddUnit(false);
+    } else {
+      toast.error(
+        useUnitStore.getState().error ?? "Failed to add unit",
+      );
     }
   };
 
@@ -108,7 +114,14 @@ export default function ProductForm({
     } else {
       ok = await createProduct(input, image ?? null);
     }
-    if (ok) onSubmit();
+    if (ok) {
+      toast.success(
+        initial ? "Product updated successfully" : "Product created successfully",
+      );
+      onSubmit();
+    } else {
+      toast.error(useProductStore.getState().error ?? "Failed to save product");
+    }
   };
 
   return (
@@ -195,32 +208,32 @@ export default function ProductForm({
                 <Plus size={14} /> {showAddUnit ? "Cancel" : "Add new unit"}
               </button>
 
-              {showAddUnit && (
-                <div className="unit-add-box">
-                  <div className="form-row">
-                    <div className="form-group" style={{ marginBottom: 0 }}>
-                      <input
-                        type="text"
-                        className="panel-input"
-                        placeholder="Code"
-                        value={newUnit.code}
-                        onChange={(e) =>
-                          setNewUnit((v) => ({ ...v, code: e.target.value }))
-                        }
-                      />
-                    </div>
-                    <div className="form-group" style={{ marginBottom: 0 }}>
-                      <input
-                        type="text"
-                        className="panel-input"
-                        placeholder="Symbol"
-                        value={newUnit.symbol}
-                        onChange={(e) =>
-                          setNewUnit((v) => ({ ...v, symbol: e.target.value }))
-                        }
-                      />
-                    </div>
-                  </div>
+                  {showAddUnit && (
+                    <div className="unit-add-box">
+                      <div className="form-row">
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                          <input
+                            type="text"
+                            className="panel-input"
+                            placeholder="Symbol, e.g. kg"
+                            value={newUnit.symbol}
+                            onChange={(e) =>
+                              setNewUnit((v) => ({ ...v, symbol: e.target.value }))
+                            }
+                          />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                          <label className="unit-add-codelabel">
+                            Code <em>(auto)</em>
+                          </label>
+                          <input
+                            type="text"
+                            className="panel-input unit-add-code"
+                            value={unitCode}
+                            readOnly
+                          />
+                        </div>
+                      </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <input
                       type="text"

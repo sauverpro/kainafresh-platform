@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Save } from "lucide-react";
+import { toast } from "sonner";
 import { useStockStore, type Stock } from "../../store/useStockStore";
 import { useProductStore } from "../../store/useProductStore";
 import Loader from "../Loader/Loader";
@@ -84,7 +85,14 @@ export default function StockForm({ initial, onSubmit, onCancel }: StockFormProp
     } else {
       ok = await createStock(input);
     }
-    if (ok) onSubmit();
+    if (ok) {
+      toast.success(
+        initial ? "Stock updated successfully" : "Stock added successfully",
+      );
+      onSubmit();
+    } else {
+      toast.error(useStockStore.getState().error ?? "Failed to save stock");
+    }
   };
 
   return (

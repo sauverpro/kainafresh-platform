@@ -12,6 +12,7 @@ import {
 import { useStockStore, type Stock } from "../../store/useStockStore";
 import Loader from "../Loader/Loader";
 import ConfirmDeleteModal from "../ui/ConfirmDeleteModal";
+import { toast } from "sonner";
 
 interface StockTableProps {
   onAdd: () => void;
@@ -48,7 +49,12 @@ export default function StockTable({ onAdd, onEdit, onView }: StockTableProps) {
     setDeleting(true);
     const ok = await deleteStock(deleteTarget.id);
     setDeleting(false);
-    if (ok) setDeleteTarget(null);
+    if (ok) {
+      toast.success("Stock record deleted successfully");
+      setDeleteTarget(null);
+    } else {
+      toast.error(useStockStore.getState().error ?? "Failed to delete stock");
+    }
   };
 
   const totalQty = stocks.reduce((sum, s) => sum + Number(s.quantity), 0);
