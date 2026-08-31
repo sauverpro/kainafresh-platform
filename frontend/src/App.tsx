@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "./context/SidebarContext";
+import { CartProvider } from "./context/CartContext";
 import { Toaster } from "sonner";
 import AppLayout from "./components/layout/AppLayout";
 import Placeholder from "./pages/Placeholder";
@@ -12,6 +13,8 @@ import type { NavItem } from "./assets/data/sideNavData.types";
 // Code-split pages so only the active view's chunk is fetched, with a
 // centered loader shown while each chunk loads during navigation.
 const Home = lazy(() => import("./pages/home/Home"));
+const OurProducts = lazy(() => import("./pages/products/OurProducts"));
+const Checkout = lazy(() => import("./pages/checkout/Checkout"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const Signup = lazy(() => import("./pages/auth/Signup"));
 const About = lazy(() => import("./pages/about/About"));
@@ -66,57 +69,61 @@ function collectRoutes(items: NavItem[]): { path: string; label: string }[] {
 
 const routes = sideNavData
   .flatMap((section) => collectRoutes(section.items))
-  .filter((route) => !route.path.startsWith("/crm/"));
+  .filter((route) => !route.path.startsWith("/crm/") && route.path !== "/admin/products" && route.path !== "/products");
 
 function App() {
   return (
     <BrowserRouter>
       <Toaster position="top-right" richColors />
       <SidebarProvider>
-        <Suspense
-          fallback={
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-              <Loader text="Loading page..." />
-            </div>
-          }
-        >
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/wholesale" element={<Wholesale />} />
+        <CartProvider>
+          <Suspense
+            fallback={
+              <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+                <Loader text="Loading page..." />
+              </div>
+            }
+          >
+            <Routes>
+              {/* Public E-Commerce & Info Routes */}
+              <Route path="/" element={<Home />} />
+              <Route path="/products" element={<OurProducts />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/wholesale" element={<Wholesale />} />
 
-            {/* Authenticated Dashboard */}
-            <Route
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/crm/settings" element={<GlobalSettings />} />
-              <Route path="/crm/:slug" element={<CrmPage />} />
-              <Route path="/products" element={<ProductsList />} />
-              <Route path="/products/:id" element={<ProductDetail />} />
-              <Route path="/inventory" element={<InventoryList />} />
-              <Route path="/inventory/:id" element={<StockDetail />} />
-              {routes.map((route) => (
-                <Route
-                  key={route.path}
-                  path={route.path}
-                  element={<Placeholder title={route.label} />}
-                />
-              ))}
-            </Route>
+              {/* Authenticated Dashboard */}
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/crm/settings" element={<GlobalSettings />} />
+                <Route path="/crm/:slug" element={<CrmPage />} />
+                <Route path="/admin/products" element={<ProductsList />} />
+                <Route path="/admin/products/:id" element={<ProductDetail />} />
+                <Route path="/inventory" element={<InventoryList />} />
+                <Route path="/inventory/:id" element={<StockDetail />} />
+                {routes.map((route) => (
+                  <Route
+                    key={route.path}
+                    path={route.path}
+                    element={<Placeholder title={route.label} />}
+                  />
+                ))}
+              </Route>
 
-            {/* Catch-All */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
+              {/* Catch-All */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </CartProvider>
       </SidebarProvider>
     </BrowserRouter>
   );

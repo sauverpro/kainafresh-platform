@@ -269,27 +269,39 @@ function Contact() {
                 </div>
               ) : (
                 <form className="contact-form" onSubmit={handleSubmit} noValidate>
-                  <h2 className="contact-form-heading">{hero.contactheading}</h2>
-                  <p className="contact-form-sub">{hero.contactformsub}</p>
+                  <h2 className="contact-form-heading">{hero.contactheading ?? 'Send Us a Message'}</h2>
+                  <p className="contact-form-sub">{hero.contactformsub ?? 'Fill out the form below and our team will get back to you within 24 hours.'}</p>
 
                   <div className="contact-form-row">
                     <div className="form-group">
-                      <label htmlFor="contact-name">Your Name *</label>
-                      <input id="contact-name" type="text" name="name" value={form.name} onChange={handleChange} placeholder="Jane Doe" required />
+                      <div className="form-label-header">
+                        <label htmlFor="contact-name">Your Name *</label>
+                        <span className="form-guide-hint">Full official or business name</span>
+                      </div>
+                      <input id="contact-name" type="text" name="name" value={form.name} onChange={handleChange} placeholder="e.g. Jane Doe" required />
                     </div>
                     <div className="form-group">
-                      <label htmlFor="contact-email">Email Address *</label>
-                      <input id="contact-email" type="email" name="email" value={form.email} onChange={handleChange} placeholder="jane@example.com" required />
+                      <div className="form-label-header">
+                        <label htmlFor="contact-email">Email Address *</label>
+                        <span className="form-guide-hint">Where we can reply to you</span>
+                      </div>
+                      <input id="contact-email" type="email" name="email" value={form.email} onChange={handleChange} placeholder="e.g. jane@company.com" required />
                     </div>
                   </div>
 
                   <div className="contact-form-row">
                     <div className="form-group">
-                      <label htmlFor="contact-phone">Phone Number</label>
-                      <input id="contact-phone" type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="+250 700 000 000" />
+                      <div className="form-label-header">
+                        <label htmlFor="contact-phone">Phone Number</label>
+                        <span className="form-guide-hint">Include country code (+250...)</span>
+                      </div>
+                      <input id="contact-phone" type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="+250 78X XXX XXX" />
                     </div>
                     <div className="form-group">
-                      <label htmlFor="contact-subject">Subject</label>
+                      <div className="form-label-header">
+                        <label htmlFor="contact-subject">Subject</label>
+                        <span className="form-guide-hint">Select matching topic</span>
+                      </div>
                       <select id="contact-subject" name="subject" value={form.subject} onChange={handleChange}>
                         <option value="">Select a topic</option>
                         <option value="General Inquiry">General Inquiry</option>
@@ -303,8 +315,11 @@ function Contact() {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="contact-message">Message *</label>
-                    <textarea id="contact-message" name="message" value={form.message} onChange={handleChange} placeholder="Tell us how we can help..." rows={5} required />
+                    <div className="form-label-header">
+                      <label htmlFor="contact-message">Message *</label>
+                      <span className="form-guide-hint">Include details about your inquiry or order requirements</span>
+                    </div>
+                    <textarea id="contact-message" name="message" value={form.message} onChange={handleChange} placeholder="Describe your question, required quantities, delivery location, or feedback in detail..." rows={5} required />
                   </div>
 
                   <button type="submit" className={`btn btn-primary contact-submit-btn ${isLoading ? 'loading' : ''}`} disabled={isLoading}>

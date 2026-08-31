@@ -36,14 +36,14 @@ export default function ProductDetail() {
         <div className="auth-error-banner">
           <span className="auth-error-icon">⚠</span> No product id provided.
         </div>
-        <button className="btn-outline" onClick={() => navigate("/products")}>
+        <button className="btn-outline" onClick={() => navigate("/admin/products")}>
           <ArrowLeft size={16} /> Back to list
         </button>
       </div>
     );
   }
 
-  const goBack = () => navigate("/products");
+  const goBack = () => navigate("/admin/products");
 
   const handleConfirmDelete = async () => {
     setDeleting(true);

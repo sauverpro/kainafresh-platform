@@ -567,6 +567,132 @@
   color: var(--color-primary);
 }
 
+/* ── Story Spotlight ── */
+.story-spotlight {
+  padding: 5rem 5%;
+  background: linear-gradient(135deg, rgba(7, 105, 53, 0.04) 0%, rgba(243, 153, 39, 0.04) 100%);
+  border-top: 1px solid rgba(7, 105, 53, 0.08);
+  border-bottom: 1px solid rgba(7, 105, 53, 0.08);
+}
+
+.story-spotlight-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.story-spotlight-text h2 {
+  font-size: 2.2rem;
+  color: var(--color-primary);
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.story-spotlight-text p {
+  color: var(--color-text-light);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  max-width: 700px;
+  margin: 0 auto 2.5rem;
+}
+
+.story-metrics {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.story-metric-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.story-metric-item strong {
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  color: var(--color-secondary);
+  line-height: 1;
+}
+
+.story-metric-item span {
+  font-size: 0.85rem;
+  color: var(--color-text-dark);
+  font-weight: 600;
+  margin-top: 0.35rem;
+}
+
+.story-cta-wrap {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ── Wholesale Banner ── */
+.wholesale-banner {
+  padding: 5rem 5%;
+  background: linear-gradient(135deg, #076935 0%, #054a25 100%);
+  color: white;
+  border-radius: 24px;
+  margin: 4rem 5%;
+  box-shadow: 0 15px 35px rgba(7, 105, 53, 0.15);
+}
+
+.wholesale-banner-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.home-tag.orange {
+  color: #F39927;
+  background: rgba(243, 153, 39, 0.2);
+}
+
+.wholesale-banner-content h2 {
+  font-size: 2.2rem;
+  color: white;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.wholesale-banner-content p {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  max-width: 720px;
+  margin: 0 auto 2rem;
+}
+
+.wholesale-banner-ctas {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.wholesale-banner-ctas .btn-outline-white {
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.wholesale-banner-ctas .btn-outline-white:hover {
+  background: white;
+  color: #076935;
+}
+
 /* ── Tablet (≤1024px) ── */
 @media (max-width: 1024px) {
   .vp-grid {

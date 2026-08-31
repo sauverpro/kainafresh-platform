@@ -37,7 +37,7 @@ function ProductsList() {
         onEdit={openEdit}
         onView={(id) => {
           clearSelected();
-          navigate(`/products/${id}`);
+          navigate(`/admin/products/${id}`);
         }}
       />
 
