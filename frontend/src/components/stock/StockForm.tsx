@@ -55,6 +55,13 @@ export default function StockForm({ initial, onSubmit, onCancel }: StockFormProp
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const selectedProduct = products.find(
+    (p) => Number(p.id) === Number(form.productid),
+  );
+  const unitLabel = selectedProduct?.unit_name
+    ? `${selectedProduct.unit_name} (${selectedProduct.unit_symbol ?? selectedProduct.unit_code ?? ""})`
+    : null;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.productid || form.quantity === undefined || form.quantity === null) return;
@@ -147,15 +154,26 @@ export default function StockForm({ initial, onSubmit, onCancel }: StockFormProp
           />
         </div>
         <div className="form-group">
-          <label>Farm / Plot</label>
+          <label>Unit</label>
           <input
             type="text"
-            className="panel-input"
-            value={form.farm_plot}
-            onChange={(e) => set("farm_plot", e.target.value)}
-            placeholder="e.g. Zone A - Plot 3"
+            className="panel-input unit-readonly"
+            value={unitLabel ?? ""}
+            placeholder="Select a product"
+            readOnly
           />
         </div>
+      </div>
+
+      <div className="form-group">
+        <label>Farm / Plot</label>
+        <input
+          type="text"
+          className="panel-input"
+          value={form.farm_plot}
+          onChange={(e) => set("farm_plot", e.target.value)}
+          placeholder="e.g. Zone A - Plot 3"
+        />
       </div>
 
       <div className="form-row">

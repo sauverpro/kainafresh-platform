@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Save, Upload, X } from "lucide-react";
+import { Save, Upload, X, Plus } from "lucide-react";
 import { useProductStore, type Product } from "../../store/useProductStore";
 import { useUnitStore } from "../../store/useUnitStore";
 
@@ -25,7 +25,7 @@ export default function ProductForm({
 }: ProductFormProps) {
   const { createProduct, updateProduct, saving, error, resetError } =
     useProductStore();
-  const { units, fetchUnits } = useUnitStore();
+  const { units, creating, fetchUnits, createUnit } = useUnitStore();
 
   const [form, setForm] = useState(() =>
     initial
@@ -40,6 +40,8 @@ export default function ProductForm({
       : emptyForm,
   );
   const [image, setImage] = useState<File | null>(null);
+  const [showAddUnit, setShowAddUnit] = useState(false);
+  const [newUnit, setNewUnit] = useState({ name: "", symbol: "" });
 
   useEffect(() => {
     fetchUnits();
@@ -56,6 +58,35 @@ export default function ProductForm({
   const set = (key: keyof typeof form, value: unknown) => {
     resetError();
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const deriveUnitCode = (nameValue: string): string => {
+    const words = nameValue.trim().split(/\s+/).filter(Boolean);
+    const base = words.length > 1
+      ? words.map((w) => w[0]).join("")
+      : words[0]?.slice(0, 3) ?? "";
+    let code = base.toUpperCase();
+    const existing = new Set(units.map((u) => u.code.toUpperCase()));
+    let i = 1;
+    while (existing.has(code)) {
+      code = `${base.toUpperCase()}${i}`;
+      i++;
+    }
+    return code;
+  };
+
+  const unitCode = deriveUnitCode(newUnit.name);
+
+  const handleAddUnit = async () => {
+    const name = newUnit.name.trim();
+    const symbol = newUnit.symbol.trim();
+    if (!name || !symbol) return;
+    const created = await createUnit({ code: unitCode, name, symbol });
+    if (created) {
+      setForm((prev) => ({ ...prev, unit_id: created.id }));
+      setNewUnit({ name: "", symbol: "" });
+      setShowAddUnit(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -153,6 +184,68 @@ export default function ProductForm({
                   </option>
                 ))}
               </select>
+              <button
+                type="button"
+                className="unit-add-toggle"
+                onClick={() => {
+                  resetError();
+                  setShowAddUnit((v) => !v);
+                }}
+              >
+                <Plus size={14} /> {showAddUnit ? "Cancel" : "Add new unit"}
+              </button>
+
+              {showAddUnit && (
+                <div className="unit-add-box">
+                  <div className="form-row">
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <input
+                        type="text"
+                        className="panel-input"
+                        placeholder="Code"
+                        value={newUnit.code}
+                        onChange={(e) =>
+                          setNewUnit((v) => ({ ...v, code: e.target.value }))
+                        }
+                      />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <input
+                        type="text"
+                        className="panel-input"
+                        placeholder="Symbol"
+                        value={newUnit.symbol}
+                        onChange={(e) =>
+                          setNewUnit((v) => ({ ...v, symbol: e.target.value }))
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <input
+                      type="text"
+                      className="panel-input"
+                      placeholder="Unit name, e.g. Kilogram"
+                      value={newUnit.name}
+                      onChange={(e) =>
+                        setNewUnit((v) => ({ ...v, name: e.target.value }))
+                      }
+                    />
+                  </div>
+                  {error && (
+                    <div className="unit-add-error">{error}</div>
+                  )}
+                  <button
+                    type="button"
+                    className="btn-primary-dark unit-add-save"
+                    onClick={handleAddUnit}
+                    disabled={creating}
+                  >
+                    {creating && <span className="spinner" style={{ marginRight: 8 }} />}
+                    Save unit
+                  </button>
+                </div>
+              )}
             </div>
             <div className="form-group">
               <label>Status</label>

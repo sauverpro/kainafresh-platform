@@ -502,3 +502,9 @@
   background: #dc2626;
   color: #fff;
 }
+
+.unit-readonly {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: default;
+}
