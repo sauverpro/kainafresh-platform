@@ -23,6 +23,9 @@ const Wholesale = lazy(() => import("./pages/wholesale/Wholesale"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 const CrmPage = lazy(() => import("./pages/crm/CrmPage"));
 const ProductsList = lazy(() => import("./pages/admin/Products/ProductsList"));
+const OrdersList = lazy(() => import("./pages/admin/Orders/OrdersList"));
+const CustomerList = lazy(() => import("./pages/admin/Customers/CustomerList"));
+const InvoicesList = lazy(() => import("./pages/admin/Invoices/InvoicesList"));
 const ProductDetail = lazy(
   () => import("./components/products/ProductDetail"),
 );
@@ -69,7 +72,16 @@ function collectRoutes(items: NavItem[]): { path: string; label: string }[] {
 
 const routes = sideNavData
   .flatMap((section) => collectRoutes(section.items))
-  .filter((route) => !route.path.startsWith("/crm/") && route.path !== "/admin/products" && route.path !== "/products");
+  .filter(
+    (route) =>
+      !route.path.startsWith("/crm/") &&
+      route.path !== "/admin/products" &&
+      route.path !== "/admin/orders" &&
+      route.path !== "/admin/customers" &&
+      route.path !== "/ecommerce/orders" &&
+      route.path !== "/ecommerce/invoices" &&
+      route.path !== "/products"
+  );
 
 function App() {
   return (
@@ -108,6 +120,10 @@ function App() {
                 <Route path="/crm/:slug" element={<CrmPage />} />
                 <Route path="/admin/products" element={<ProductsList />} />
                 <Route path="/admin/products/:id" element={<ProductDetail />} />
+                <Route path="/admin/orders" element={<OrdersList />} />
+                <Route path="/admin/customers" element={<CustomerList />} />
+                <Route path="/ecommerce/invoices" element={<InvoicesList />} />
+                <Route path="/ecommerce/orders" element={<OrdersList />} />
                 <Route path="/inventory" element={<InventoryList />} />
                 <Route path="/inventory/:id" element={<StockDetail />} />
                 {routes.map((route) => (

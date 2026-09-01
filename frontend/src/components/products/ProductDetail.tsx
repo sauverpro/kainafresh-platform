@@ -8,6 +8,7 @@ import {
   Tag,
   Calendar,
   Boxes,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductStore } from "../../store/useProductStore";
@@ -34,7 +35,7 @@ export default function ProductDetail() {
     return (
       <div className="products-dashboard">
         <div className="auth-error-banner">
-          <span className="auth-error-icon">⚠</span> No product id provided.
+          <AlertCircle size={16} className="inline-block mr-1 text-red-500" /> No product id provided.
         </div>
         <button className="btn-outline" onClick={() => navigate("/admin/products")}>
           <ArrowLeft size={16} /> Back to list
@@ -67,7 +68,7 @@ export default function ProductDetail() {
       ) : error || !selected ? (
         <div className="products-dashboard">
           <div className="auth-error-banner">
-            <span className="auth-error-icon">⚠</span>{" "}
+            <AlertCircle size={16} className="inline-block mr-1 text-red-500" />{" "}
             {error ?? "Product not found."}
           </div>
           <button className="btn-outline" onClick={goBack}>

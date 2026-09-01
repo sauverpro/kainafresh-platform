@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Save } from "lucide-react";
+import { Save, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useStockStore, type Stock } from "../../store/useStockStore";
 import { useProductStore } from "../../store/useProductStore";
@@ -99,7 +99,7 @@ export default function StockForm({ initial, onSubmit, onCancel }: StockFormProp
     <form className="panel-form" onSubmit={handleSubmit}>
       {error && (
         <div className="auth-error-banner" role="alert">
-          <span className="auth-error-icon">⚠</span> {error}
+          <AlertCircle size={16} className="inline-block mr-1 text-red-500" /> {error}
         </div>
       )}
 

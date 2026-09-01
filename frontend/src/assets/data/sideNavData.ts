@@ -37,7 +37,8 @@ export const sideNavData: NavSection[] = [
         icon: ShoppingCart,
         subItems: [
           { label: "Products", path: "/admin/products" },
-          { label: "Orders", path: "/ecommerce/orders" },
+          { label: "Orders", path: "/admin/orders" },
+          { label: "Customers", path: "/admin/customers" },
           { label: "Invoices", path: "/ecommerce/invoices" },
         ],
       },

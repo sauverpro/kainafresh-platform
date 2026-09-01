@@ -9,6 +9,7 @@ import {
   Calendar,
   Boxes,
   MapPin,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useStockStore } from "../../store/useStockStore";
@@ -42,7 +43,7 @@ export default function StockDetail() {
     return (
       <div className="inventory-dashboard">
         <div className="auth-error-banner">
-          <span className="auth-error-icon">⚠</span> No stock id provided.
+          <AlertCircle size={16} className="inline-block mr-1 text-red-500" /> No stock id provided.
         </div>
         <button className="btn-outline-dark" onClick={() => navigate("/inventory")}>
           <ArrowLeft size={16} style={{ marginRight: 8 }} /> Back to inventory
@@ -73,7 +74,7 @@ export default function StockDetail() {
       ) : error || !selected ? (
         <div className="inventory-dashboard">
           <div className="auth-error-banner">
-            <span className="auth-error-icon">⚠</span>{" "}
+            <AlertCircle size={16} className="inline-block mr-1 text-red-500" />{" "}
             {error ?? "Stock entry not found."}
           </div>
           <button className="btn-outline-dark" onClick={goBack}>
