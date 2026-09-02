@@ -276,4 +276,99 @@ public function destroy($id){
         ],500);
 
 }
+// update password
+public function updatepassword($id){
+     try {
+            // Check if user is authenticated
+            $userId = $this->getAuthenticatedUserId();
+            if (!$userId) {
+                return $this->jsonResponse([
+                    'success' => false,
+                    'message' => 'Unauthorized. Please login.'
+                ], 401);
+            }
+            
+            // Check if user is updating their own password or is admin
+            $user = $this->userModel->findByUserId($userId);
+            if ($user['role'] !== 'admin' && (int)$userId !== (int)$id) {
+                return $this->jsonResponse([
+                    'success' => false,
+                    'message' => 'You can only update your own password'
+                ], 403);
+            }
+            
+            // Get request data
+            $data = $this->getRequestData();
+            
+            // Validate required fields
+            $validation = $this->validateRequired($data, ['current_password', 'new_password']);
+            if ($validation) {
+                return $this->jsonResponse([
+                    'success' => false,
+                    'message' => $validation
+                ], 422);
+            }
+            
+            // Validate new password length
+            if (strlen($data['new_password']) < 8) {
+                return $this->jsonResponse([
+                    'success' => false,
+                    'message' => 'New password must be at least 8 characters long'
+                ], 422);
+            }
+            
+            // If admin is updating another user's password, skip current password check
+            if ($user['role'] === 'admin' && (int)$userId !== (int)$id) {
+                // Admin can update any user's password without current password
+                $updated = $this->userModel->updatePassword($id, $data['new_password']);
+                
+                if ($updated) {
+                    return $this->jsonResponse([
+                        'success' => true,
+                        'message' => 'Password updated successfully',
+                        'data' => $updated
+                    ]);
+                } else {
+                    return $this->jsonResponse([
+                        'success' => false,
+                        'message' => 'Failed to update password'
+                    ], 500);
+                }
+            }
+
+            // check if the new password is not the same as current password
+            if(password_verify($data['new_password'],$user['password'])){
+                $this->jsonResponse([
+                    'success'=> true,
+                    'message'=> 'New password must not be the same as current password'],422);
+            }
+            
+            // User updating their own password - verify current password
+            $updated = $this->userModel->verifyAndUpdatePassword(
+                $id,
+                $data['current_password'],
+                $data['new_password']
+            );
+            
+            if ($updated) {
+                return $this->jsonResponse([
+                    'success' => true,
+                    'message' => 'Password updated successfully',
+                    'data' => $updated
+                ]);
+            } else {
+                return $this->jsonResponse([
+                    'success' => false,
+                    'message' => 'Current password is incorrect'
+                ], 400);
+            }
+            
+        } catch (Exception $e) {
+            error_log("Password update error: " . $e->getMessage());
+            return $this->jsonResponse([
+                'success' => false,
+                'message' => 'Server error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -112,6 +112,7 @@ $router->addRoute('POST','/api/admin/users/new','AuthController@createuser','aut
 $router->addRoute('GET','/api/customers','AuthController@customers','auth');
 $router->addRoute('PUT','/api/admin/users/update/{id}','AuthController@updateuser','auth');
 $router->addRoute('DELETE','/api/admin/users/delete/{id}','AuthController@destroy','auth');
+$router->addRoute('POST','/api/auth/change_password/{id}','AuthController@updatepassword','auth');
 /*
 |--------------------------------------------------------------------------
 | Units

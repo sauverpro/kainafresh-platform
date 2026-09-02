@@ -64,4 +64,56 @@ class User extends Model
      public function deleteUser($id){
      return $this->delete($id);
     }
+    // update password
+    public function updatePassword($id, $newPassword) {
+        try {
+            // Hash the password
+            $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+            
+            $sql = "UPDATE `{$this->table}` SET `password` = ? WHERE `id` = ?";
+            $stmt = $this->db->prepare($sql);
+            
+            if (!$stmt) {
+                throw new Exception("Prepare failed: " . $this->db->getConnection()->error);
+            }
+            
+            $stmt->bind_param("si", $hashedPassword, $id);
+            
+            if ($stmt->execute()) {
+                // Return the updated user (without password)
+                return $this->find($id);
+            }
+            
+            return false;
+        } catch (Exception $e) {
+            error_log("Password update error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+public function verifyAndUpdatePassword($id, $currentPassword, $newPassword) {
+        // Get user with password
+        $user = $this->findByIdWithPassword($id);
+        
+        if (!$user) {
+            return false;
+        }
+        
+        // Verify current password
+        if (!password_verify($currentPassword, $user['password'])) {
+            return false;
+        }
+        
+        // Update password
+        return $this->updatePassword($id, $newPassword);
+    }
+public function findByIdWithPassword($id) {
+        $sql = "SELECT * FROM `{$this->table}` WHERE `id` = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
+
     }
