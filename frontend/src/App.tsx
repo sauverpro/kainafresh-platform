@@ -26,6 +26,7 @@ const ProductsList = lazy(() => import("./pages/admin/Products/ProductsList"));
 const OrdersList = lazy(() => import("./pages/admin/Orders/OrdersList"));
 const CustomerList = lazy(() => import("./pages/admin/Customers/CustomerList"));
 const InvoicesList = lazy(() => import("./pages/admin/Invoices/InvoicesList"));
+const SalesList = lazy(() => import("./pages/admin/Sales/SalesList"));
 const ProductDetail = lazy(
   () => import("./components/products/ProductDetail"),
 );
@@ -80,6 +81,7 @@ const routes = sideNavData
       route.path !== "/admin/customers" &&
       route.path !== "/ecommerce/orders" &&
       route.path !== "/ecommerce/invoices" &&
+      route.path !== "/sales" &&
       route.path !== "/products"
   );
 
@@ -123,6 +125,7 @@ function App() {
                 <Route path="/admin/orders" element={<OrdersList />} />
                 <Route path="/admin/customers" element={<CustomerList />} />
                 <Route path="/ecommerce/invoices" element={<InvoicesList />} />
+                <Route path="/sales" element={<SalesList />} />
                 <Route path="/ecommerce/orders" element={<OrdersList />} />
                 <Route path="/inventory" element={<InventoryList />} />
                 <Route path="/inventory/:id" element={<StockDetail />} />

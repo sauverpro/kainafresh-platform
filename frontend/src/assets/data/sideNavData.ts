@@ -1,7 +1,6 @@
 import {
   LayoutGrid,
   Users2,
-  LineChart,
   Wallet,
   ShoppingCart,
   CalendarDays,
@@ -48,7 +47,6 @@ export const sideNavData: NavSection[] = [
         icon: Warehouse,
         path: "/inventory",
       },
-      { id: "stocks", label: "Stocks", icon: LineChart, path: "/stocks" },
       { id: "sales", label: "Sales", icon: Wallet, path: "/sales" },
       { id: "finance", label: "Finance", icon: Wallet, path: "/finance" },
       { id: "calendar", label: "Calendar", icon: CalendarDays, path: "/calendar" },
