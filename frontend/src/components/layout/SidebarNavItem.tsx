@@ -47,7 +47,7 @@ export default function SidebarNavItem({ item }: Props) {
   const Icon = item.icon;
 
   const badge = item.badge && (
-    <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
+    <span className="rounded-full bg-[#F39927] px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
       {item.badge}
     </span>
   );
@@ -62,20 +62,24 @@ export default function SidebarNavItem({ item }: Props) {
             setOpenSubmenu(isOpen ? null : item.id);
           }}
           className={[
-            "group flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200",
+            "group flex w-full items-center rounded-xl px-3.5 py-3 text-sm font-semibold transition-all duration-200 cursor-pointer",
             isOpen || isChildActive
-              ? "bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white",
+              ? "bg-white !text-[#076935] shadow-md font-bold"
+              : "text-white/85 hover:bg-white/15 hover:text-white",
             !isRailExpanded ? "justify-center" : "justify-between",
           ].join(" ")}
+          style={{
+            fontFamily: 'var(--font-heading)',
+            color: (isOpen || isChildActive) ? '#076935' : undefined,
+          }}
         >
           <span className="flex items-center gap-3">
             <Icon
               className={[
-                "h-5 w-5 shrink-0",
+                "h-5 w-5 shrink-0 transition-colors duration-200",
                 isOpen || isChildActive
-                  ? "text-brand-500"
-                  : "text-gray-500 dark:text-gray-400",
+                  ? "text-[#F39927]"
+                  : "text-white/70 group-hover:text-white",
               ].join(" ")}
             />
             <span
@@ -85,6 +89,7 @@ export default function SidebarNavItem({ item }: Props) {
                   ? "max-w-[160px] opacity-100"
                   : "max-w-0 opacity-0",
               ].join(" ")}
+              style={{ color: (isOpen || isChildActive) ? '#076935' : undefined }}
             >
               {item.label}
             </span>
@@ -96,7 +101,9 @@ export default function SidebarNavItem({ item }: Props) {
               <ChevronDown
                 className={[
                   "h-4 w-4 shrink-0 transition-transform duration-200",
-                  isOpen ? "rotate-180 text-brand-500" : "text-gray-400",
+                  isOpen
+                    ? "rotate-180 text-[#F39927]"
+                    : "text-white/60 group-hover:text-white",
                 ].join(" ")}
               />
             </span>
@@ -108,7 +115,7 @@ export default function SidebarNavItem({ item }: Props) {
           style={{ maxHeight: isRailExpanded ? maxHeight : "0px" }}
           className="overflow-hidden transition-[max-height] duration-300 ease-in-out"
         >
-          <ul className="mt-1 ml-2 space-y-1 border-l border-gray-200 pl-3 dark:border-white/10">
+          <ul className="mt-1.5 ml-3 space-y-1 border-l-2 border-white/20 pl-3">
             {item.subItems!.map((sub) => {
               if (sub.otherSub?.length) {
                 const isGroupOpen =
@@ -122,22 +129,22 @@ export default function SidebarNavItem({ item }: Props) {
                         setOpenOtherSub(isGroupOpen ? null : sub.label)
                       }
                       className={[
-                        "flex w-full items-center justify-between rounded-md px-2.5 py-2 text-sm transition-colors hover:text-gray-800 dark:hover:text-white",
+                        "flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-sm transition-colors cursor-pointer",
                         isGroupOpen
-                          ? "text-brand-600 font-medium dark:text-brand-300"
-                          : "text-gray-500 dark:text-gray-400",
+                          ? "text-white font-bold bg-white/20"
+                          : "text-white/75 hover:text-white hover:bg-white/10",
                       ].join(" ")}
                     >
                       <span>{sub.label}</span>
                       <ChevronDown
                         className={[
                           "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
-                          isGroupOpen ? "rotate-180" : "",
+                          isGroupOpen ? "rotate-180 text-[#F39927]" : "text-white/60",
                         ].join(" ")}
                       />
                     </button>
                     {isGroupOpen && (
-                      <ul className="ml-1 mt-0.5 space-y-0.5 px-1 ">
+                      <ul className="ml-2 mt-1 space-y-1 pl-2 border-l border-white/15">
                         {sub.otherSub.map((child) =>
                           child.path ? (
                             <li key={child.path}>
@@ -145,12 +152,13 @@ export default function SidebarNavItem({ item }: Props) {
                                 to={child.path}
                                 className={({ isActive }) =>
                                   [
-                                    "block rounded-md px-2.5 py-1.5 text-[13px] transition-colors",
+                                    "block rounded-md px-3 py-2 text-[13px] transition-all duration-150",
                                     isActive
-                                      ? "bg-brand-50 font-medium text-brand-600 dark:bg-brand-500/10 dark:text-brand-300"
-                                      : "text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-white",
+                                      ? "bg-white/25 text-white font-bold backdrop-blur-md border-l-4 border-[#F39927] shadow-sm"
+                                      : "text-white/75 hover:text-white hover:bg-white/10",
                                   ].join(" ")
                                 }
+                                style={({ isActive }) => (isActive ? { color: '#ffffff' } : {})}
                               >
                                 {child.label}
                               </NavLink>
@@ -169,12 +177,13 @@ export default function SidebarNavItem({ item }: Props) {
                     to={sub.path}
                     className={({ isActive }) =>
                       [
-                        "block rounded-md px-2.5 py-2 text-sm transition-colors duration-150",
+                        "block rounded-lg px-3.5 py-2 text-sm transition-all duration-150 font-medium",
                         isActive
-                          ? "bg-brand-50 font-medium text-brand-600 dark:bg-brand-500/10 dark:text-brand-300"
-                          : "text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white",
+                          ? "bg-white/25 text-white font-bold backdrop-blur-md border-l-4 border-[#F39927] shadow-sm"
+                          : "text-white/80 hover:text-white hover:bg-white/10",
                       ].join(" ")
                     }
+                    style={({ isActive }) => (isActive ? { color: '#ffffff' } : {})}
                   >
                     {sub.label}
                   </NavLink>
@@ -193,22 +202,26 @@ export default function SidebarNavItem({ item }: Props) {
         to={item.path ?? "#"}
         className={({ isActive }) =>
           [
-            "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200",
+            "group flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition-all duration-200 cursor-pointer",
             isActive
-              ? "bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white",
+              ? "bg-white !text-[#076935] font-bold shadow-md shadow-black/10"
+              : "text-white/85 hover:bg-white/15 hover:text-white",
             !isRailExpanded ? "justify-center" : "",
           ].join(" ")
         }
+        style={({ isActive }) => ({
+          fontFamily: 'var(--font-heading)',
+          color: isActive ? '#076935' : undefined,
+        })}
       >
         {({ isActive }) => (
           <>
             <Icon
               className={[
-                "h-5 w-5 shrink-0",
+                "h-5 w-5 shrink-0 transition-colors duration-200",
                 isActive
-                  ? "text-brand-500"
-                  : "text-gray-500 dark:text-gray-400",
+                  ? "text-[#F39927]"
+                  : "text-white/70 group-hover:text-white",
               ].join(" ")}
             />
             <span
@@ -218,6 +231,7 @@ export default function SidebarNavItem({ item }: Props) {
                   ? "max-w-[160px] opacity-100"
                   : "max-w-0 opacity-0",
               ].join(" ")}
+              style={{ color: isActive ? '#076935' : undefined }}
             >
               {item.label}
             </span>

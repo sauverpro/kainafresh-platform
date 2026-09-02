@@ -9,7 +9,7 @@ import { monthlyTarget } from "../../assets/data/dashboardData";
 
 export default function MonthlyTargetCard() {
   const data = [
-    { name: "target", value: monthlyTarget.percent, fill: "#1d7255" },
+    { name: "target", value: monthlyTarget.percent, fill: "#F39927" },
   ];
 
   return (
@@ -55,7 +55,7 @@ export default function MonthlyTargetCard() {
           <span className="text-3xl font-bold text-gray-800 dark:text-white">
             {monthlyTarget.percent}%
           </span>
-          <span className="mt-2 flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
+          <span className="mt-2 flex items-center gap-1 rounded-full bg-[#F39927]/10 px-2.5 py-0.5 text-xs font-bold text-[#F39927] dark:bg-[#F39927]/20 dark:text-[#F39927]">
             {monthlyTarget.changeLabel}
           </span>
         </div>

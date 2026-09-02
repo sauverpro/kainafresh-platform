@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Save, Upload, X, Plus } from "lucide-react";
+import { Save, Upload, X, Plus, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useProductStore, type Product } from "../../store/useProductStore";
 import { useUnitStore } from "../../store/useUnitStore";
@@ -128,7 +128,7 @@ export default function ProductForm({
     <form className="panel-form" onSubmit={handleSubmit}>
       {error && (
         <div className="auth-error-banner" role="alert">
-          <span className="auth-error-icon">⚠</span> {error}
+          <AlertCircle size={16} className="inline-block mr-1 text-red-500" /> {error}
         </div>
       )}
 

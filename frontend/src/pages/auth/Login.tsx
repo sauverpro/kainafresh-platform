@@ -20,7 +20,7 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 // Import Lucide vector icons for UI form inputs and badges
-import { Eye, EyeOff, Mail, Lock, ArrowLeft, Leaf, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowLeft, Leaf, ShieldCheck, AlertCircle } from 'lucide-react';
 
 // Import API client helpers for authentication
 import { apiPost, setToken } from '../../api/client';
@@ -161,7 +161,7 @@ function Login() {
             {/* Error Notification Banner */}
             {error && (
               <div className="auth-error-banner" role="alert">
-                <span className="auth-error-icon">⚠</span>
+                <AlertCircle size={16} className="auth-error-icon" />
                 {error}
               </div>
             )}

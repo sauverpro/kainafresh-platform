@@ -30,7 +30,8 @@ import {
   X,
   Search,
   User,
-  Bell
+  Bell,
+  Leaf
 } from 'lucide-react';
 
 // Import API client for dynamic page fetching
@@ -156,8 +157,13 @@ function AdminLayout({ children }: AdminLayoutProps) {
       <aside className={`admin-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="admin-logo">
           <Link to="/">
-            <h2>Kaina<span className="logo-accent">Fresh</span></h2>
-            <span className="admin-badge">Admin</span>
+            <div className="admin-logo-brand">
+              <div className="admin-logo-icon">
+                <Leaf size={18} color="#F39927" />
+              </div>
+              <h2>Kaina<span className="logo-accent">Fresh</span></h2>
+            </div>
+            <span className="admin-badge">Admin Portal</span>
           </Link>
           <button className="mobile-close-btn" onClick={() => setIsMobileMenuOpen(false)}>
             <X size={24} />

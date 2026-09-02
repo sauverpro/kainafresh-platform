@@ -1,5 +1,5 @@
 /* ──────────────────────────────────────────────
-   Admin Dashboard Layout Styles
+   Admin Dashboard Layout Styles — Rich Green Theme
    Features the seamless overlapping sidebar tab
 ────────────────────────────────────────────── */
 
@@ -7,7 +7,7 @@
   display: flex;
   height: 100vh;
   width: 100vw;
-  background-color: var(--color-primary); /* Dark Green background */
+  background: linear-gradient(180deg, #076935 0%, #055028 55%, #03361a 100%);
   overflow: hidden;
   font-family: var(--font-body);
 }
@@ -18,12 +18,15 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  padding: 2.5rem 0 2.5rem 1.5rem; /* Padding left, NO padding right so active tabs touch the edge */
+  padding: 2.5rem 0 2.5rem 1.25rem; /* Padding left, NO padding right so active tabs touch the edge */
+  background: transparent;
+  position: relative;
+  z-index: 10;
 }
 
 .admin-logo {
-  padding-left: 1rem;
-  margin-bottom: 3rem;
+  padding-left: 0.75rem;
+  margin-bottom: 2.5rem;
 }
 
 .admin-logo a {
@@ -33,12 +36,32 @@
   text-decoration: none;
 }
 
+.admin-logo-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-logo-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 .admin-logo h2 {
   font-family: var(--font-heading);
   color: white;
   font-size: 1.8rem;
   margin: 0;
   line-height: 1;
+  letter-spacing: -0.02em;
 }
 
 .logo-accent {
@@ -46,17 +69,23 @@
 }
 
 .admin-badge {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: rgba(255,255,255,0.7);
+  color: #F39927;
+  background: rgba(243, 153, 39, 0.18);
+  border: 1px solid rgba(243, 153, 39, 0.35);
   font-weight: 700;
-  margin-top: 0.2rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 50px;
+  margin-top: 0.45rem;
+  backdrop-filter: blur(4px);
 }
 
 .admin-nav {
   flex: 1;
-  margin-top: 2.5rem; /* Push down significantly to clear the 40px border-radius of the white main box */
+  margin-top: 1.5rem; /* Push down significantly to clear the 40px border-radius of the white main box */
+  overflow-y: auto;
 }
 
 .admin-nav ul {
@@ -69,31 +98,31 @@
 }
 
 .admin-nav-header {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+  padding: 1.25rem 1.25rem 0.5rem 1.25rem;
   margin-top: 0.5rem;
 }
 
 .admin-nav-item {
   position: relative;
   border-radius: 30px 0 0 30px; /* Only round left side */
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.15s ease;
 }
 
 .admin-nav-item:hover:not(.active):not(.expanded) {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 .admin-nav-link {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 1.5rem;
-  color: rgba(255, 255, 255, 0.7);
+  padding: 0.95rem 1.25rem;
+  color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
   font-weight: 600;
   font-size: 0.95rem;
@@ -117,9 +146,11 @@
 .admin-nav-item.active > .admin-nav-link,
 .admin-nav-item.expanded > .admin-nav-link {
   color: var(--color-primary); /* Green text on white bg */
+  font-weight: 700;
 }
 
-.admin-nav-item.active > .admin-nav-link svg {
+.admin-nav-item.active > .admin-nav-link svg,
+.admin-nav-item.expanded > .admin-nav-link svg {
   color: var(--color-secondary); /* Golden amber icon highlight on active tab! */
 }
 
@@ -174,9 +205,9 @@
 }
 
 .admin-nav-item.sub-item .admin-nav-link {
-  padding: 0.6rem 1.5rem 0.6rem 3.5rem; /* Indent sub items */
-  font-size: 0.9rem;
-  color: var(--color-text-light); /* Dark grey text inside the white block */
+  padding: 0.65rem 1.25rem 0.65rem 3.25rem; /* Indent sub items */
+  font-size: 0.88rem;
+  color: #4B5563; /* Slate gray text inside the white block */
 }
 
 .admin-nav-item.sub-item:hover:not(.active) {
@@ -185,37 +216,47 @@
 
 .admin-nav-item.sub-item:hover:not(.active) .admin-nav-link {
   color: var(--color-primary);
-  background: rgba(0,0,0,0.03); /* Slight hover inside the white block */
+  background: rgba(7, 105, 53, 0.08); /* Green hover tint inside the white block */
+  border-radius: 12px;
 }
 
 .admin-nav-item.sub-item.active .admin-nav-link {
   color: var(--color-primary);
   font-weight: 700;
-  background: rgba(7, 105, 53, 0.05); /* Very slight green highlight */
-  border-right: 3px solid var(--color-primary); /* A line to indicate active child */
+  background: rgba(7, 105, 53, 0.12); /* Green highlight */
+  border-right: 4px solid var(--color-primary); /* Green line to indicate active child */
+  border-radius: 12px 0 0 12px;
 }
 
 .admin-logout {
-  padding-left: 1.5rem;
+  padding: 1.5rem 1.25rem 0 0.75rem;
   margin-top: auto;
 }
 
 .logout-btn {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 600;
-  font-size: 0.95rem;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
   cursor: pointer;
-  padding: 0;
-  transition: color 0.2s ease;
+  padding: 0.75rem 1.25rem;
+  border-radius: 50px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
 }
 
 .logout-btn:hover {
-  color: white;
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
 /* ── Content Wrapper ── */
@@ -234,9 +275,8 @@
   margin: 0.5rem 1rem 1rem 0; /* Gap on right and bottom, slight gap on top from topbar */
   overflow-y: auto;
   position: relative;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.08);
 }
-
-
 
 /* ── Desktop Topbar (Pill Header) ── */
 .admin-topbar {
@@ -245,9 +285,10 @@
   align-items: center;
   background: white;
   margin: 1rem 1rem 0 0; /* Aligned with sidebar and right margin */
-  padding: 0.8rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   border-radius: 50px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(7, 105, 53, 0.1);
+  box-shadow: 0 4px 20px rgba(7, 105, 53, 0.08);
   z-index: 50;
 }
 
@@ -255,16 +296,18 @@
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  background: #F3F4F6;
+  background: #F4FAF7;
+  border: 1px solid rgba(7, 105, 53, 0.15);
   padding: 0.6rem 1.2rem;
   border-radius: 30px;
-  width: 300px;
+  width: 320px;
   transition: all 0.2s ease;
 }
 
 .topbar-search:focus-within {
   background: white;
-  box-shadow: 0 0 0 2px rgba(39, 39, 42, 0.1);
+  border-color: #076935;
+  box-shadow: 0 0 0 3px rgba(7, 105, 53, 0.15);
 }
 
 .topbar-search input {
@@ -278,7 +321,7 @@
 }
 
 .topbar-search .search-icon {
-  color: var(--color-text-light);
+  color: #076935;
 }
 
 .topbar-actions {
@@ -288,36 +331,43 @@
 }
 
 .icon-btn {
-  background: none;
-  border: none;
-  color: var(--color-text-light);
+  background: #F4FAF7;
+  border: 1px solid rgba(7, 105, 53, 0.15);
+  color: #076935;
   cursor: pointer;
   position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .icon-btn:hover {
-  color: var(--color-text-dark);
+  background: #076935;
+  color: white;
+  border-color: #076935;
 }
 
 .icon-btn .badge {
   position: absolute;
   top: -4px;
   right: -4px;
-  background: #EF4444;
+  background: #F39927;
   color: white;
   font-size: 0.65rem;
-  font-weight: bold;
-  height: 16px;
-  min-width: 16px;
-  border-radius: 8px;
+  font-weight: 800;
+  height: 18px;
+  min-width: 18px;
+  border-radius: 9999px;
+  border: 2px solid white;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 .user-profile-pill {
@@ -325,17 +375,21 @@
   align-items: center;
   gap: 0.8rem;
   cursor: pointer;
-  padding: 0.4rem 0.6rem;
+  padding: 0.35rem 0.75rem 0.35rem 0.35rem;
   border-radius: 30px;
-  transition: background 0.2s;
+  background: #F4FAF7;
+  border: 1px solid rgba(7, 105, 53, 0.15);
+  transition: all 0.2s ease;
 }
 
 .user-profile-pill:hover {
-  background: #F3F4F6;
+  background: white;
+  border-color: #076935;
+  box-shadow: 0 4px 12px rgba(7, 105, 53, 0.1);
 }
 
 .user-avatar {
-  background: var(--color-primary);
+  background: linear-gradient(135deg, #076935, #055028);
   color: white;
   width: 36px;
   height: 36px;
@@ -343,16 +397,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 6px rgba(7, 105, 53, 0.25);
 }
 
 .user-name {
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text-dark);
+  font-family: var(--font-heading);
 }
 
 .user-profile-pill .chevron {
-  color: var(--color-text-light);
+  color: #076935;
 }
 
 .admin-main-inner {
@@ -369,24 +425,26 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.5rem;
-  background: white;
-  border-bottom: 1px solid #E5E7EB;
+  background: #076935;
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: sticky;
   top: 0;
   z-index: 90;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .admin-mobile-header h2 {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: 1.2rem;
-  color: var(--color-primary);
+  font-size: 1.25rem;
+  color: white;
 }
 
 .mobile-menu-btn {
   background: none;
   border: none;
-  color: var(--color-text-dark);
+  color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -409,7 +467,7 @@
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(4px);
   z-index: 99;
   animation: fadeIn 0.2s ease-out;
 }
@@ -429,6 +487,8 @@
     left: -280px; /* Hidden by default */
     height: 100vh;
     z-index: 100;
+    background: linear-gradient(180deg, #076935 0%, #055028 60%, #03361a 100%);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 

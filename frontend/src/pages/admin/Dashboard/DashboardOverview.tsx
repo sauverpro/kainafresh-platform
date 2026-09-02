@@ -96,40 +96,84 @@ function DashboardOverview() {
 
             <div className="hero-chart-body">
               {/* 2x2 Metric Cards Grid */}
-              <div className="metrics-grid-2x2">
-                <div className="metric-card chip-purple">
-                  <div className="chip-icon"><DollarSign size={20} color="#7C3AED" /></div>
-                  <div className="metric-card-info">
-                    <span className="metric-card-title">Total Revenue</span>
-                    <span className="metric-card-val">RWF 840,000</span>
-                    <span className="metric-card-sub">↑ 15% vs last month</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+                {/* Total Revenue */}
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex flex-col justify-between hover:border-gray-200/80 transition-all">
+                  <div className="w-10 h-10 rounded-xl bg-gray-100/70 flex items-center justify-center text-gray-600 mb-3">
+                    <DollarSign size={18} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-500 block mb-1">
+                      Total Revenue
+                    </span>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <h4 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
+                        RWF 840k
+                      </h4>
+                      <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 shrink-0">
+                        ↑ 15%
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="metric-card chip-green">
-                  <div className="chip-icon"><Leaf size={20} color="#076935" /></div>
-                  <div className="metric-card-info">
-                    <span className="metric-card-title">Active Produce</span>
-                    <span className="metric-card-val">24 Items</span>
-                    <span className="metric-card-sub">Organic Fresh Stock</span>
+                {/* Active Produce */}
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex flex-col justify-between hover:border-gray-200/80 transition-all">
+                  <div className="w-10 h-10 rounded-xl bg-gray-100/70 flex items-center justify-center text-gray-600 mb-3">
+                    <Leaf size={18} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-500 block mb-1">
+                      Active Produce
+                    </span>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <h4 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
+                        24 Items
+                      </h4>
+                      <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 shrink-0">
+                        Stocked
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="metric-card chip-amber">
-                  <div className="chip-icon"><ShoppingBag size={20} color="#D97706" /></div>
-                  <div className="metric-card-info">
-                    <span className="metric-card-title">Completed Orders</span>
-                    <span className="metric-card-val">156 Orders</span>
-                    <span className="metric-card-sub">↑ 8% vs last week</span>
+                {/* Completed Orders */}
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex flex-col justify-between hover:border-gray-200/80 transition-all">
+                  <div className="w-10 h-10 rounded-xl bg-gray-100/70 flex items-center justify-center text-gray-600 mb-3">
+                    <ShoppingBag size={18} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-500 block mb-1">
+                      Completed Orders
+                    </span>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <h4 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
+                        156
+                      </h4>
+                      <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 shrink-0">
+                        ↑ 8.0%
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="metric-card chip-blue">
-                  <div className="chip-icon"><Users size={20} color="#0284C7" /></div>
-                  <div className="metric-card-info">
-                    <span className="metric-card-title">Active Customers</span>
-                    <span className="metric-card-val">120 Buyers</span>
-                    <span className="metric-card-sub">Registered Accounts</span>
+                {/* Active Customers */}
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex flex-col justify-between hover:border-gray-200/80 transition-all">
+                  <div className="w-10 h-10 rounded-xl bg-gray-100/70 flex items-center justify-center text-gray-600 mb-3">
+                    <Users size={18} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-500 block mb-1">
+                      Active Customers
+                    </span>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <h4 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
+                        3,782
+                      </h4>
+                      <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 shrink-0">
+                        ↑ 11.01%
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -158,14 +202,14 @@ function DashboardOverview() {
                   />
                   <defs>
                     <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#076935" />
-                      <stop offset="100%" stopColor="#F39927" />
+                      <stop offset="0%" stopColor="#F39927" />
+                      <stop offset="100%" stopColor="#E67E22" />
                     </linearGradient>
                   </defs>
                 </svg>
 
                 <div className="ring-chart-center">
-                  <div className="ring-chart-number">84%</div>
+                  <div className="ring-chart-number text-[#F39927]">84%</div>
                   <div className="ring-chart-label">Goal Achieved</div>
                 </div>
               </div>

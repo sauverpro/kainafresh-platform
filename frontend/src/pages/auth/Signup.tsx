@@ -20,7 +20,7 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 // Import Lucide vector icons for progressive step navigation and form inputs
-import { Eye, EyeOff, ArrowRight, ArrowLeft, Mail, Phone, Lock, User, AtSign, Truck, Clock } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, ArrowLeft, Mail, Phone, Lock, User, AtSign, Truck, Clock, AlertCircle } from 'lucide-react';
 
 // Import API client helpers for user registration and JWT token storage
 import { apiPost, setToken } from '../../api/client';
@@ -287,7 +287,7 @@ function Signup() {
           {/* Server error */}
           {serverError && (
             <div className="auth-error-banner" role="alert">
-              <span className="auth-error-icon">⚠</span>
+              <AlertCircle size={16} className="auth-error-icon" />
               {serverError}
             </div>
           )}
