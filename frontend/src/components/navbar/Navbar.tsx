@@ -246,6 +246,7 @@ function Navbar() {
                 onClick={closeMenu}
                 className="nav-icon-link"
               >
+                {getNavIcon(link)}
                 <span>{link.link_name}</span>
               </NavLink>
             ))}

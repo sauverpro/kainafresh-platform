@@ -4,7 +4,6 @@ import {
   Users,
   ShoppingBag,
   Building2,
-  Banknote,
   Search,
   Plus,
   Eye,
@@ -19,7 +18,6 @@ import {
   MapPin,
   UserCheck,
   UserX,
-  RefreshCw,
 } from "lucide-react";
 import { usePageTitle } from "../../../hooks/usePageTitle";
 import { apiGet, apiPost, apiPut, apiDelete } from "../../../api/client";
@@ -70,7 +68,7 @@ interface Customer {
   status?: "active" | "inactive" | "suspended";
   total_orders?: number;
   total_spent?: number;
-  last_order?: string;
+  last_order?: string | null;
   preferred_payment?: string;
   notes?: string;
 }

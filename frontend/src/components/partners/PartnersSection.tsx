@@ -45,6 +45,19 @@ export default function PartnersSection({
           list = res;
         }
 
+        // If /api/partners returned empty, attempt fetching CMS home page partners section
+        if (list.length === 0) {
+          try {
+            const cmsRes = await apiGet<{ success?: boolean; data?: { sections?: { type: string; content?: { partners?: PartnerItem[] } }[] } }>('/api/pages/slug/home');
+            const sec = cmsRes?.data?.sections?.find(s => s.type === 'partners');
+            if (sec?.content?.partners && Array.isArray(sec.content.partners) && sec.content.partners.length > 0) {
+              list = sec.content.partners;
+            }
+          } catch {
+            // Ignore CMS error
+          }
+        }
+
         if (!cancelled) {
           setPartners(list);
         }
@@ -68,8 +81,8 @@ export default function PartnersSection({
     return `${API_BASE}${logoPath.startsWith('/') ? logoPath : '/' + logoPath}`;
   };
 
-  if (loading || partners.length === 0) {
-    return null; // Silent hide if no partners exist in DB
+  if (loading) {
+    return null;
   }
 
   return (

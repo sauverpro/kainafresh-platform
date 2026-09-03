@@ -251,7 +251,8 @@
 }
 
 .btn-save:hover {
-  background: var(--color-primary-dark);
+  background: #055028 !important;
+  color: #ffffff !important;
 }
 
 .btn-save:disabled {
