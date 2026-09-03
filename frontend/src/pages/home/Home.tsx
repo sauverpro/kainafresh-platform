@@ -428,11 +428,11 @@ function Home() {
                 </div>
               </div>
               <div className="story-cta-wrap">
-                <Link to={story.primaryCta?.to} className="btn btn-primary story-btn">
-                  {story.primaryCta?.label} <ArrowRight size={16} />
+                <Link to={story.primaryCta?.to || '/about'} className="btn btn-primary story-btn">
+                  {story.primaryCta?.label || 'Learn More'} <ArrowRight size={16} />
                 </Link>
-                <Link to={story.secondaryCta?.to} className="btn btn-outline-green">
-                 {story.secondaryCta?.label}
+                <Link to={story.secondaryCta?.to || '/contact'} className="btn btn-outline-green">
+                 {story.secondaryCta?.label || 'Get in Touch'}
                 </Link>
               </div>
             </div>
@@ -511,10 +511,10 @@ function Home() {
 
           {/* Prompt to View More Products */}
           <div className="fp-bottom-prompt mt-12 text-center p-8 bg-white rounded-2xl border border-[#076935]/10 shadow-xs max-w-3xl mx-auto">
-            <h3 className="font-heading text-xl text-[#076935] mb-2 font-bold">{catalog?.heading}</h3>
-            <p className="text-gray-600 text-sm mb-5">{catalog?.paragraphs}</p>
-            <Link to={catalog?.primaryCta?.to} className="btn btn-primary">
-              {catalog?.primaryCta?.label} <ArrowRight size={16} />
+            <h3 className="font-heading text-xl text-[#076935] mb-2 font-bold">{catalog?.heading || 'Explore Our Full Produce Catalog'}</h3>
+            <p className="text-gray-600 text-sm mb-5">{catalog?.paragraphs || 'From seasonal root crops to freshly picked vegetables, order directly from our farm.'}</p>
+            <Link to={catalog?.primaryCta?.to || '/products'} className="btn btn-primary">
+              {catalog?.primaryCta?.label || 'Browse All Products'} <ArrowRight size={16} />
             </Link>
           </div>
         </section>

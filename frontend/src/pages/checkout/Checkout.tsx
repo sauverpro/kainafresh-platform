@@ -170,7 +170,7 @@ const handleSubmitOrder = async (e: React.FormEvent) => {
       address: `${form.address}, ${form.district}` || form.district,
     };
 
-    const customerResponse = await apiPost('/api/customers', customerPayload);
+    const customerResponse = await apiPost<{ success?: boolean; message?: string; id?: number | string; data?: { id?: number | string } }>('/api/customers', customerPayload);
     
     if (!customerResponse.success) {
       throw new Error(customerResponse.message || 'Failed to create customer');
@@ -187,7 +187,7 @@ const handleSubmitOrder = async (e: React.FormEvent) => {
       order_source: 'ecommerce',
     };
 
-    const orderResponse = await apiPost('/api/orders', orderPayload);
+    const orderResponse = await apiPost<{ success?: boolean; message?: string; id?: number | string; data?: { id?: number | string } }>('/api/orders', orderPayload);
     
     if (!orderResponse.success) {
       throw new Error(orderResponse.message || 'Failed to create order');
@@ -202,7 +202,7 @@ const handleSubmitOrder = async (e: React.FormEvent) => {
         quantity: item.quantity,
       };
 
-      const itemResponse = await apiPost(`/api/orders/${orderId}/items`, itemPayload);
+      const itemResponse = await apiPost<{ success?: boolean; message?: string; data?: unknown }>(`/api/orders/${orderId}/items`, itemPayload);
       
       if (!itemResponse.success) {
         throw new Error(`Failed to add product ${item.product.name} to order`);
@@ -327,7 +327,7 @@ const handleSubmitOrder = async (e: React.FormEvent) => {
                 </h3>
                 <div className="flex flex-col gap-2.5 mb-4">
                   {orderConfirmation.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-sm text-gray-800">
+                    <div key={`conf-item-${item.name}-${idx}`} className="flex justify-between text-sm text-gray-800">
                       <span>
                         {item.name} × {item.quantity} {item.unit}
                       </span>
@@ -661,7 +661,7 @@ const handleSubmitOrder = async (e: React.FormEvent) => {
 
                             return (
                               <div key={product.id} className="flex items-center gap-3">
-                                {/* <img src={itemImg} alt={product.name} className="w-12 h-12 rounded-xl object-cover bg-[#f4faf7] shrink-0" /> */}
+                                <img src={itemImg} alt={product.name} className="w-12 h-12 rounded-xl object-cover bg-[#f4faf7] shrink-0" />
                                 <div className="flex-1 min-w-0">
                                   <span className="font-semibold text-sm text-gray-800 truncate block" style={{ fontFamily: 'var(--font-heading)' }}>
                                     {product.name}

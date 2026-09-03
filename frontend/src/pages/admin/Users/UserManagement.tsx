@@ -85,20 +85,20 @@ const ROLE_LABELS: Record<RoleKey, string> = {
 const ROLE_KEYS: RoleKey[] = ["admin", "sales_manager", "customer"];
 
 const ROLE_BADGE: Record<RoleKey, string> = {
-  admin: "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200",
-  sales_manager: "bg-sky-50 text-sky-700 ring-1 ring-sky-200",
-  customer: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+  admin: "bg-[#076935]/10 text-[#076935] ring-1 ring-[#076935]/25",
+  sales_manager: "bg-[#F39927]/10 text-[#D97706] ring-1 ring-[#F39927]/30",
+  customer: "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200",
 };
 
 const STATUS_BADGE: Record<StatusKey, string> = {
-  active: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+  active: "bg-[#076935]/10 text-[#076935] ring-1 ring-[#076935]/25",
   inactive: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",
 };
 
 const ROLE_DOT: Record<RoleKey, string> = {
-  admin: "bg-indigo-500",
-  sales_manager: "bg-sky-500",
-  customer: "bg-amber-500",
+  admin: "bg-[#076935]",
+  sales_manager: "bg-[#F39927]",
+  customer: "bg-emerald-600",
 };
 
 /* ------------------------------------------------------------------------
@@ -371,33 +371,33 @@ export default function UserManagement() {
     {
       label: "Total Users",
       value: stats.total,
-      icon: <Users size={22} className="text-[#0f766e]" />,
-      accent: "bg-teal-50",
+      icon: <Users size={22} className="text-[#076935]" />,
+      accent: "bg-[#076935]/10",
     },
     {
       label: "Admins",
       value: stats.admin,
-      icon: <ShieldCheck size={22} className="text-indigo-600" />,
-      accent: "bg-indigo-50",
+      icon: <ShieldCheck size={22} className="text-[#076935]" />,
+      accent: "bg-[#076935]/15",
     },
     {
       label: "Sales Managers",
       value: stats.salesManager,
-      icon: <UserCog size={22} className="text-sky-600" />,
-      accent: "bg-sky-50",
+      icon: <UserCog size={22} className="text-[#F39927]" />,
+      accent: "bg-[#F39927]/10",
     },
     {
       label: "Customers",
       value: stats.customer,
-      icon: <ShoppingBag size={22} className="text-amber-600" />,
-      accent: "bg-amber-50",
+      icon: <ShoppingBag size={22} className="text-emerald-700" />,
+      accent: "bg-emerald-50",
     },
   ];
 
   const filterBtn = (active: boolean) =>
     `px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
       active
-        ? "bg-[#0f766e] text-white shadow-sm"
+        ? "bg-[#076935] text-white shadow-sm"
         : "text-gray-600 hover:bg-gray-100"
     }`;
 
@@ -420,7 +420,7 @@ export default function UserManagement() {
           <button
             type="button"
             onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#0f766e] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#115e59]"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#076935] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#055028]"
           >
             <Plus size={16} />
             Add User
@@ -468,7 +468,7 @@ export default function UserManagement() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search name, username, email..."
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-[#0f766e] focus:bg-white focus:ring-2 focus:ring-[#0f766e]/20"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-[#076935] focus:bg-white focus:ring-2 focus:ring-[#076935]/20"
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -489,7 +489,7 @@ export default function UserManagement() {
               onChange={(e) =>
                 setStatusFilter(e.target.value as StatusKey | "all")
               }
-              className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 outline-none focus:border-[#0f766e]"
+              className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 outline-none focus:border-[#076935]"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -638,7 +638,7 @@ export default function UserManagement() {
                               <button
                                 type="button"
                                 aria-label="Actions"
-                                className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-[#0f766e] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0f766e]/40"
+                                className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-[#076935] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#076935]/40"
                               >
                                 <MoreVertical size={17} />
                               </button>
@@ -692,7 +692,7 @@ export default function UserManagement() {
         size="lg"
         title={
           <div className="flex w-full items-center justify-center gap-2.5 mx-auto">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 text-[#0f766e]">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#076935]/10 text-[#076935]">
               {editing ? <Pencil size={16} /> : <Plus size={16} />}
             </span>
             {editing ? "Edit User" : "Add New User"}
@@ -716,7 +716,7 @@ export default function UserManagement() {
                 value={form.username}
                 onChange={(e) => setFormField("username", e.target.value)}
                 placeholder="e.g. jdoe"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none transition focus:border-[#0f766e] focus:bg-white focus:ring-2 focus:ring-[#0f766e]/20"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none transition focus:border-[#076935] focus:bg-white focus:ring-2 focus:ring-[#076935]/20"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -728,7 +728,7 @@ export default function UserManagement() {
                 value={form.full_name}
                 onChange={(e) => setFormField("full_name", e.target.value)}
                 placeholder="e.g. John Doe"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none transition focus:border-[#0f766e] focus:bg-white focus:ring-2 focus:ring-[#0f766e]/20"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none transition focus:border-[#076935] focus:bg-white focus:ring-2 focus:ring-[#076935]/20"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -740,7 +740,7 @@ export default function UserManagement() {
                 value={form.email}
                 onChange={(e) => setFormField("email", e.target.value)}
                 placeholder="user@example.com"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none transition focus:border-[#0f766e] focus:bg-white focus:ring-2 focus:ring-[#0f766e]/20"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none transition focus:border-[#076935] focus:bg-white focus:ring-2 focus:ring-[#076935]/20"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -752,7 +752,7 @@ export default function UserManagement() {
                 value={form.phone_number}
                 onChange={(e) => setFormField("phone_number", e.target.value)}
                 placeholder="+250 7xx xxx xxx"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none transition focus:border-[#0f766e] focus:bg-white focus:ring-2 focus:ring-[#0f766e]/20"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none transition focus:border-[#076935] focus:bg-white focus:ring-2 focus:ring-[#076935]/20"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -794,7 +794,7 @@ export default function UserManagement() {
                       ? "Leave blank to keep current password"
                       : "At least 8 characters"
                   }
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-3 pr-11 text-sm outline-none transition focus:border-[#0f766e] focus:bg-white focus:ring-2 focus:ring-[#0f766e]/20"
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-3 pr-11 text-sm outline-none transition focus:border-[#076935] focus:bg-white focus:ring-2 focus:ring-[#076935]/20"
                 />
                 <button
                   type="button"
@@ -826,7 +826,7 @@ export default function UserManagement() {
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#0f766e] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#115e59] disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#076935] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#055028] disabled:opacity-60"
             >
               {saving ? (
                 <Loader2 size={16} className="animate-spin" />
@@ -848,7 +848,7 @@ export default function UserManagement() {
         size="md"
         title={
           <div className="flex flex-1 items-center justify-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 text-[#0f766e]">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#076935]/10 text-[#076935]">
               <Eye size={16} />
             </span>
             User Details
@@ -859,7 +859,7 @@ export default function UserManagement() {
           <div>
             <div className="mb-5 flex items-center gap-4">
               <div
-                className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0f766e] to-[#115e59] text-lg font-bold text-white"
+                className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#076935] to-[#055028] text-lg font-bold text-white"
                 style={{ fontFamily: "var(--font-heading)" }}
               >
                 {initialsOf(viewing)}
@@ -899,7 +899,7 @@ export default function UserManagement() {
                   className={`mt-1.5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_BADGE[normalizeStatusKey(viewing.status)]}`}
                 >
                   <span
-                    className={`h-1.5 w-1.5 rounded-full ${normalizeStatusKey(viewing.status) === "active" ? "bg-emerald-500" : "bg-rose-500"}`}
+                    className={`h-1.5 w-1.5 rounded-full ${normalizeStatusKey(viewing.status) === "active" ? "bg-[#076935]" : "bg-rose-500"}`}
                   />
                   {normalizeStatusKey(viewing.status) === "active"
                     ? "Active"
@@ -939,7 +939,7 @@ export default function UserManagement() {
               <button
                 type="button"
                 onClick={() => setViewing(null)}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#0f766e] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#115e59]"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#076935] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#055028]"
               >
                 Close
               </button>

@@ -58,6 +58,7 @@ interface ProductState {
   updateProduct: (
     id: number | string,
     input: Partial<ProductInput>,
+    image?: File | null,
   ) => Promise<boolean>;
   deleteProduct: (id: number | string) => Promise<boolean>;
   resetError: () => void;
@@ -140,11 +141,27 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
-  updateProduct: async (id, input) => {
+  updateProduct: async (id, input, image) => {
     set({ saving: true, error: null });
     try {
-      await apiPut<ApiResponse<Product>>(`/api/products/${id}`, input);
+      if (image) {
+        const formData = new FormData();
+        formData.append("_method", "PUT");
+        formData.append("product_image", image);
+        if (input.name) formData.append("name", input.name);
+        if (input.description !== undefined) formData.append("description", input.description || "");
+        if (input.unit_id) formData.append("unit_id", String(input.unit_id));
+        if (input.shelf_life !== undefined) formData.append("shelf_life", String(input.shelf_life));
+        if (input.price !== undefined) formData.append("price", String(input.price));
+        if (input.status) formData.append("status", input.status);
+        await apiPostFormData<ApiResponse<Product>>(`/api/products/${id}`, formData);
+      } else {
+        await apiPut<ApiResponse<Product>>(`/api/products/${id}`, input);
+      }
       await get().fetchProducts();
+      if (get().selected?.id === id) {
+        await get().getProduct(id);
+      }
       set({ saving: false });
       return true;
     } catch (err: unknown) {
