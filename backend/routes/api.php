@@ -109,7 +109,7 @@ $router->addRoute('POST','/api/partners/edit/{id}','PartnerController@partner','
 $router->addRoute('DELETE','/api/partners/delete/{id}','PartnerController@destroy','auth');
 $router->addRoute('GET','/api/admin/users','AuthController@users','auth');
 $router->addRoute('POST','/api/admin/users/new','AuthController@createuser','auth');
-$router->addRoute('GET','/api/customers','AuthController@customers','auth');
+// $router->addRoute('GET','/api/customers','AuthController@customers','auth');
 $router->addRoute('PUT','/api/admin/users/update/{id}','AuthController@updateuser','auth');
 $router->addRoute('DELETE','/api/admin/users/delete/{id}','AuthController@destroy','auth');
 $router->addRoute('POST','/api/auth/change_password/{id}','AuthController@updatepassword','auth');

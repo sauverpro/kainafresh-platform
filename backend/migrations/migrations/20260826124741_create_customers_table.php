@@ -13,6 +13,14 @@ class CreateCustomersTable extends Migration
                 'length' => 100,
                 'nullable' => false
             ],
+             [
+                'name' => 'segment',
+                'type' => 'VARCHAR',
+                'length' => 100,
+                'nullable' => false,
+                'default' => 'retailer'
+
+            ],
 
             [
                 'name' => 'last_name',
