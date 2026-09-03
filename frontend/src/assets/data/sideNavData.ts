@@ -24,10 +24,8 @@ export const sideNavData: NavSection[] = [
         id: "cms",
         label: "CMS",
         icon: LayoutTemplate,
-        role:["admin"],
-        subItems: [
-          { label: "Pages", otherSub: [] ,role:["admin"],}
-        ],
+        role: ["admin"],
+        subItems: [],
       },
       {
         id: "inventory",
