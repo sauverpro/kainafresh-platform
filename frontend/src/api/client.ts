@@ -17,6 +17,24 @@ const BASE_URL: string = import.meta.env.VITE_API_BASE_URL || (typeof window !==
 // LocalStorage key identifier for storing user session JWT auth token
 const TOKEN_KEY = 'kainafresh_token';
 
+// LocalStorage key identifier for storing the persisted user profile/role
+const USER_KEY = 'kainafresh_user';
+
+/**
+ * Shape of the user profile returned by the backend auth endpoints and
+ * persisted to localStorage so the app can resolve the current user's role
+ * for route protection and role-based navigation.
+ */
+export interface UserProfile {
+  id: number | string;
+  username?: string;
+  email?: string;
+  role?: 'admin' | 'sales_manager' | 'customer' | string;
+  full_name?: string;
+  phone_number?: string;
+  [key: string]: unknown;
+}
+
 // ---------------------------------------------------------------------------
 // Custom ApiError Exception Class for Uniform Error Handling
 // ---------------------------------------------------------------------------
@@ -73,6 +91,32 @@ export const removeToken = (): void => localStorage.removeItem(TOKEN_KEY);
  * @returns boolean - true if logged in, false if unauthenticated
  */
 export const isAuthenticated = (): boolean => Boolean(getToken());
+
+/** 
+ * Persists the authenticated user's profile (incl. role) to localStorage.
+ * @param user - User profile object returned from the auth endpoint
+ */
+export const setCurrentUser = (user: UserProfile): void =>
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+
+/** 
+ * Reads the persisted user profile from localStorage.
+ * @returns UserProfile | null when no user session is stored
+ */
+export const getCurrentUser = (): UserProfile | null => {
+  const raw = localStorage.getItem(USER_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as UserProfile;
+  } catch {
+    return null;
+  }
+};
+
+/** 
+ * Removes the persisted user profile from localStorage on logout.
+ */
+export const removeCurrentUser = (): void => localStorage.removeItem(USER_KEY);
 
 // ---------------------------------------------------------------------------
 // Core Internal HTTP Fetch Engine Wrapper

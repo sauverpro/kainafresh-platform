@@ -25,6 +25,12 @@ import { Eye, EyeOff, Mail, Lock, ArrowLeft, Leaf, ShieldCheck, AlertCircle } fr
 // Import API client helpers for authentication
 import { apiPost, setToken } from '../../api/client';
 
+// Import auth context to persist the logged-in user profile
+import { useAuth } from '../../auth/AuthContext';
+
+// Import role helper for routing to the user's default home
+import { normalizeRole, DEFAULT_HOME } from '../../auth/roleAccess';
+
 // Import hook to dynamically update HTML document title
 import { usePageTitle } from '../../hooks/usePageTitle';
 
@@ -46,6 +52,8 @@ interface LoginApiResponse {
       username: string;
       email: string;
       role: 'admin' | 'sales_manager' | 'customer';
+      full_name?: string;
+      phone_number?: string;
     };
   };
 }
@@ -59,6 +67,9 @@ function Login() {
 
   // Imperative router navigation instance
   const navigate = useNavigate();
+
+  // Auth context for persisting the logged-in user profile
+  const { setUser } = useAuth();
 
   // Form input field values state
   const [form, setForm] = useState({ email: '', password: '' });
@@ -115,12 +126,11 @@ function Login() {
       // Store JWT token string in browser localStorage
       setToken(token);
 
-      // Route admin users to the Dashboard, and customers to Home page
-      if (user?.role === 'admin') {
-        navigate('/dashboard');
-      } else {
-        navigate('/');
-      }
+      // Persist the logged-in user profile (used for role-based access & UI)
+      setUser(user);
+
+      // Route based on the role's default home page
+      navigate(DEFAULT_HOME[normalizeRole(user?.role)] ?? '/');
     } catch (err: unknown) {
       // Handle authentication error responses
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.');

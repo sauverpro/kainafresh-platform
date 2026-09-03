@@ -18,13 +18,15 @@ export const sideNavData: NavSection[] = [
         label: "Dashboard",
         icon: LayoutGrid,
         path: "/dashboard",
+        role:["admin"]
       },
       {
         id: "cms",
         label: "CMS",
         icon: LayoutTemplate,
+        role:["admin"],
         subItems: [
-          { label: "Pages", otherSub: [] },
+          { label: "Pages", otherSub: [] ,role:["admin"],}
         ],
       },
       {
@@ -37,15 +39,17 @@ export const sideNavData: NavSection[] = [
           { label: "Invoices", path: "/ecommerce/invoices" },
           { label: "Stock", path: "/stock" },
         ],
+        role:["admin","sales-manager"]
       },
       {
         id: "customers",
         label: "Customers",
         icon: Users2,
         path: "/admin/customers",
+        role:["admin","sales-manager"]
       },
-      { id: "sales", label: "Sales", icon: Wallet, path: "/sales" },
-      { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
+      { id: "sales", label: "Sales", icon: Wallet, path: "/sales" ,role:["admin","sales-manager"]},
+      { id: "settings", label: "Settings", icon: Settings, path: "/settings" ,role:["admin"]},
     ],
   },
 ];

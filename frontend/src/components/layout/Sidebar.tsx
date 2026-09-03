@@ -5,6 +5,8 @@ import { sideNavData } from "../../assets/data/sideNavData";
 import SidebarNavItem from "./SidebarNavItem";
 import { usePageStore } from "../../store/usePageStore";
 import { apiGet } from "../../api/client";
+import { useAuth } from "../../auth/AuthContext";
+import { canAccessNav } from "../../auth/roleAccess";
 import type { NavSection } from "../../assets/data/sideNavData.types";
 import { Leaf } from "lucide-react";
 
@@ -18,6 +20,7 @@ export default function Sidebar() {
   const { isExpanded, isMobileOpen, isRailExpanded, setIsHovered } =
     useSidebar();
   const { pages, fetchPages } = usePageStore();
+  const { user } = useAuth();
 
   const [logoSrc, setLogoSrc] = useState<string | null>(null);
   const [siteTitle, setSiteTitle] = useState<string | null>(null);
@@ -63,26 +66,30 @@ export default function Sidebar() {
   }, []);
 
   const navData: NavSection[] = useMemo(() => {
-    return sideNavData.map((section) => ({
-      ...section,
-      items: section.items.map((item) => {
-        if (item.id !== "cms") return item;
-        return {
-          ...item,
-          subItems: item.subItems?.map((sub) => {
-            if (sub.label !== "Pages") return sub;
+    return sideNavData
+      .map((section) => ({
+        ...section,
+        items: section.items
+          .map((item) => {
+            if (item.id !== "cms") return item;
             return {
-              ...sub,
-              otherSub: pages.map((p) => ({
-                label: p.title,
-                path: `/cms/${encodeURIComponent(p.slug)}`,
-              })),
+              ...item,
+              subItems: item.subItems?.map((sub) => {
+                if (sub.label !== "Pages") return sub;
+                return {
+                  ...sub,
+                  otherSub: pages.map((p) => ({
+                    label: p.title,
+                    path: `/cms/${encodeURIComponent(p.slug)}`,
+                  })),
+                };
+              }),
             };
-          }),
-        };
-      }),
-    }));
-  }, [pages]);
+          })
+          .filter((item) => canAccessNav(item.id, user)),
+      }))
+      .filter((section) => section.items.length > 0);
+  }, [pages, user]);
 
   return (
     <aside
