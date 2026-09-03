@@ -49,7 +49,16 @@ export const sideNavData: NavSection[] = [
         role:["admin","sales-manager"]
       },
       { id: "sales", label: "Sales", icon: Wallet, path: "/sales" ,role:["admin","sales-manager"]},
-      { id: "settings", label: "Settings", icon: Settings, path: "/settings" ,role:["admin"]},
+      {
+        id: "settings",
+        label: "Settings",
+        icon: Settings,
+        role:["admin"],
+        subItems: [
+          { label: "General", path: "/settings", role:["admin"] },
+          { label: "User Management", path: "/admin/users", role:["admin"] },
+        ],
+      },
     ],
   },
 ];
