@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { useSidebar } from "../../context/SidebarContext";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import UserProfileModal from "./UserProfileModal";
 
 export default function AppLayout() {
   const { isExpanded, isHovered, isMobileOpen, toggleMobileSidebar } = useSidebar();
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const railExpanded = isExpanded || isHovered;
 
@@ -26,11 +29,13 @@ export default function AppLayout() {
           railExpanded ? "lg:ml-[260px]" : "lg:ml-[84px]",
         ].join(" ")}
       >
-        <Header />
+        <Header onOpenProfile={() => setProfileOpen(true)} />
         <main className="px-6 py-4 lg:px-8 lg:py-6">
           <Outlet />
         </main>
       </div>
+
+      <UserProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </div>
   );
 }

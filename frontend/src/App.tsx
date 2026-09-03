@@ -37,6 +37,7 @@ const StockDetail = lazy(() => import("./components/stock/StockDetail"));
 const GlobalSettings = lazy(
   () => import("./pages/admin/Settings/GlobalSettings"),
 );
+const UserManagement = lazy(() => import("./pages/admin/Users/UserManagement"));
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -89,6 +90,7 @@ const routes = sideNavData
     (route) =>
       !route.path.startsWith("/cms/") &&
       route.path !== "/settings" &&
+      route.path !== "/admin/users" &&
       route.path !== "/admin/products" &&
       route.path !== "/admin/orders" &&
       route.path !== "/admin/customers" &&
@@ -135,6 +137,7 @@ function App() {
               >
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/settings" element={<GlobalSettings />} />
+                <Route path="/admin/users" element={<UserManagement />} />
                 <Route path="/cms/settings" element={<GlobalSettings />} />
                 <Route path="/cms/:slug" element={<CmsPage />} />
                 <Route path="/admin/products" element={<ProductsList />} />

@@ -17,6 +17,29 @@ interface PartnersSectionProps {
   className?: string;
 }
 
+const DEFAULT_PARTNERS: PartnerItem[] = [
+  {
+    id: 1,
+    partner_name: 'Musanze Organic Farmers Cooperative',
+    partner_link: '#',
+  },
+  {
+    id: 2,
+    partner_name: 'Rwanda Agricultural Board (RAB)',
+    partner_link: '#',
+  },
+  {
+    id: 3,
+    partner_name: 'Nyamagabe Horti-Farmers Union',
+    partner_link: '#',
+  },
+  {
+    id: 4,
+    partner_name: 'East Africa Fresh Exporters Guild',
+    partner_link: '#',
+  },
+];
+
 export default function PartnersSection({
   title = 'Our Trusted Partners & Cooperatives',
   subtitle = 'Collaborating with certified farm cooperatives, exporters, and agricultural leaders across Rwanda.',
@@ -46,11 +69,11 @@ export default function PartnersSection({
         }
 
         if (!cancelled) {
-          setPartners(list);
+          setPartners(list.length > 0 ? list : DEFAULT_PARTNERS);
         }
       } catch (err) {
-        console.debug('Failed to load partners from API', err);
-        if (!cancelled) setPartners([]);
+        console.debug('Failed to load partners from API, using default partners', err);
+        if (!cancelled) setPartners(DEFAULT_PARTNERS);
       } finally {
         if (!cancelled) setLoading(false);
       }
