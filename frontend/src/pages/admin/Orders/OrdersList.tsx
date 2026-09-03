@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   ShoppingBag,
   Clock,
@@ -17,12 +17,134 @@ import {
   Phone,
   Mail,
   AlertCircle,
-  ArrowUp
+  ArrowUp,
+  Loader2,
+  Boxes
 } from 'lucide-react';
 import { usePageTitle } from '../../../hooks/usePageTitle';
+import { apiGet, apiPut } from '../../../api/client';
+import { toast } from "sonner";
+import StatusDropdown, { type StatusOption } from '../../../components/ui/StatusDropdown';
+
+// Backend order item shape: GET /api/orders/{orderId}/items
+interface BackendOrderItem {
+  id: number;
+  order_id: number | string;
+  product_id: number;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+  product_name?: string;
+  product_image?: string | null;
+  unit_code?: string;
+  unit_name?: string;
+  unit_symbol?: string;
+}
+
+// Backend order shape: GET /api/orders
+interface BackendOrder {
+  id: number | string;
+  user_id: number;
+  customer_id?: number | null;
+  order_date?: string;
+  status?: string;
+  total: number;
+  order_source?: string;
+  user_username?: string;
+  user_full_name?: string;
+  customer_first_name?: string;
+  customer_last_name?: string;
+  customer_phone?: string;
+  customer_email?: string;
+}
+
+const STATUS_MAP: Record<string, OrderItem['status']> = {
+  pending: 'Pending',
+  processing: 'Processing',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
+};
+
+const STATUS_OPTIONS: StatusOption[] = [
+  { value: 'Pending', label: 'Pending', dotClassName: 'bg-amber-400' },
+  { value: 'Processing', label: 'Processing', dotClassName: 'bg-blue-500' },
+  { value: 'Shipped', label: 'Shipped', dotClassName: 'bg-purple-500' },
+  { value: 'Delivered', label: 'Delivered', dotClassName: 'bg-emerald-500' },
+  { value: 'Cancelled', label: 'Cancelled', dotClassName: 'bg-rose-500' },
+];
+
+/**
+ * Format an ISO "YYYY-MM-DD HH:MM:SS" (or "YYYY-MM-DD") string into
+ * { date: "D MMM YYYY", time: "HH:MM" } for the UI.
+ */
+function formatOrderDate(value?: string): { date: string; time: string } {
+  if (!value) return { date: '—', time: '' };
+  const parsed = new Date(value.replace(' ', 'T'));
+  if (isNaN(parsed.getTime())) {
+    const [d = '', t = ''] = value.split(' ');
+    return { date: d, time: t.slice(0, 5) };
+  }
+  const date = parsed.toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  const time = parsed.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  return { date, time };
+}
+
+function customerNameOf(o: BackendOrder): string {
+  const first = o.customer_first_name?.trim();
+  const last = o.customer_last_name?.trim();
+  if (first) return [first, last].filter(Boolean).join(' ');
+  if (o.user_full_name?.trim()) return o.user_full_name.trim();
+  return o.user_username?.trim() || `User #${o.user_id}`;
+}
+
+function paymentLabelOf(source?: string): OrderItem['paymentMethod'] {
+  return source === 'externalorder' ? 'Cash on Delivery' : 'MTN Mobile Money';
+}
+
+/**
+ * Map a backend order record into the OrderItem display shape used
+ * throughout this page. Item line items are fetched lazily when an
+ * order is opened in the detail drawer.
+ */
+function mapBackendOrder(o: BackendOrder): OrderItem {
+  const status = STATUS_MAP[(o.status || '').toLowerCase()] || 'Pending';
+  const { date, time } = formatOrderDate(o.order_date);
+  const customerName = customerNameOf(o);
+
+  return {
+    id: `KF-${String(o.id).padStart(4, '0')}`,
+    backendId: o.id,
+    customerName,
+    customerEmail: o.customer_email || '',
+    customerPhone: o.customer_phone || '',
+    district: 'Kigali (Centre)',
+    address: '—',
+    date,
+    time,
+    totalAmount: Number(o.total) || 0,
+    paymentMethod: paymentLabelOf(o.order_source),
+    paymentStatus: status === 'Pending' || status === 'Processing' ? 'Pending' : 'Paid',
+    status,
+    itemCount: 0,
+    totalWeightKg: 0,
+    items: [],
+    deliveryFee: 0,
+    discount: 0,
+  };
+}
 
 export interface OrderItem {
   id: string;
+  backendId?: number | string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -50,134 +172,84 @@ export interface OrderItem {
   notes?: string;
 }
 
-const MOCK_ORDERS: OrderItem[] = [
-  {
-    id: 'KF-9042',
-    customerName: 'Keza Diane',
-    customerEmail: 'diane.keza@gmail.com',
-    customerPhone: '+250 788 123 456',
-    district: 'Kigali (Nyarugenge)',
-    address: 'KN 45 St, House 12, Kiyovu',
-    date: '31 Aug 2026',
-    time: '14:30',
-    totalAmount: 28500,
-    paymentMethod: 'MTN Mobile Money',
-    paymentStatus: 'Paid',
-    status: 'Pending',
-    itemCount: 4,
-    totalWeightKg: 12.5,
-    deliveryFee: 2000,
-    discount: 0,
-    notes: 'Please call before arrival.',
-    items: [
-      { id: 1, name: 'Fresh Organic Green Beans', category: 'Vegetables', unitPrice: 1200, unit: 'kg', quantity: 5 },
-      { id: 2, name: 'Hass Organic Avocados', category: 'Fruits', unitPrice: 800, unit: 'piece', quantity: 10 },
-      { id: 3, name: 'Fresh Farm Tomatoes', category: 'Vegetables', unitPrice: 1500, unit: 'kg', quantity: 4 },
-      { id: 4, name: 'Fresh Mountain Spinach', category: 'Leafy Greens', unitPrice: 600, unit: 'bunch', quantity: 5 },
-    ],
-  },
-  {
-    id: 'KF-9041',
-    customerName: 'Mugisha Eric',
-    customerEmail: 'eric.m@yahoo.fr',
-    customerPhone: '+250 783 987 654',
-    district: 'Musanze',
-    address: 'Muhoza Sector, Cell 4',
-    date: '31 Aug 2026',
-    time: '11:15',
-    totalAmount: 42000,
-    paymentMethod: 'Card Payment',
-    paymentStatus: 'Paid',
-    status: 'Processing',
-    itemCount: 3,
-    totalWeightKg: 25.0,
-    deliveryFee: 3500,
-    discount: 1500,
-    notes: 'Leave package with security gate if away.',
-    items: [
-      { id: 5, name: 'Red Sweet Potatoes', category: 'Root Crops', unitPrice: 900, unit: 'kg', quantity: 20 },
-      { id: 6, name: 'Fresh Garlic Cloves', category: 'Spices & Herbs', unitPrice: 2500, unit: 'kg', quantity: 4 },
-      { id: 7, name: 'Sweet Passion Fruit', category: 'Fruits', unitPrice: 400, unit: 'piece', quantity: 35 },
-    ],
-  },
-  {
-    id: 'KF-9040',
-    customerName: 'Uwase Solange',
-    customerEmail: 'solange.u@kainafresh.rw',
-    customerPhone: '+250 785 444 333',
-    district: 'Kigali (Gasabo)',
-    address: 'KG 121 St, Kimironko',
-    date: '30 Aug 2026',
-    time: '16:45',
-    totalAmount: 18900,
-    paymentMethod: 'MTN Mobile Money',
-    paymentStatus: 'Paid',
-    status: 'Shipped',
-    itemCount: 2,
-    totalWeightKg: 8.0,
-    deliveryFee: 2000,
-    discount: 0,
-    items: [
-      { id: 1, name: 'Fresh Organic Green Beans', category: 'Vegetables', unitPrice: 1200, unit: 'kg', quantity: 7 },
-      { id: 3, name: 'Fresh Farm Tomatoes', category: 'Vegetables', unitPrice: 1500, unit: 'kg', quantity: 7 },
-    ],
-  },
-  {
-    id: 'KF-9039',
-    customerName: 'Gakwaya Jean-Paul',
-    customerEmail: 'jp.gakwaya@hotmail.com',
-    customerPhone: '+250 789 222 111',
-    district: 'Huye',
-    address: 'Ngoma Sector, Huye Main Road',
-    date: '30 Aug 2026',
-    time: '09:20',
-    totalAmount: 65000,
-    paymentMethod: 'Cash on Delivery',
-    paymentStatus: 'Pending',
-    status: 'Delivered',
-    itemCount: 5,
-    totalWeightKg: 40.0,
-    deliveryFee: 5000,
-    discount: 2000,
-    items: [
-      { id: 2, name: 'Hass Organic Avocados', category: 'Fruits', unitPrice: 800, unit: 'piece', quantity: 30 },
-      { id: 5, name: 'Red Sweet Potatoes', category: 'Root Crops', unitPrice: 900, unit: 'kg', quantity: 30 },
-      { id: 7, name: 'Sweet Passion Fruit', category: 'Fruits', unitPrice: 400, unit: 'piece', quantity: 30 },
-    ],
-  },
-  {
-    id: 'KF-9038',
-    customerName: 'Ines Umutoni',
-    customerEmail: 'ines.umutoni@outlook.com',
-    customerPhone: '+250 788 777 888',
-    district: 'Bugesera',
-    address: 'Nyamata Town Center',
-    date: '29 Aug 2026',
-    time: '18:10',
-    totalAmount: 14500,
-    paymentMethod: 'Airtel Money',
-    paymentStatus: 'Failed',
-    status: 'Cancelled',
-    itemCount: 1,
-    totalWeightKg: 5.0,
-    deliveryFee: 2500,
-    discount: 0,
-    notes: 'Order cancelled due to failed payment auth.',
-    items: [
-      { id: 6, name: 'Fresh Garlic Cloves', category: 'Spices & Herbs', unitPrice: 2500, unit: 'kg', quantity: 5 },
-    ],
-  },
-];
-
 export default function OrdersList() {
   usePageTitle('admin-orders', 'Orders Management');
 
-  const [orders, setOrders] = useState<OrderItem[]>(MOCK_ORDERS);
+  const [orders, setOrders] = useState<OrderItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('All');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('All');
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
+  const [itemsLoading, setItemsLoading] = useState(false);
+  const [updatingIds, setUpdatingIds] = useState<string[]>([]);
+
+  /**
+   * Fetch all orders from the backend and map them into the UI shape.
+   */
+  const loadOrders = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const res = await apiGet<{ success: boolean; data: BackendOrder[] }>('/api/orders');
+      const items = (res.data ?? []).map(mapBackendOrder);
+      setOrders(items.length ? items : []);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load orders';
+      setLoadError(message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
+
+  /**
+   * Fetch the line items for a given order and attach them to the summary
+   * used by the detail drawer.
+   */
+  const handleOpenOrder = useCallback(async (order: OrderItem) => {
+    setSelectedOrder((prev) =>
+      prev && prev.backendId === order.backendId
+        ? { ...order, items: prev.items }
+        : { ...order, items: [] },
+    );
+    setItemsLoading(true);
+    try {
+      const res = await apiGet<{ success: boolean; data: BackendOrderItem[] }>(
+        `/api/orders/${order.backendId}/items`,
+      );
+      const items = (res.data ?? []).map((it) => ({
+        id: it.id,
+        name: it.product_name || `Product #${it.product_id}`,
+        category: it.unit_name || 'Produce',
+        unitPrice: Number(it.unit_price) || 0,
+        unit: it.unit_symbol || it.unit_code || 'unit',
+        quantity: Number(it.quantity) || 0,
+      }));
+      setSelectedOrder((prev) =>
+        prev && prev.backendId === order.backendId
+          ? {
+              ...prev,
+              items,
+              itemCount: items.length,
+            }
+          : prev,
+      );
+    } catch {
+      setSelectedOrder((prev) =>
+        prev && prev.backendId === order.backendId
+          ? { ...prev, items: [], itemCount: 0 }
+          : prev,
+      );
+    } finally {
+      setItemsLoading(false);
+    }
+  }, []);
 
   // Status statistics calculations
   const stats = useMemo(() => {
@@ -185,10 +257,9 @@ export default function OrdersList() {
     const pending = orders.filter((o) => o.status === 'Pending').length;
     const processing = orders.filter((o) => o.status === 'Processing').length;
     const shipped = orders.filter((o) => o.status === 'Shipped').length;
-    const delivered = orders.filter((o) => o.status === 'Delivered').length;
     const totalVolumeRwf = orders.reduce((sum, o) => sum + o.totalAmount, 0);
 
-    return { total, pending, processing, shipped, delivered, totalVolumeRwf };
+    return { total, pending, processing, shipped, totalVolumeRwf };
   }, [orders]);
 
   // Filtered orders computation
@@ -224,12 +295,46 @@ export default function OrdersList() {
     }
   };
 
-  const handleUpdateStatus = (orderId: string, newStatus: OrderItem['status']) => {
+  const handleUpdateStatus = async (orderId: string, newStatus: OrderItem['status']) => {
+    const target = orders.find((o) => o.id === orderId);
+    const backendId = target?.backendId ?? orderId.replace('KF-', '');
+    const backendStatus = newStatus.toLowerCase();
+
+    // Capture the previous status so we can revert if the API call fails.
+    const previousStatus = target?.status;
+
+    if (target?.status === newStatus || updatingIds.includes(orderId)) return;
+
+    // Mark this order's dropdown as loading while the update is in-flight.
+    setUpdatingIds((prev) => [...prev, orderId]);
+
+    // Optimistically update the UI.
     setOrders((prev) =>
       prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
     );
     if (selectedOrder && selectedOrder.id === orderId) {
       setSelectedOrder((prev) => (prev ? { ...prev, status: newStatus } : null));
+    }
+
+    try {
+      await apiPut<{ success: boolean }>(`/api/orders/${backendId}`, { status: backendStatus });
+      toast.success(`Order ${orderId} marked as ${newStatus}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update order status';
+      // Revert on failure.
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId ? { ...o, status: previousStatus ?? o.status } : o
+        )
+      );
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder((prev) =>
+          prev ? { ...prev, status: previousStatus ?? prev.status } : null
+        );
+      }
+      toast.error(`Failed to update status: ${message}`);
+    } finally {
+      setUpdatingIds((prev) => prev.filter((id) => id !== orderId));
     }
   };
 
@@ -251,12 +356,6 @@ export default function OrdersList() {
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
             <Truck size={13} /> Shipped
-          </span>
-        );
-      case 'Delivered':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#076935]/15 text-[#076935] border border-[#076935]/30">
-            <CheckCircle size={13} /> Delivered
           </span>
         );
       case 'Cancelled':
@@ -286,11 +385,12 @@ export default function OrdersList() {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setOrders(MOCK_ORDERS)}
-            className="inline-flex items-center gap-2 bg-[#F4FAF7] hover:bg-[#e4f3eb] text-[#076935] px-4 py-2.5 rounded-full text-xs md:text-sm font-bold border border-[#076935]/20 transition-all cursor-pointer"
+            onClick={loadOrders}
+            disabled={loading}
+            className="inline-flex items-center gap-2 bg-[#F4FAF7] hover:bg-[#e4f3eb] text-[#076935] px-4 py-2.5 rounded-full text-xs md:text-sm font-bold border border-[#076935]/20 transition-all cursor-pointer disabled:opacity-60"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            <RefreshCw size={15} /> Refresh List
+            <RefreshCw size={15} className={loading ? 'animate-spin' : ''} /> Refresh List
           </button>
 
           <button
@@ -302,6 +402,22 @@ export default function OrdersList() {
           </button>
         </div>
       </div>
+
+      {loadError && (
+        <div className="flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+          <AlertCircle size={18} className="mt-0.5 shrink-0" />
+          <div>
+            <p className="font-bold">Could not load orders</p>
+            <p className="text-rose-600">{loadError}</p>
+            <button
+              onClick={loadOrders}
+              className="mt-2 inline-flex items-center gap-1.5 font-bold text-rose-700 underline-offset-2 hover:underline cursor-pointer border-0 bg-transparent"
+            >
+              <RefreshCw size={13} className={loading ? 'animate-spin' : ''} /> Retry
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Bento Stats Cards Row ── */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -369,7 +485,7 @@ export default function OrdersList() {
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Fulfilled Orders</p>
               <p className="mt-1.5 text-2xl font-semibold text-gray-800 dark:text-white">
-                {stats.delivered}
+                {stats.shipped}
               </p>
             </div>
             <span className="flex items-center gap-0.5 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
@@ -440,7 +556,7 @@ export default function OrdersList() {
 
         {/* Status Filter Tab Pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar border-t border-gray-100 pt-4">
-          {['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'].map((statusKey) => {
+          {['All', 'Pending', 'Processing', 'Shipped', 'Cancelled'].map((statusKey) => {
             const count =
               statusKey === 'All'
                 ? orders.length
@@ -500,7 +616,16 @@ export default function OrdersList() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
-              {filteredOrders.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="py-16 text-center text-gray-500">
+                    <Loader2 size={32} className="mx-auto mb-3 animate-spin text-[#076935]" />
+                    <p className="font-bold text-base text-gray-700" style={{ fontFamily: 'var(--font-heading)' }}>
+                      Loading orders...
+                    </p>
+                  </td>
+                </tr>
+              ) : filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-16 text-center text-gray-500">
                     <AlertCircle size={36} className="mx-auto mb-3 text-gray-300" />
@@ -517,7 +642,7 @@ export default function OrdersList() {
                   <tr
                     key={order.id}
                     className="hover:bg-[#F4FAF7]/50 transition-colors group cursor-pointer"
-                    onClick={() => setSelectedOrder(order)}
+                    onClick={() => handleOpenOrder(order)}
                   >
                     <td className="py-4 px-6" onClick={(e) => e.stopPropagation()}>
                       <input
@@ -528,7 +653,7 @@ export default function OrdersList() {
                       />
                     </td>
                     <td className="py-4 px-6 font-bold text-[#076935]" style={{ fontFamily: 'var(--font-heading)' }}>
-                      #{order.id}
+                      {order.id}
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
@@ -556,7 +681,7 @@ export default function OrdersList() {
                           RWF {order.totalAmount.toLocaleString()}
                         </strong>
                         <span className="text-[11px] font-semibold text-gray-500">
-                          {order.paymentMethod} • <span className={order.paymentStatus === 'Paid' ? 'text-[#076935] font-bold' : 'text-amber-600'}>{order.paymentStatus}</span>
+                          {order.paymentMethod} 
                         </span>
                       </div>
                     </td>
@@ -568,23 +693,19 @@ export default function OrdersList() {
                     <td className="py-4 px-6 text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => setSelectedOrder(order)}
+                          onClick={() => handleOpenOrder(order)}
                           className="p-2 rounded-full hover:bg-[#076935]/10 text-gray-500 hover:text-[#076935] transition-colors cursor-pointer border-0"
                           title="View Details"
                         >
                           <Eye size={18} />
                         </button>
-                        <select
+                        <StatusDropdown
                           value={order.status}
-                          onChange={(e) => handleUpdateStatus(order.id, e.target.value as any)}
-                          className="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#076935] cursor-pointer"
-                        >
-                          <option value="Pending">Set Pending</option>
-                          <option value="Processing">Set Processing</option>
-                          <option value="Shipped">Set Shipped</option>
-                          <option value="Delivered">Set Delivered</option>
-                          <option value="Cancelled">Set Cancelled</option>
-                        </select>
+                          options={STATUS_OPTIONS}
+                          onChange={(v) => handleUpdateStatus(order.id, v as OrderItem['status'])}
+                          loading={updatingIds.includes(order.id)}
+                          ariaLabel={`Change status for order ${order.id}`}
+                        />
                       </div>
                     </td>
                   </tr>
@@ -630,9 +751,6 @@ export default function OrdersList() {
             <div>
               <div className="flex items-center justify-between pb-6 border-b border-gray-100 mb-6">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#F39927]" style={{ fontFamily: 'var(--font-heading)' }}>
-                    Order Breakdown
-                  </span>
                   <h2 className="text-2xl font-bold text-[#076935]" style={{ fontFamily: 'var(--font-heading)' }}>
                     Order #{selectedOrder.id}
                   </h2>
@@ -741,19 +859,35 @@ export default function OrdersList() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {selectedOrder.items.map((prod) => (
-                        <tr key={prod.id}>
-                          <td className="p-3 font-semibold text-gray-800">
-                            {prod.name}
-                            <span className="block text-[10px] text-gray-400 font-normal">{prod.category}</span>
-                          </td>
-                          <td className="p-3 text-gray-600">RWF {prod.unitPrice.toLocaleString()} / {prod.unit}</td>
-                          <td className="p-3 font-bold text-gray-800">{prod.quantity}</td>
-                          <td className="p-3 text-right font-bold text-[#076935]">
-                            RWF {(prod.unitPrice * prod.quantity).toLocaleString()}
+                      {itemsLoading ? (
+                        <tr>
+                          <td colSpan={4} className="p-6 text-center text-gray-500">
+                            <Loader2 size={18} className="mx-auto mb-2 animate-spin text-[#076935]" />
+                            Loading items...
                           </td>
                         </tr>
-                      ))}
+                      ) : selectedOrder.items.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="p-6 text-center text-gray-400">
+                            <Boxes size={20} className="mx-auto mb-2" />
+                            No items recorded for this order.
+                          </td>
+                        </tr>
+                      ) : (
+                        selectedOrder.items.map((prod) => (
+                          <tr key={prod.id}>
+                            <td className="p-3 font-semibold text-gray-800">
+                              {prod.name}
+                              <span className="block text-[10px] text-gray-400 font-normal">{prod.category}</span>
+                            </td>
+                            <td className="p-3 text-gray-600">RWF {prod.unitPrice.toLocaleString()} / {prod.unit}</td>
+                            <td className="p-3 font-bold text-gray-800">{prod.quantity}</td>
+                            <td className="p-3 text-right font-bold text-[#076935]">
+                              RWF {(prod.unitPrice * prod.quantity).toLocaleString()}
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
