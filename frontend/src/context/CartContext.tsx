@@ -38,7 +38,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const CART_STORAGE_KEY = 'kainafresh_cart_items';
-const DEFAULT_DELIVERY_FEE = 1500; // 1500 RWF standard delivery
+const DEFAULT_DELIVERY_FEE = 0; // 1500 RWF standard delivery
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {

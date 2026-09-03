@@ -98,7 +98,7 @@ export default function CartDrawer() {
                     key={product.id}
                     className="flex items-center gap-4 p-3.5 bg-white rounded-2xl border border-[#076935]/10 shadow-xs hover:border-[#076935]/25 transition-all"
                   >
-                    <img src={itemImg} alt={product.name} className="w-16 h-16 rounded-xl object-cover bg-[#f4faf7] shrink-0" />
+                    {/* <img src={itemImg} alt={product.name} className="w-16 h-16 rounded-xl object-cover bg-[#f4faf7] shrink-0" /> */}
 
                     <div className="flex-1 min-w-0">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-[#F39927] block" style={{ fontFamily: 'var(--font-heading)' }}>
@@ -157,10 +157,10 @@ export default function CartDrawer() {
                 <span>Subtotal</span>
                 <span>RWF {cartSubtotal.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between text-sm text-gray-600">
+              {/* <div className="flex justify-between text-sm text-gray-600">
                 <span>Delivery Fee (Kigali Metro)</span>
                 <span>RWF {deliveryFee.toLocaleString()}</span>
-              </div>
+              </div> */}
               <div className="flex justify-between text-base font-bold text-gray-800 pt-3 border-t border-dashed border-gray-200">
                 <span>Total</span>
                 <strong className="text-xl text-[#076935]" style={{ fontFamily: 'var(--font-heading)' }}>

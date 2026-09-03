@@ -74,71 +74,179 @@ export default function Checkout() {
     if (errorMsg) setErrorMsg(null);
   };
 
-  const handleSubmitOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // const handleSubmitOrder = async (e: React.FormEvent) => {
+  //   e.preventDefault();
 
-    if (!form.fullName.trim() || !form.phone.trim() || !form.address.trim()) {
-      setErrorMsg('Please fill in your Full Name, Phone Number, and Delivery Address.');
-      return;
-    }
+  //   if (!form.fullName.trim() || !form.phone.trim() || !form.district.trim()) {
+  //     setErrorMsg('Please fill in your Full Name, Phone Number, and Delivery Address.');
+  //     return;
+  //   }
 
-    if (cartItems.length === 0) {
-      setErrorMsg('Your shopping basket is empty.');
-      return;
-    }
+  //   if (cartItems.length === 0) {
+  //     setErrorMsg('Your shopping basket is empty.');
+  //     return;
+  //   }
 
-    setSubmitting(true);
+  //   setSubmitting(true);
 
-    const randomRef = `KF-${Math.floor(10000 + Math.random() * 90000)}`;
+  //   const randomRef = `KF-${Math.floor(10000 + Math.random() * 90000)}`;
 
-    const orderPayload = {
-      customer_name: form.fullName,
-      email: form.email,
+  //   const orderPayload = {
+  //     customer_name: form.fullName,
+  //     email: form.email,
+  //     phone: form.phone,
+  //     district: form.district,
+  //     address: form.address,
+  //     notes: form.notes,
+  //     payment_method: form.paymentMethod,
+  //     total_amount: cartTotal,
+  //     items: cartItems.map((item) => ({
+  //       product_id: item.product.id,
+  //       quantity: item.quantity,
+  //       price: item.product.price,
+  //     })),
+  //   };
+
+  //   try {
+  //     await apiPost('/api/orders', orderPayload);
+  //   } catch (err) {
+  //     console.debug('Order POST endpoint notification:', err);
+  //   }
+  //   // create customer
+  //   const customerPayload = {
+  //     name: form.fullName,
+  //     email: form.email,
+  //     phone: form.phone,
+  //   };
+  //   setTimeout(() => {
+  //     setOrderConfirmation({
+  //       orderRef: randomRef,
+  //       date: new Date().toLocaleDateString('en-US', {
+  //         year: 'numeric',
+  //         month: 'long',
+  //         day: 'numeric',
+  //         hour: '2-digit',
+  //         minute: '2-digit',
+  //       }),
+  //       form,
+  //       items: cartItems.map((item) => ({
+  //         name: item.product.name,
+  //         quantity: item.quantity,
+  //         price: Number(item.product.price) || 0,
+  //         unit: item.product.unit || 'kg',
+  //       })),
+  //       subtotal: cartSubtotal,
+  //       deliveryFee,
+  //       total: cartTotal,
+  //     });
+
+  //     clearCart();
+  //     setSubmitting(false);
+  //   }, 1200);
+  // };
+const handleSubmitOrder = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!form.fullName.trim() || !form.phone.trim() || !form.district.trim()) {
+    setErrorMsg('Please fill in your Full Name, Phone Number, and Delivery Address.');
+    return;
+  }
+
+  if (cartItems.length === 0) {
+    setErrorMsg('Your shopping basket is empty.');
+    return;
+  }
+
+  setSubmitting(true);
+  setErrorMsg(null);
+
+  try {
+    // Step 1: Create Customer
+    const customerPayload = {
+      first_name: form.fullName.split(' ')[0] || '',
+      last_name: form.fullName.split(' ').slice(1).join(' ') || '',
       phone: form.phone,
-      district: form.district,
-      address: form.address,
-      notes: form.notes,
-      payment_method: form.paymentMethod,
-      total_amount: cartTotal,
-      items: cartItems.map((item) => ({
-        product_id: item.product.id,
-        quantity: item.quantity,
-        price: item.product.price,
-      })),
+      email: form.email || '',
+      address: `${form.address}, ${form.district}` || form.district,
     };
 
-    try {
-      await apiPost('/api/orders', orderPayload);
-    } catch (err) {
-      console.debug('Order POST endpoint notification:', err);
+    const customerResponse = await apiPost('/api/customers', customerPayload);
+    
+    if (!customerResponse.success) {
+      throw new Error(customerResponse.message || 'Failed to create customer');
     }
 
-    setTimeout(() => {
-      setOrderConfirmation({
-        orderRef: randomRef,
-        date: new Date().toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-        form,
-        items: cartItems.map((item) => ({
-          name: item.product.name,
-          quantity: item.quantity,
-          price: Number(item.product.price) || 0,
-          unit: item.product.unit || 'kg',
-        })),
-        subtotal: cartSubtotal,
-        deliveryFee,
-        total: cartTotal,
-      });
+    const customerId = customerResponse.data?.id || customerResponse.id;
 
-      clearCart();
-      setSubmitting(false);
-    }, 1200);
-  };
+    // Step 2: Create Order
+    const orderPayload = {
+      user_id: 1, // You might want to get this from auth context
+      customer_id: customerId,
+      total: cartTotal,
+      status: 'pending',
+      order_source: 'ecommerce',
+    };
+
+    const orderResponse = await apiPost('/api/orders', orderPayload);
+    
+    if (!orderResponse.success) {
+      throw new Error(orderResponse.message || 'Failed to create order');
+    }
+
+    const orderId = orderResponse.data?.id || orderResponse.id;
+
+    // Step 3: Create Order Items
+    const orderItemsPromises = cartItems.map(async (item) => {
+      const itemPayload = {
+        product_id: item.product.id,
+        quantity: item.quantity,
+      };
+
+      const itemResponse = await apiPost(`/api/orders/${orderId}/items`, itemPayload);
+      
+      if (!itemResponse.success) {
+        throw new Error(`Failed to add product ${item.product.name} to order`);
+      }
+
+      return itemResponse.data;
+    });
+
+    await Promise.all(orderItemsPromises);
+
+    // Step 4: Generate Order Reference
+    const randomRef = `KF-${String(orderId).padStart(5, '0')}`;
+
+    // Step 5: Show Confirmation
+    setOrderConfirmation({
+      orderRef: randomRef,
+      date: new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      form,
+      items: cartItems.map((item) => ({
+        name: item.product.name,
+        quantity: item.quantity,
+        price: Number(item.product.price) || 0,
+        unit: item.product.unit || 'kg',
+      })),
+      subtotal: cartSubtotal,
+      deliveryFee,
+      total: cartTotal,
+    });
+
+    clearCart();
+
+  } catch (error) {
+    console.error('Order creation failed:', error);
+    setErrorMsg(error instanceof Error ? error.message : 'Failed to create your order. Please try again.');
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   return (
     <>
@@ -233,10 +341,10 @@ export default function Checkout() {
                     <span>Subtotal</span>
                     <span>RWF {orderConfirmation.subtotal.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between">
+                  {/* <div className="flex justify-between">
                     <span>Delivery Fee</span>
                     <span>RWF {orderConfirmation.deliveryFee.toLocaleString()}</span>
-                  </div>
+                  </div> */}
                   <div className="flex justify-between text-base font-bold text-gray-800 pt-2 border-t border-dashed border-gray-200">
                     <span>Total Amount</span>
                     <strong className="text-xl text-[#076935]" style={{ fontFamily: 'var(--font-heading)' }}>
@@ -383,7 +491,7 @@ export default function Checkout() {
                             onChange={handleChange}
                             placeholder="e.g. KG 123 St, House No. 4"
                             className="p-3.5 border border-gray-200 rounded-xl font-sans text-sm bg-white focus:outline-none focus:border-[#076935] focus:ring-2 focus:ring-[#076935]/10 transition-all"
-                            required
+                            
                           />
                         </div>
                       </div>
@@ -553,7 +661,7 @@ export default function Checkout() {
 
                             return (
                               <div key={product.id} className="flex items-center gap-3">
-                                <img src={itemImg} alt={product.name} className="w-12 h-12 rounded-xl object-cover bg-[#f4faf7] shrink-0" />
+                                {/* <img src={itemImg} alt={product.name} className="w-12 h-12 rounded-xl object-cover bg-[#f4faf7] shrink-0" /> */}
                                 <div className="flex-1 min-w-0">
                                   <span className="font-semibold text-sm text-gray-800 truncate block" style={{ fontFamily: 'var(--font-heading)' }}>
                                     {product.name}
@@ -575,10 +683,10 @@ export default function Checkout() {
                             <span>Subtotal</span>
                             <span>RWF {cartSubtotal.toLocaleString()}</span>
                           </div>
-                          <div className="flex justify-between">
+                          {/* <div className="flex justify-between">
                             <span>Delivery Fee</span>
                             <span>RWF {deliveryFee.toLocaleString()}</span>
-                          </div>
+                          </div> */}
                           <div className="flex justify-between text-base font-bold text-gray-800 pt-3 border-t border-dashed border-gray-200">
                             <span>Total</span>
                             <strong className="text-xl text-[#076935]" style={{ fontFamily: 'var(--font-heading)' }}>

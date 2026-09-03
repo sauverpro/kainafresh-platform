@@ -203,6 +203,7 @@ export default function OurProducts() {
               return {
                 id: item.id,
                 name: item.name,
+                description: item.description || '',
                 price: Number(item.price) || 1000,
                 unit: resolvedUnit || 'kg',
                 category: item.category || 'Organic Produce',
@@ -535,7 +536,7 @@ export default function OurProducts() {
                     </div>
 
                     <p className="text-gray-600 text-sm leading-relaxed mb-5">
-                      Freshly harvested from certified organic farms in Rwanda. Grown naturally with zero chemical pesticides or artificial fertilizers for maximum nutrition and crisp taste.
+                      {selectedProduct.description || 'Description not available.'}
                     </p>
 
                     <div className="flex gap-4 mb-6 p-3.5 bg-[#f4faf7] rounded-xl text-xs text-gray-800">

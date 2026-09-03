@@ -160,10 +160,10 @@ function Login() {
           </div>
 
           {/* Auth Tab Navigation */}
-          <div className="auth-tabs">
+          {/* <div className="auth-tabs">
             <Link to="/login" className="auth-tab active">Login</Link>
             <Link to="/signup" className="auth-tab">Sign up</Link>
-          </div>
+          </div> */}
 
           {/* Form Element */}
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
