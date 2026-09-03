@@ -9,10 +9,10 @@ import {
   Building2,
   Plus,
   ArrowUpRight,
+  ArrowLeft,
   Download,
 } from "lucide-react";
 import DirectSaleModal from "../../../components/sales/DirectSaleModal";
-import MonthDetailDrawer, { type MonthSalesData } from "../../../components/sales/MonthDetailDrawer";
 import { toast } from "sonner";
 
 export interface SalesTransaction {
@@ -97,11 +97,59 @@ export default function SalesList() {
   const [segmentFilter, setSegmentFilter] = useState<"all" | "wholesale" | "retail">("all");
   const [directSaleOpen, setDirectSaleOpen] = useState(false);
 
-  // Graph Tweaking States
+  // Graph Tweaking & In-Graph Drill-down States
   const [graphYear, setGraphYear] = useState<"2026" | "2025">("2026");
   const [graphMetric, setGraphMetric] = useState<"revenue" | "volume">("revenue");
-  const [graphSegment, setGraphSegment] = useState<"all" | "wholesale" | "retail">("all");
-  const [selectedMonth, setSelectedMonth] = useState<MonthSalesData | null>(null);
+  const [activeSelectedMonth, setActiveSelectedMonth] = useState<string | null>(null);
+
+  // Helper to generate 31 days for a given month with Orange & Light Orange peak styling
+  const generateDailyDataForMonth = (monthName: string) => {
+    const days = [];
+    for (let i = 1; i <= 31; i++) {
+      let isPeak = false;
+      let revVal = Math.floor(45000 + Math.random() * 85000);
+      let driver = "Standard Produce Sales";
+
+      if (monthName.toLowerCase().includes("aug")) {
+        if (i === 25) {
+          revVal = 1298000;
+          isPeak = true;
+          driver = "Inyange Exporters Bulk Chilli (#SL-9405)";
+        } else if (i === 31) {
+          revVal = 619500;
+          isPeak = true;
+          driver = "Serena Hotel Avocados (#SL-9401)";
+        } else if (i === 30) {
+          revVal = 413000;
+          isPeak = true;
+          driver = "Simba Supermarket (#SL-9402)";
+        } else if (i === 15) {
+          revVal = 320000;
+          isPeak = true;
+          driver = "Kigali Marriott Produce";
+        }
+      } else {
+        if (i === 14 || i === 28) {
+          revVal = Math.floor(350000 + Math.random() * 200000);
+          isPeak = true;
+          driver = "B2B Contract Fulfillment";
+        }
+      }
+
+      const heightPercent = Math.min(100, Math.max(14, Math.round((revVal / 1300000) * 100))) + "%";
+
+      days.push({
+        day: i,
+        dateLabel: `${monthName.slice(0, 3)} ${i}`,
+        revVal,
+        formattedRev: (revVal / 1000).toFixed(0) + "k RWF",
+        heightPercent,
+        isPeak,
+        driver,
+      });
+    }
+    return days;
+  };
 
   // Dynamic Monthly Data based on selected year & segment filters
   const monthlyDataset = [
@@ -334,26 +382,42 @@ export default function SalesList() {
         </div>
       </div>
 
-      {/* 2. Monthly Sales Trend Chart & Segment Breakdown */}
+      {/* 2. Monthly & 30-Day Daily Sales Trend Chart & Segment Breakdown */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {/* Monthly Sales Trend Visualizer (2 cols) */}
+        {/* Sales Trend Visualizer (2 cols) */}
         <div className="lg:col-span-2 rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs space-y-4">
+          {/* Header & Filter Controls Bar */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 pb-3 dark:border-white/10">
             <div>
-              <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <TrendingUp size={18} className="text-[#076935]" /> Monthly Sales Revenue Trend
-              </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Click any month bar below to inspect high sales peak dates and closed orders.
+              <div className="flex items-center gap-2">
+                {activeSelectedMonth && (
+                  <button
+                    onClick={() => setActiveSelectedMonth(null)}
+                    className="flex items-center gap-1 rounded-lg border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-bold text-orange-700 hover:bg-orange-100 dark:border-orange-500/20 dark:bg-orange-500/15 dark:text-orange-300"
+                  >
+                    <ArrowLeft size={12} /> All Months
+                  </button>
+                )}
+                <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <TrendingUp size={18} className="text-orange-600 dark:text-orange-400" />
+                  {activeSelectedMonth
+                    ? `${activeSelectedMonth} 2026 Daily Sales Trend`
+                    : `Monthly Sales Revenue Trend (${graphYear})`}
+                </h3>
+              </div>
+              <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                {activeSelectedMonth
+                  ? `Daily sales trajectory across 31 days in ${activeSelectedMonth}. Solid orange bars highlight peak sales dates.`
+                  : "Click any month bar below to switch the graph to 30-day daily sales."}
               </p>
             </div>
 
-            {/* Graph Tweaking Controls */}
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Clean Horizontal Graph Controls Bar */}
+            <div className="flex items-center gap-2 rounded-xl bg-gray-50 p-1 dark:bg-white/5 border border-gray-100 dark:border-white/5">
               <select
                 value={graphYear}
                 onChange={(e) => setGraphYear(e.target.value as "2026" | "2025")}
-                className="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-700 dark:border-white/10 dark:bg-gray-800 dark:text-gray-200"
+                className="h-8 rounded-lg border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 shadow-2xs focus:border-orange-500 focus:outline-hidden dark:border-white/10 dark:bg-gray-800 dark:text-gray-200"
               >
                 <option value="2026">Year 2026</option>
                 <option value="2025">Year 2025</option>
@@ -362,59 +426,107 @@ export default function SalesList() {
               <select
                 value={graphMetric}
                 onChange={(e) => setGraphMetric(e.target.value as "revenue" | "volume")}
-                className="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-700 dark:border-white/10 dark:bg-gray-800 dark:text-gray-200"
+                className="h-8 rounded-lg border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 shadow-2xs focus:border-orange-500 focus:outline-hidden dark:border-white/10 dark:bg-gray-800 dark:text-gray-200"
               >
                 <option value="revenue">Gross Revenue (RWF)</option>
                 <option value="volume">Orders Volume</option>
               </select>
-
-              <select
-                value={graphSegment}
-                onChange={(e) => setGraphSegment(e.target.value as "all" | "wholesale" | "retail")}
-                className="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-700 dark:border-white/10 dark:bg-gray-800 dark:text-gray-200"
-              >
-                <option value="all">All Channels</option>
-                <option value="wholesale">B2B Wholesale</option>
-                <option value="retail">Retail Buyers</option>
-              </select>
             </div>
           </div>
 
-          {/* Bar Chart Visualizer */}
+          {/* Graph Visualizer Area */}
           <div className="pt-2">
-            <div className="flex h-48 items-end justify-between gap-2 pt-6 pb-2 px-2 border-b border-gray-100 dark:border-white/10">
-              {monthlyDataset.map((bar, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => setSelectedMonth(bar)}
-                  className="group relative flex flex-1 flex-col items-center h-full justify-end cursor-pointer"
-                >
-                  {/* Tooltip on Hover */}
-                  <div className="absolute -top-7 opacity-0 group-hover:opacity-100 transition-opacity rounded-md bg-gray-900 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs dark:bg-white dark:text-gray-900 whitespace-nowrap pointer-events-none z-10">
-                    {graphMetric === "revenue" ? `${bar.rev} RWF` : `${bar.ordersCount} Orders`} (Click to inspect)
-                  </div>
-
-                  {/* Bar */}
+            {!activeSelectedMonth ? (
+              /* MONTHLY VIEW (Jan - Dec) — Orange & Light Orange Theme */
+              <div className="flex h-56 items-end justify-between gap-2 pt-14 pb-2 px-2 border-b border-gray-100 dark:border-white/10">
+                {monthlyDataset.map((bar, idx) => (
                   <div
-                    className={`w-full rounded-t-lg transition-all duration-300 ${
-                      bar.active
-                        ? "bg-[#076935] shadow-xs group-hover:bg-[#055028]"
-                        : "bg-[#076935]/25 group-hover:bg-[#076935]/70 dark:bg-green-500/20 dark:group-hover:bg-green-500/50"
-                    }`}
-                    style={{ height: bar.height }}
-                  />
+                    key={idx}
+                    onClick={() => setActiveSelectedMonth(bar.month)}
+                    className="group relative flex flex-1 flex-col items-center h-full justify-end cursor-pointer"
+                  >
+                    {/* Floating Hover Tooltip (Always Visible) */}
+                    <div className="absolute -top-11 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg bg-gray-900 px-2.5 py-1 text-[11px] font-bold text-white shadow-lg dark:bg-white dark:text-gray-900 whitespace-nowrap pointer-events-none z-30 text-center">
+                      {graphMetric === "revenue" ? `${bar.rev} RWF` : `${bar.ordersCount} Orders`}
+                      <div className="text-[9px] text-orange-300 dark:text-orange-600 font-semibold">Click to inspect</div>
+                    </div>
 
-                  {/* Label */}
-                  <span className={`mt-2 text-[11px] font-semibold ${bar.active ? "text-[#076935] font-bold dark:text-green-400" : "text-gray-500 dark:text-gray-400 group-hover:text-gray-900"}`}>
-                    {bar.month}
-                  </span>
+                    {/* Bar — Orange & Light Orange Gradient */}
+                    <div
+                      className={`w-full rounded-t-md transition-all duration-300 ${
+                        bar.active
+                          ? "bg-orange-500 shadow-xs group-hover:bg-orange-600 dark:bg-orange-500"
+                          : "bg-orange-400/30 group-hover:bg-orange-500/70 dark:bg-orange-500/20 dark:group-hover:bg-orange-500/50"
+                      }`}
+                      style={{ height: bar.height }}
+                    />
+
+                    {/* Month Label */}
+                    <span className={`mt-2 text-[11px] font-semibold ${bar.active ? "text-orange-600 font-bold dark:text-orange-400" : "text-gray-500 dark:text-gray-400 group-hover:text-gray-900"}`}>
+                      {bar.month}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* 31-DAY DAILY VIEW — In-Graph Drill-down */
+              <div className="overflow-x-auto pb-2 pt-2">
+                <div className="flex h-56 min-w-[700px] items-end justify-between gap-1 pt-14 pb-2 px-1 border-b border-gray-100 dark:border-white/10">
+                  {generateDailyDataForMonth(activeSelectedMonth).map((dayData, idx) => (
+                    <div
+                      key={idx}
+                      className="group relative flex flex-1 flex-col items-center h-full justify-end cursor-pointer"
+                    >
+                      {/* Floating Hover Tooltip (Always Visible) */}
+                      <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg bg-gray-900 px-2.5 py-1 text-[11px] font-bold text-white shadow-lg dark:bg-white dark:text-gray-900 whitespace-nowrap pointer-events-none z-30 text-center">
+                        <div>{dayData.dateLabel}: <span className="text-orange-400 dark:text-orange-600">{dayData.formattedRev}</span></div>
+                        {dayData.isPeak && <div className="text-[9px] text-amber-300 dark:text-amber-600 font-bold">🔥 {dayData.driver}</div>}
+                      </div>
+
+                      {/* Peak Tag */}
+                      {dayData.isPeak && (
+                        <span className="mb-1 text-[10px] font-black text-orange-600 animate-pulse dark:text-orange-400">
+                          🔥
+                        </span>
+                      )}
+
+                      {/* Daily Bar — Orange Theme */}
+                      <div
+                        className={`w-full rounded-t-sm transition-all duration-200 ${
+                          dayData.isPeak
+                            ? "bg-orange-500 shadow-xs group-hover:bg-orange-600 dark:bg-orange-500"
+                            : "bg-orange-400/35 group-hover:bg-orange-500/80 dark:bg-orange-500/25 dark:group-hover:bg-orange-500/60"
+                        }`}
+                        style={{ height: dayData.heightPercent }}
+                      />
+
+                      {/* Day Number Label */}
+                      <span className={`mt-1.5 text-[10px] font-medium ${dayData.isPeak ? "font-bold text-orange-600 dark:text-orange-400" : "text-gray-400"}`}>
+                        {dayData.day}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
 
             <div className="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 px-1">
-              <span>Total YTD Revenue: <strong className="text-gray-900 dark:text-white">22.9M RWF</strong></span>
-              <span className="text-[#076935] font-semibold dark:text-green-400">💡 Click any bar to view peak sales dates</span>
+              {!activeSelectedMonth ? (
+                <>
+                  <span>Total YTD Revenue: <strong className="text-gray-900 dark:text-white">22.9M RWF</strong></span>
+                  <span className="text-orange-600 font-semibold dark:text-orange-400">💡 Click any month bar to view 30-day daily sales</span>
+                </>
+              ) : (
+                <>
+                  <span>Viewing <strong className="text-orange-600 dark:text-orange-400">{activeSelectedMonth} 2026</strong> daily breakdown</span>
+                  <button
+                    onClick={() => setActiveSelectedMonth(null)}
+                    className="text-orange-600 font-bold hover:underline dark:text-orange-400"
+                  >
+                    ← Back to 12-Month Overview
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -624,14 +736,6 @@ export default function SalesList() {
           </table>
         </div>
       </div>
-
-      {/* Month Deep-Dive Inspection Drawer */}
-      <MonthDetailDrawer
-        open={Boolean(selectedMonth)}
-        monthData={selectedMonth}
-        onClose={() => setSelectedMonth(null)}
-        transactions={transactions}
-      />
 
       {/* Direct Farm-Gate Sale Modal */}
       <DirectSaleModal
