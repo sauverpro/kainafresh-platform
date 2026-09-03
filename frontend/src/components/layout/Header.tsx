@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { Menu, Search, Bell, ChevronDown, X, LogOut } from "lucide-react";
+import { Menu, Search, Bell, ChevronDown, X, LogOut, UserRoundPen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSidebar } from "../../context/SidebarContext";
 import { useAuth } from "../../auth/AuthContext";
 import { toast } from "sonner";
 
-export default function Header() {
+interface HeaderProps {
+  onOpenProfile?: () => void;
+}
+
+export default function Header({ onOpenProfile }: HeaderProps) {
   const { toggleSidebar, toggleMobileSidebar, isMobileOpen } = useSidebar();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -123,15 +127,16 @@ export default function Header() {
                 </span>
               </div>
               <hr className="my-1.5 border-gray-100 dark:border-white/10" />
-              {["Edit profile", "Account settings", "Support"].map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  className="block w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
-                >
-                  {label}
-                </button>
-              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenProfile?.();
+                  setProfileOpen(false);
+                }}
+                className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
+              >
+                <UserRoundPen size={15} /> My Profile
+              </button>
               <hr className="my-1.5 border-gray-100 dark:border-white/10" />
               <button
                 type="button"
