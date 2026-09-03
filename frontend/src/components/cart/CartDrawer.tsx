@@ -11,7 +11,6 @@ export default function CartDrawer() {
     updateQuantity,
     removeFromCart,
     cartSubtotal,
-    deliveryFee,
     cartTotal,
     cartCount,
   } = useCart();
@@ -98,7 +97,7 @@ export default function CartDrawer() {
                     key={product.id}
                     className="flex items-center gap-4 p-3.5 bg-white rounded-2xl border border-[#076935]/10 shadow-xs hover:border-[#076935]/25 transition-all"
                   >
-                    {/* <img src={itemImg} alt={product.name} className="w-16 h-16 rounded-xl object-cover bg-[#f4faf7] shrink-0" /> */}
+                    <img src={itemImg} alt={product.name} className="w-16 h-16 rounded-xl object-cover bg-[#f4faf7] shrink-0" />
 
                     <div className="flex-1 min-w-0">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-[#F39927] block" style={{ fontFamily: 'var(--font-heading)' }}>

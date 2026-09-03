@@ -110,7 +110,7 @@ export default function ProductForm({
     if (initial) {
       const patch: Partial<typeof input> = { ...input };
       if (patch.description === undefined) delete patch.description;
-      ok = await updateProduct(initial.id, patch);
+      ok = await updateProduct(initial.id, patch, image ?? null);
     } else {
       ok = await createProduct(input, image ?? null);
     }
@@ -132,43 +132,71 @@ export default function ProductForm({
         </div>
       )}
 
-          {/* Image picker (create only) */}
-          {!initial && (
-            <div className="form-group">
-              <label>Product Image</label>
-              <div className="image-upload-box">
-                {image ? (
-                  <div style={{ position: "relative", textAlign: "center" }}>
-                    <img
-                      src={URL.createObjectURL(image)}
-                      alt="preview"
-                      style={{ maxHeight: 140, objectFit: "cover", borderRadius: 8 }}
-                    />
-                    <button
-                      type="button"
-                      className="btn-icon btn-danger"
-                      onClick={() => setImage(null)}
-                      style={{ position: "absolute", top: 8, right: 8 }}
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ) : (
-                  <label className="upload-placeholder" style={{ cursor: "pointer" }}>
-                    <Upload size={28} color="var(--color-text-light)" />
-                    <p>Click to upload product image</p>
-                    <span>PNG, JPG up to 5MB</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      hidden
-                      onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-                    />
-                  </label>
-                )}
-              </div>
+      {/* Image picker for create and edit */}
+      <div className="form-group">
+        <label>Product Image</label>
+        <div className="image-upload-box">
+          {image ? (
+            <div style={{ position: "relative", textAlign: "center" }}>
+              <img
+                src={URL.createObjectURL(image)}
+                alt="New preview"
+                style={{ maxHeight: 140, objectFit: "cover", borderRadius: 8 }}
+              />
+              <button
+                type="button"
+                className="btn-icon btn-danger"
+                onClick={() => setImage(null)}
+                style={{ position: "absolute", top: 8, right: 8 }}
+                title="Remove image"
+              >
+                <X size={16} />
+              </button>
             </div>
+          ) : initial?.product_image ? (
+            <div style={{ position: "relative", textAlign: "center" }}>
+              <img
+                src={initial.product_image}
+                alt={initial.name}
+                style={{ maxHeight: 140, objectFit: "cover", borderRadius: 8 }}
+              />
+              <label
+                className="btn-outline"
+                style={{
+                  position: "absolute",
+                  bottom: 8,
+                  right: 8,
+                  background: "rgba(255, 255, 255, 0.9)",
+                  backdropFilter: "blur(4px)",
+                  padding: "4px 10px",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                }}
+              >
+                <Upload size={14} style={{ marginRight: 4 }} /> Change Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+                />
+              </label>
+            </div>
+          ) : (
+            <label className="upload-placeholder" style={{ cursor: "pointer" }}>
+              <Upload size={28} color="var(--color-text-light)" />
+              <p>Click to upload product image</p>
+              <span>PNG, JPG up to 5MB</span>
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+              />
+            </label>
           )}
+        </div>
+      </div>
 
           <div className="form-group">
             <label>Product Name</label>

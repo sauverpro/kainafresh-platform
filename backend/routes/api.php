@@ -180,6 +180,12 @@ $router->addRoute(
 );
 
 $router->addRoute(
+    'POST',
+    '/api/products/{id}',
+    'ProductController@update'
+);
+
+$router->addRoute(
     'DELETE',
     '/api/products/{id}',
     'ProductController@destroy'

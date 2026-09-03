@@ -53,10 +53,11 @@ function Toast({ message, type, onClose }: ToastProps) {
 interface DynamicFormProps<T extends Record<string, unknown> | unknown[] = Record<string, unknown> | unknown[]> {
   data: T;
   onChange: (updated: T) => void;
+  parentPath?: string;
 }
 
 // A dynamic form renderer that iterates over JSON object keys
-function DynamicForm<T extends Record<string, unknown> | unknown[]>({ data, onChange }: DynamicFormProps<T>) {
+function DynamicForm<T extends Record<string, unknown> | unknown[]>({ data, onChange, parentPath = '' }: DynamicFormProps<T>) {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
   const toggleAccordion = (path: string, index: number) => {
@@ -102,7 +103,7 @@ function DynamicForm<T extends Record<string, unknown> | unknown[]>({ data, onCh
                 const itemTitle = (itemObj.title || itemObj.heading || itemObj.question || itemObj.name || itemObj.value || `Item ${index + 1}`) as string;
 
                 return (
-                  <div key={index} className="cms-accordion-item">
+                  <div key={accordionKey} className="cms-accordion-item">
                     <div className="cms-accordion-header" onClick={() => toggleAccordion(path, index)}>
                       <div className="cms-accordion-header-left">
                         <span className="cms-accordion-drag"><GripVertical size={16} /></span>
@@ -132,6 +133,7 @@ function DynamicForm<T extends Record<string, unknown> | unknown[]>({ data, onCh
                       <div className="cms-accordion-body">
                         <DynamicForm 
                           data={itemObj} 
+                          parentPath={accordionKey}
                           onChange={(updatedItem) => {
                             const newArr = [...value];
                             newArr[index] = updatedItem;
@@ -150,11 +152,17 @@ function DynamicForm<T extends Record<string, unknown> | unknown[]>({ data, onCh
             type="button" 
             className="btn-add-item"
             onClick={() => {
-              // Determine template from the first item if exists
+              // Determine template from the first item if exists, or smart defaults for team/partners
               const firstItem = value[0] as Record<string, unknown> | undefined;
-              const template = (value.length > 0 && firstItem && typeof firstItem === 'object')
-                ? Object.keys(firstItem).reduce((acc: Record<string, string>, k: string) => ({...acc, [k]: ''}), {} as Record<string, string>) 
-                : { text: '' };
+              let template: Record<string, string> = { text: '' };
+              
+              if (value.length > 0 && firstItem && typeof firstItem === 'object') {
+                template = Object.keys(firstItem).reduce((acc: Record<string, string>, k: string) => ({ ...acc, [k]: '' }), {});
+              } else if (key === 'members' || path.includes('team') || path.includes('member')) {
+                template = { name: '', role: '', initials: '', email: '', phone_number: '' };
+              } else if (key === 'partners' || path.includes('partner')) {
+                template = { partner_name: '', partner_logo: '', partner_link: '' };
+              }
               
               handleChange(key, [...value, template]);
               // Auto-expand the new item
@@ -175,6 +183,7 @@ function DynamicForm<T extends Record<string, unknown> | unknown[]>({ data, onCh
           <div className="cms-nested-object">
             <DynamicForm 
               data={value as Record<string, unknown>} 
+              parentPath={path}
               onChange={(updatedObj) => handleChange(key, updatedObj)} 
             />
           </div>
@@ -226,7 +235,10 @@ function DynamicForm<T extends Record<string, unknown> | unknown[]>({ data, onCh
 
   return (
     <div className="cms-dynamic-form">
-      {Object.entries(data).map(([k, v]) => renderField(k, v, k))}
+      {Object.entries(data).map(([k, v]) => {
+        const fullPath = parentPath ? `${parentPath}.${k}` : k;
+        return renderField(k, v, fullPath);
+      })}
     </div>
   );
 }
@@ -262,6 +274,32 @@ function ActiveWorkspace({ section, pageId, onSaveSuccess }: ActiveWorkspaceProp
     }
   };
 
+  const initializeSchema = (type: string) => {
+    if (type === 'about-team' || type === 'team') {
+      setContentData({
+        tag: 'The People Behind the Farm',
+        heading: 'Meet Our Team',
+        members: [
+          { name: 'Jean-Pierre Uwimana', role: 'Founder & Farm Director', initials: 'JU', email: 'jp.uwimana@kainafresh.rw', phone_number: '+250 788 123 456' }
+        ]
+      });
+    } else if (type === 'partners') {
+      setContentData({
+        tag: 'Strategic Collaborations',
+        heading: 'Our Trusted Partners & Cooperatives',
+        subheading: 'Collaborating with certified farm cooperatives, exporters, and agricultural leaders across Rwanda.',
+        partners: [
+          { partner_name: 'Musanze Organic Farmers Cooperative', partner_logo: '', partner_link: '#' }
+        ]
+      });
+    } else {
+      setContentData({
+        heading: 'Section Title',
+        description: 'Section description text...'
+      });
+    }
+  };
+
   return (
     <div className="cms-workspace-card">
       <div className="cms-workspace-header">
@@ -280,12 +318,19 @@ function ActiveWorkspace({ section, pageId, onSaveSuccess }: ActiveWorkspaceProp
       
       <div className="cms-workspace-body">
         {Object.keys(contentData).length > 0 ? (
-          <DynamicForm data={contentData} onChange={setContentData} />
+          <DynamicForm<Record<string, unknown>> data={contentData} onChange={(updated) => setContentData(updated)} />
         ) : (
           <div className="cms-empty-state">
              <Layout size={48} />
-             <h3>No Content Schema</h3>
-             <p>This section does not have editable content fields associated with it.</p>
+             <h3>No Content Schema Yet</h3>
+             <p>This section does not have editable content fields initialized in the database.</p>
+             <button
+               type="button"
+               className="btn-add-item mt-4"
+               onClick={() => initializeSchema(section.type)}
+             >
+               <Plus size={18} /> Initialize {section.type.replace('-', ' ')} Form Schema
+             </button>
           </div>
         )}
       </div>

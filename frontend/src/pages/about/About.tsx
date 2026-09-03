@@ -372,23 +372,25 @@ function About() {
         </section>
 
         {/* ── Team ── */}
-        <section className="about-team">
-          <div className="about-team-header">
-            <span className="section-tag">The People Behind the Farm</span>
-            <h2>Meet Our Team</h2>
-          </div>
-          <div className="team-grid">
-            {team.map((member) => (
-              <div key={member.name} className="team-card card">
-                <div className="team-avatar">{member.initials}</div>
-                <h3>{member.name}</h3>
-                <span className="team-role">{member.role}</span>
-                <p className='text-sm'>{member.email}</p>
-                <p className='text-sm'>{member.phone_number}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        {team.length > 0 && (
+          <section className="about-team">
+            <div className="about-team-header">
+              <span className="section-tag">The People Behind the Farm</span>
+              <h2>Meet Our Team</h2>
+            </div>
+            <div className="team-grid">
+              {team.map((member) => (
+                <div key={member.name} className="team-card card">
+                  <div className="team-avatar">{member.initials}</div>
+                  <h3>{member.name}</h3>
+                  <span className="team-role">{member.role}</span>
+                  <p className='text-sm'>{member.email}</p>
+                  <p className='text-sm'>{member.phone_number}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* ── Partners Showcase ── */}
         <PartnersSection title="Our Strategic Partners & Cooperatives" />

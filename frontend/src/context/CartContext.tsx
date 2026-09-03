@@ -12,6 +12,8 @@ export interface CartProduct {
   product_image?: string;
   inStock?: boolean;
   shelf_life?: number;
+  description?: string;
+  badge?: string;
 }
 
 export interface CartItem {
