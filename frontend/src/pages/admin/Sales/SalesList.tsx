@@ -107,7 +107,8 @@ export default function SalesList() {
     const days = [];
     for (let i = 1; i <= 31; i++) {
       let isPeak = false;
-      let revVal = Math.floor(45000 + Math.random() * 85000);
+      const pseudoSeed = (i * 37 + monthName.length * 13) % 100;
+      let revVal = 45000 + pseudoSeed * 850;
       let driver = "Standard Produce Sales";
 
       if (monthName.toLowerCase().includes("aug")) {
@@ -130,7 +131,7 @@ export default function SalesList() {
         }
       } else {
         if (i === 14 || i === 28) {
-          revVal = Math.floor(350000 + Math.random() * 200000);
+          revVal = 350000 + (pseudoSeed % 20) * 10000;
           isPeak = true;
           driver = "B2B Contract Fulfillment";
         }

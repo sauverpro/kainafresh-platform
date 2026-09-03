@@ -1,5 +1,5 @@
 import PageEditor from "../admin/CMS/PageEditor";
 
-export default function CrmPage() {
+export default function CmsPage() {
   return <PageEditor />;
 }

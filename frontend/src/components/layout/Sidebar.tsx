@@ -66,7 +66,7 @@ export default function Sidebar() {
     return sideNavData.map((section) => ({
       ...section,
       items: section.items.map((item) => {
-        if (item.id !== "crm") return item;
+        if (item.id !== "cms") return item;
         return {
           ...item,
           subItems: item.subItems?.map((sub) => {
@@ -75,7 +75,7 @@ export default function Sidebar() {
               ...sub,
               otherSub: pages.map((p) => ({
                 label: p.title,
-                path: `/crm/${encodeURIComponent(p.slug)}`,
+                path: `/cms/${encodeURIComponent(p.slug)}`,
               })),
             };
           }),

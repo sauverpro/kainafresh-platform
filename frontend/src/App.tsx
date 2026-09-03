@@ -21,7 +21,7 @@ const About = lazy(() => import("./pages/about/About"));
 const Contact = lazy(() => import("./pages/contact/Contact"));
 const Wholesale = lazy(() => import("./pages/wholesale/Wholesale"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
-const CrmPage = lazy(() => import("./pages/crm/CrmPage"));
+const CmsPage = lazy(() => import("./pages/cms/CmsPage"));
 const ProductsList = lazy(() => import("./pages/admin/Products/ProductsList"));
 const OrdersList = lazy(() => import("./pages/admin/Orders/OrdersList"));
 const CustomerList = lazy(() => import("./pages/admin/Customers/CustomerList"));
@@ -75,13 +75,16 @@ const routes = sideNavData
   .flatMap((section) => collectRoutes(section.items))
   .filter(
     (route) =>
-      !route.path.startsWith("/crm/") &&
+      !route.path.startsWith("/cms/") &&
+      route.path !== "/settings" &&
       route.path !== "/admin/products" &&
       route.path !== "/admin/orders" &&
       route.path !== "/admin/customers" &&
       route.path !== "/ecommerce/orders" &&
       route.path !== "/ecommerce/invoices" &&
       route.path !== "/sales" &&
+      route.path !== "/stock" &&
+      route.path !== "/inventory" &&
       route.path !== "/products"
   );
 
@@ -118,8 +121,9 @@ function App() {
                 }
               >
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/crm/settings" element={<GlobalSettings />} />
-                <Route path="/crm/:slug" element={<CrmPage />} />
+                <Route path="/settings" element={<GlobalSettings />} />
+                <Route path="/cms/settings" element={<GlobalSettings />} />
+                <Route path="/cms/:slug" element={<CmsPage />} />
                 <Route path="/admin/products" element={<ProductsList />} />
                 <Route path="/admin/products/:id" element={<ProductDetail />} />
                 <Route path="/admin/orders" element={<OrdersList />} />
@@ -127,6 +131,8 @@ function App() {
                 <Route path="/ecommerce/invoices" element={<InvoicesList />} />
                 <Route path="/sales" element={<SalesList />} />
                 <Route path="/ecommerce/orders" element={<OrdersList />} />
+                <Route path="/stock" element={<InventoryList />} />
+                <Route path="/stock/:id" element={<StockDetail />} />
                 <Route path="/inventory" element={<InventoryList />} />
                 <Route path="/inventory/:id" element={<StockDetail />} />
                 {routes.map((route) => (

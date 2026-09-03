@@ -1,12 +1,10 @@
 import {
   LayoutGrid,
-  Users2,
+  LayoutTemplate,
   Wallet,
-  ShoppingCart,
-  CalendarDays,
-  CircleUserRound,
-  Files,
   Warehouse,
+  Users2,
+  Settings,
 } from "lucide-react";
 import type { NavSection } from "./sideNavData.types";
 
@@ -22,45 +20,32 @@ export const sideNavData: NavSection[] = [
         path: "/dashboard",
       },
       {
-        id: "crm",
-        label: "CRM",
-        icon: Users2,
+        id: "cms",
+        label: "CMS",
+        icon: LayoutTemplate,
         subItems: [
           { label: "Pages", otherSub: [] },
-          { label: "Settings", path: "/crm/settings" },
-        ],
-      },
-      {
-        id: "ecommerce",
-        label: "E-commerce",
-        icon: ShoppingCart,
-        subItems: [
-          { label: "Products", path: "/admin/products" },
-          { label: "Orders", path: "/admin/orders" },
-          { label: "Customers", path: "/admin/customers" },
-          { label: "Invoices", path: "/ecommerce/invoices" },
         ],
       },
       {
         id: "inventory",
         label: "Inventory",
         icon: Warehouse,
-        path: "/inventory",
-      },
-      { id: "sales", label: "Sales", icon: Wallet, path: "/sales" },
-      { id: "finance", label: "Finance", icon: Wallet, path: "/finance" },
-      { id: "calendar", label: "Calendar", icon: CalendarDays, path: "/calendar" },
-      { id: "user-profile", label: "User Profile", icon: CircleUserRound, path: "/profile" },
-      {
-        id: "pages",
-        label: "Pages",
-        icon: Files,
         subItems: [
-          { label: "Blank Page", path: "/pages/blank" },
-          { label: "404 Error", path: "/pages/404" },
-          { label: "Pricing Tables", path: "/pages/pricing" },
+          { label: "Products", path: "/admin/products" },
+          { label: "Orders", path: "/admin/orders" },
+          { label: "Invoices", path: "/ecommerce/invoices" },
+          { label: "Stock", path: "/stock" },
         ],
       },
+      {
+        id: "customers",
+        label: "Customers",
+        icon: Users2,
+        path: "/admin/customers",
+      },
+      { id: "sales", label: "Sales", icon: Wallet, path: "/sales" },
+      { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
     ],
   },
 ];
