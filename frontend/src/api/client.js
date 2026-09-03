@@ -10,6 +10,7 @@
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? `${window.location.protocol}//${window.location.hostname}:8000` : import.meta.env.VITE_API_BASE_URL);
 const TOKEN_KEY = 'kainafresh_token';
+const USER_KEY = 'kainafresh_user';
 
 // ---------------------------------------------------------------------------
 // Token helpers
@@ -26,6 +27,23 @@ export const removeToken = () => localStorage.removeItem(TOKEN_KEY);
 
 /** Returns true if a token currently exists in storage. */
 export const isAuthenticated = () => Boolean(getToken());
+
+/** Persist the authenticated user's profile (incl. role) to localStorage. */
+export const setCurrentUser = (user) => localStorage.setItem(USER_KEY, JSON.stringify(user));
+
+/** Read the persisted user profile from localStorage (or null). */
+export const getCurrentUser = () => {
+  const raw = localStorage.getItem(USER_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+};
+
+/** Remove the persisted user profile on logout. */
+export const removeCurrentUser = () => localStorage.removeItem(USER_KEY);
 
 // ---------------------------------------------------------------------------
 // Internal fetch wrapper

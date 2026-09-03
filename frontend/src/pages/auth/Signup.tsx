@@ -25,6 +25,12 @@ import { Eye, EyeOff, ArrowRight, ArrowLeft, Mail, Phone, Lock, User, AtSign, Tr
 // Import API client helpers for user registration and JWT token storage
 import { apiPost, setToken } from '../../api/client';
 
+// Import auth context to persist the registered user profile
+import { useAuth } from '../../auth/AuthContext';
+
+// Import role helper for routing to the user's default home
+import { normalizeRole, DEFAULT_HOME } from '../../auth/roleAccess';
+
 // Import hook to dynamically update HTML title tag
 import { usePageTitle } from '../../hooks/usePageTitle';
 
@@ -64,6 +70,14 @@ interface FieldErrors {
 interface LoginResponse {
   data: {
     token: string;
+    user?: {
+      id: number;
+      username?: string;
+      email?: string;
+      role?: string;
+      full_name?: string;
+      phone_number?: string;
+    };
   };
 }
 
@@ -76,6 +90,9 @@ function Signup() {
 
   // Imperative navigation hook
   const navigate = useNavigate();
+
+  // Auth context for persisting the registered user profile
+  const { setUser } = useAuth();
 
   // Current active step index state (Step 1, 2, or 3)
   const [step, setStep] = useState<number>(1);
@@ -211,11 +228,14 @@ function Signup() {
       });
 
       // Store JWT token string in browser localStorage
-      const { token } = loginData.data;
+      const { token, user } = loginData.data;
       setToken(token);
 
-      // Redirect user to home landing page
-      navigate('/');
+      // Persist the registered user profile (role-based access & UI)
+      if (user) setUser(user);
+
+      // Route based on the role's default home page
+      navigate(DEFAULT_HOME[normalizeRole(user?.role)] ?? '/');
     } catch (err: unknown) {
       setServerError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
     } finally {

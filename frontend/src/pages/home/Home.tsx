@@ -18,6 +18,7 @@ import Footer from "../../components/footer/Footer";
 import PartnersSection from "../../components/partners/PartnersSection";
 import { apiGet } from "../../api/client";
 import { usePageTitle } from "../../hooks/usePageTitle";
+import { useCart, type CartProduct } from '../../context/CartContext';
 
 /**
  * Home Page
@@ -62,112 +63,45 @@ interface FaqItem { question: string; answer: string }
 interface FaqsContent { tag?: string; heading?: string; subheading?: string; items?: FaqItem[] }
 
 interface CmsSection { type: string; content: HeroContent & ValuePropsContent & FaqsContent }
+interface SpotlightContent{
+  tag?: string;
+  heading?: string;
+  paragraphs?: string;
+  primaryCta?: {label: string; to: string;}
+  secondaryCta?: {label: string; to: string;}
+  organic?: {label: string; number: string;}
+  working_hours?: {label: string; number: string;}
+}
+interface CatalogContent{
 
-// --- Dummy Data ---
+  heading?: string;
+  paragraphs?: string;
+  primaryCta?: {label: string; to: string;}
+  
+}
+interface ApiProduct {
+  id: number | string;
+  name: string;
+  price: number | string;
+  currency?: string;
+  unit_name?: string;
+  unit?: string;
+  unit_id?: number | string;
+  category?: string;
+  product_image?: string;
+  image?: string;
+  shelf_life?: number | string;
+  status?: string;
+  badge?: string;
+  description?: string;
+}
+interface ApiUnit {
+  id: number | string;
+  name: string;
+}
 
-const FEATURED_PRODUCTS = [
-  {
-    id: 1,
-    name: "Fresh Green Beans",
-    category: "Vegetables",
-    price: 1200,
-    unit: "kg",
-    currency: "RWF",
-    badge: "Best Seller",
-    inStock: true,
-    image: productPlaceholder,
-  },
-  {
-    id: 2,
-    name: "Organic Avocados",
-    category: "Fruits",
-    price: 800,
-    unit: "piece",
-    currency: "RWF",
-    badge: "New",
-    inStock: true,
-    image: productPlaceholder,
-  },
-  {
-    id: 3,
-    name: "Farm Tomatoes",
-    category: "Vegetables",
-    price: 1500,
-    unit: "kg",
-    currency: "RWF",
-    badge: null,
-    inStock: true,
-    image: productPlaceholder,
-  },
-  {
-    id: 4,
-    name: "Sweet Potatoes",
-    category: "Root Crops",
-    price: 900,
-    unit: "kg",
-    currency: "RWF",
-    badge: "Seasonal",
-    inStock: true,
-    image: productPlaceholder,
-  },
-  {
-    id: 5,
-    name: "Fresh Spinach",
-    category: "Leafy Greens",
-    price: 600,
-    unit: "bunch",
-    currency: "RWF",
-    badge: null,
-    inStock: false,
-    image: productPlaceholder,
-  },
-  {
-    id: 6,
-    name: "Passion Fruit",
-    category: "Fruits",
-    price: 400,
-    unit: "piece",
-    currency: "RWF",
-    badge: "Popular",
-    inStock: true,
-    image: productPlaceholder,
-  },
-];
-
-// const FAQS = [
-//   {
-//     id: 1,
-//     question: "How do I place an order?",
-//     answer:
-//       "Browse our products, add your items to the cart, and checkout. You can pay on delivery or via mobile money. Orders placed before 2 PM are delivered the next day.",
-//   },
-//   {
-//     id: 2,
-//     question: "Do you deliver to my area?",
-//     answer:
-//       "We currently deliver across Kigali and surrounding districts. Enter your location at checkout to confirm delivery availability and estimated time.",
-//   },
-//   {
-//     id: 3,
-//     question: "How do I know the produce is truly organic?",
-//     answer:
-//       "KainaFresh is certified organic. Our farm undergoes regular inspections, and all products carry a certification label. You can visit our farm — we welcome it!",
-//   },
-//   {
-//     id: 4,
-//     question: "Can I order in bulk for my business?",
-//     answer:
-//       "Absolutely. We have a dedicated wholesale programme for restaurants, supermarkets, and exporters. Visit our Wholesale & Exports page or contact us directly.",
-//   },
-//   {
-//     id: 5,
-//     question: "What if I receive produce that is not fresh?",
-//     answer:
-//       "We stand behind every delivery. If anything isn't up to standard, contact us within 24 hours and we will replace it or issue a full refund — no questions asked.",
-//   },
-// ];
-
-// ── Component ──
+// ── REMOVED DUMMY DATA ──
+// const FEATURED_PRODUCTS = [...] // DELETE THIS
 
 /**
  * ============================================================================
@@ -191,7 +125,7 @@ import Loader from "../../components/Loader/Loader";
 function Home() {
   // Update document HTML title tag for SEO optimization
   usePageTitle("home", "Home");
-
+  const { addToCart } = useCart();
   // Dynamic CMS state definitions
   const [cmsHero, setCmsHero] = useState<HeroContent | null>(null);
   const [cmsValueProps, setCmsValueProps] = useState<ValuePropsContent | null>(null);
@@ -201,12 +135,73 @@ function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   // Dynamic CTA section content state
   const [cmsHomeCta, setCmsHomeCta] = useState<HomectaContent | null>(null);
-
+  const [cmsSpotligh, setCmsSpotlight] = useState<SpotlightContent | null>(null)
+  const [cmsCatalog, setCmsCatalog] = useState<CatalogContent | null>(null);
   // Page loading indicator state while fetching CMS data from MariaDB
   const [loading, setLoading] = useState(true);
-
+  const [products, setProducts] = useState<CartProduct[]>([]);
+  
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || window.location.origin;
+  
   // Lifecycle effect: Query CMS sections for page slug 'home' on mount
   useEffect(() => {
+    async function loadData(){
+      let cancelled = false;
+        // 2. Fetch units map from MariaDB (/api/units)
+        const unitsMap: Record<string, string> = {};
+        try {
+          const unitsRes = await apiGet<{ success?: boolean; data?: ApiUnit[] }>('/api/units');
+          const unitsList = unitsRes?.data ?? (Array.isArray(unitsRes) ? unitsRes : []);
+          if (Array.isArray(unitsList)) {
+            unitsList.forEach(u => {
+              unitsMap[String(u.id)] = u.name;
+            });
+          }
+        } catch (err) {
+          console.debug('Failed loading units from DB', err);
+        }
+        // 3. Fetch products from MariaDB (/api/products)
+        try {
+          const res = await apiGet<{ success?: boolean; data?: ApiProduct[] }>('/api/products');
+          const list = res?.data ?? (Array.isArray(res) ? res : []);
+
+          if (!cancelled) {
+            if (Array.isArray(list) && list.length > 0) {
+              const mapped: CartProduct[] = list.map((item) => {
+                const rawImg = item.product_image || item.image;
+                const imgUrl = rawImg
+                  ? /^https?:\/\//.test(rawImg)
+                    ? rawImg
+                    : `${API_BASE}${rawImg.startsWith('/') ? rawImg : '/' + rawImg}`
+                  : productPlaceholder;
+
+                const unitIdKey = item.unit_id ? String(item.unit_id) : '';
+                const resolvedUnit = item.unit_name || item.unit || (unitIdKey ? unitsMap[unitIdKey] : 'kg');
+
+                return {
+                  id: item.id,
+                  name: item.name,
+                  price: Number(item.price) || 1000,
+                  unit: resolvedUnit || 'kg',
+                  category: item.category || 'Organic Produce',
+                  image: imgUrl,
+                  inStock: item.status !== 'inactive',
+                  shelf_life: item.shelf_life ? Number(item.shelf_life) : undefined,
+                };
+              });
+              setProducts(mapped);
+            } else {
+              setProducts([]);
+            }
+          }
+        } catch (err) {
+          console.debug('Failed to fetch products from backend, using fallback', err);
+          // Only set empty array if we didn't get any products
+          if (!cancelled) {
+            setProducts([]);
+          }
+        }
+    }
     // Perform HTTP GET request to retrieve dynamic CMS sections
     apiGet<{ success: boolean; data: { sections: CmsSection[] } }>('/api/pages/slug/home')
       .then((res) => {
@@ -222,7 +217,8 @@ function Home() {
         // Populate state variables with dynamic content
         setCmsHero(find<HeroContent>('hero'));
         setCmsHomeCta(find<HomectaContent>('home-cta'));
-
+        setCmsSpotlight(find<SpotlightContent>('story-spotlight'));
+        setCmsCatalog(find<CatalogContent>('product_catalog'));
         const valuePropsSection = sections.find((sec) => sec.type === 'value_props');
         // some CMS rows store a bare items array, so we set for array data
         const valuePropsContent = valuePropsSection?.content;
@@ -238,15 +234,18 @@ function Home() {
           Array.isArray(valueFaq) ? {items: valueFaq as FaqItem[]} :(valueFaq as FaqsContent)
         );
 
-        
+        // Load products data after CMS
+        loadData();
       })
       .catch(() => { 
         // Silently catch network errors and rely on fallback defaults
+        loadData(); // Still try to load products even if CMS fails
       })
       .finally(() => {
         // Complete loading phase
         setLoading(false);
       });
+      
   }, []);
 
   // Toggle handler for opening/closing FAQ accordion items
@@ -262,7 +261,20 @@ function Home() {
     primaryCta: { label: cmsHero?.primaryCta?.label ?? 'Our Products', to: cmsHero?.primaryCta?.to ?? '/products' },
     secondaryCta: { label: cmsHero?.secondaryCta?.label ?? 'Wholesale & Exports', to: cmsHero?.secondaryCta?.to ?? '/wholesale' },
   };
-
+  const story ={
+    tag: cmsSpotligh?.tag,
+    heading: cmsSpotligh?.heading,
+    paragraphs: cmsSpotligh?.paragraphs,
+    primaryCta : cmsSpotligh?.primaryCta,
+    secondaryCta: cmsSpotligh?.secondaryCta,
+    organic: cmsSpotligh?.organic,
+    working_hours : cmsSpotligh?.working_hours
+  }
+  const catalog ={
+    heading: cmsCatalog?.heading,
+    paragraphs: cmsCatalog?.paragraphs,
+    primaryCta : cmsCatalog?.primaryCta
+  }
   const homeCTA = {
     heading: cmsHomeCta?.heading ?? 'Fresh Food, Direct to You',
     paragraph: cmsHomeCta?.paragraph ?? 'Ready to taste the difference of real organic farming? Order today.',
@@ -292,6 +304,9 @@ function Home() {
         { id: 2, question: 'Do you deliver to my area?', answer: 'We deliver across Kigali and surrounding districts.' },
         { id: 3, question: 'How do I know produce is organic?', answer: 'KainaFresh is certified organic with regular farm inspections.' },
       ];
+
+  //Get only first 4 products for featured display
+  const featuredProducts = products.slice(0, 4);
 
   // Render a stable page shell (header) with a centered loader while fetching
   if (loading) {
@@ -396,32 +411,28 @@ function Home() {
         <section className="story-spotlight">
           <div className="story-spotlight-inner">
             <div className="story-spotlight-text">
-              <span className="home-tag">Our Sustainable Farm</span>
-              <h2>Cultivating Organic Goodness Direct From Soil to Table</h2>
+              <span className="home-tag">{story.tag}</span>
+              <h2>{story.heading}</h2>
               <p>
-                At KainaFresh, we believe high quality food starts with healthy soil and chemical-free agriculture. 
-                We work directly with certified organic farmers to deliver produce picked at peak ripeness.
+                {story.paragraphs}
               </p>
               <div className="story-metrics">
                 <div className="story-metric-item">
-                  <strong>100%</strong>
-                  <span>Organic Certified</span>
+                  <strong>{story.organic?.number}</strong>
+                  <span>{story.organic?.label}</span>
                 </div>
+               
                 <div className="story-metric-item">
-                  <strong>50+</strong>
-                  <span>Partner Farms</span>
-                </div>
-                <div className="story-metric-item">
-                  <strong>24h</strong>
-                  <span>Farm to Door</span>
+                  <strong>{story.working_hours?.number}</strong>
+                  <span>{story.working_hours?.label}</span>
                 </div>
               </div>
               <div className="story-cta-wrap">
-                <Link to="/about" className="btn btn-primary story-btn">
-                  Read Our Full Story <ArrowRight size={16} />
+                <Link to={story.primaryCta?.to} className="btn btn-primary story-btn">
+                  {story.primaryCta?.label} <ArrowRight size={16} />
                 </Link>
-                <Link to="/wholesale" className="btn btn-outline-green">
-                  Learn About Bulk Supply
+                <Link to={story.secondaryCta?.to} className="btn btn-outline-green">
+                 {story.secondaryCta?.label}
                 </Link>
               </div>
             </div>
@@ -441,56 +452,69 @@ function Home() {
             </Link>
           </div>
 
-          <div className="fp-grid">
-            {FEATURED_PRODUCTS.map((product) => (
-              <div key={product.id} className="product-card card">
-                <div className="product-img-wrap">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="product-image"
-                  />
-                  {product.badge && (
-                    <span className="product-badge">{product.badge}</span>
-                  )}
-                  {!product.inStock && (
-                    <div className="product-out-of-stock">Out of Stock</div>
-                  )}
-                </div>
-                <div className="product-info">
-                  <span className="product-category">{product.category}</span>
-                  <h3 className="product-name">{product.name}</h3>
-                  <div className="product-footer">
-                    <div className="product-price">
-                      <strong>
-                        {product.currency} {product.price.toLocaleString()}
-                      </strong>
-                      <span>/ {product.unit}</span>
+          {/* ── UPDATED: Now using API products with 4 per row ── */}
+          <div className="fp-grid" style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(4, 1fr)', 
+            gap: '1.5rem' 
+          }}>
+            {featuredProducts.length > 0 ? (
+              featuredProducts.map((product) => (
+                <div key={product.id} className="product-card card">
+                  <div className="product-img-wrap">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="product-image"
+                    />
+                    {product.badge && (
+                      <span className="product-badge">{product.badge}</span>
+                    )}
+                    {!product.inStock && (
+                      <div className="product-out-of-stock">Out of Stock</div>
+                    )}
+                  </div>
+                  <div className="product-info">
+                    <span className="product-category">{product.category}</span>
+                    <h3 className="product-name">{product.name}</h3>
+                    <div className="product-footer">
+                      <div className="product-price">
+                        <strong>
+                          RWF {product.price.toLocaleString()}
+                        </strong>
+                        <span>{product.unit}</span>
+                      </div>
+                      <button
+                        className="btn btn-primary product-order-btn"
+                        disabled={!product.inStock}
+                        onClick={() => addToCart(product)}
+                      >
+                        <ShoppingCart size={14} />
+                        Order
+                      </button>
                     </div>
-                    <button
-                      className="btn btn-primary product-order-btn"
-                      disabled={!product.inStock}
-                    >
-                      <ShoppingCart size={14} />
-                      Order
-                    </button>
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-gray-100 text-right">
-                    <Link to="/products" className="text-xs font-semibold text-[#076935] hover:text-[#F39927] inline-flex items-center gap-1">
-                      View Product Details <ArrowRight size={12} />
-                    </Link>
+                    <div className="mt-3 pt-3 border-t border-gray-100 text-right">
+                      <Link to={`/products`} className="text-xs font-semibold text-[#076935] hover:text-[#F39927] inline-flex items-center gap-1">
+                        View Product Details <ArrowRight size={12} />
+                      </Link>
+                    </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              //Fallback message when no products are available
+              <div className="col-span-4 text-center py-8 text-gray-500">
+                <p>No products available at the moment. Please check back later.</p>
               </div>
-            ))}
+            )}
           </div>
 
           {/* Prompt to View More Products */}
           <div className="fp-bottom-prompt mt-12 text-center p-8 bg-white rounded-2xl border border-[#076935]/10 shadow-xs max-w-3xl mx-auto">
-            <h3 className="font-heading text-xl text-[#076935] mb-2 font-bold">Looking for More Varieties?</h3>
-            <p className="text-gray-600 text-sm mb-5">Explore our complete catalog of organic root crops, seasonal fruits, leafy greens, and farm produce.</p>
-            <Link to="/products" className="btn btn-primary">
-              View Complete Product Catalog <ArrowRight size={16} />
+            <h3 className="font-heading text-xl text-[#076935] mb-2 font-bold">{catalog?.heading}</h3>
+            <p className="text-gray-600 text-sm mb-5">{catalog?.paragraphs}</p>
+            <Link to={catalog?.primaryCta?.to} className="btn btn-primary">
+              {catalog?.primaryCta?.label} <ArrowRight size={16} />
             </Link>
           </div>
         </section>

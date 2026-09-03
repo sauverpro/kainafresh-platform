@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { SidebarProvider } from "./context/SidebarContext";
 import { CartProvider } from "./context/CartContext";
 import { Toaster } from "sonner";
@@ -7,6 +7,8 @@ import AppLayout from "./components/layout/AppLayout";
 import Placeholder from "./pages/Placeholder";
 import Loader from "./components/Loader/Loader";
 import { isAuthenticated } from "./api/client";
+import { AuthProvider, useAuth } from "./auth/AuthContext";
+import { canAccessPath, normalizeRole, DEFAULT_HOME } from "./auth/roleAccess";
 import { sideNavData } from "./assets/data/sideNavData";
 import type { NavItem } from "./assets/data/sideNavData.types";
 
@@ -41,9 +43,19 @@ interface ProtectedRouteProps {
 }
 
 function ProtectedRoute({ children }: ProtectedRouteProps) {
+  const { user } = useAuth();
+  const location = useLocation();
+
   if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
+
+  // Role-based route protection: redirect denied users to their role's home.
+  if (!canAccessPath(location.pathname, user)) {
+    const home = DEFAULT_HOME[normalizeRole(user?.role)] ?? "/";
+    return <Navigate to={home} replace />;
+  }
+
   return <>{children}</>;
 }
 
@@ -92,8 +104,9 @@ function App() {
   return (
     <BrowserRouter>
       <Toaster position="top-right" richColors />
-      <SidebarProvider>
-        <CartProvider>
+      <AuthProvider>
+        <SidebarProvider>
+          <CartProvider>
           <Suspense
             fallback={
               <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -149,7 +162,8 @@ function App() {
             </Routes>
           </Suspense>
         </CartProvider>
-      </SidebarProvider>
+        </SidebarProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

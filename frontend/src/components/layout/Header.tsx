@@ -1,14 +1,32 @@
 import { useEffect, useRef, useState } from "react";
-import { Menu, Search, Bell, ChevronDown, X } from "lucide-react";
+import { Menu, Search, Bell, ChevronDown, X, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useSidebar } from "../../context/SidebarContext";
-
-const USER_NAME = "Alice";
-const INITIALS = USER_NAME.slice(0, 2).toUpperCase();
+import { useAuth } from "../../auth/AuthContext";
+import { toast } from "sonner";
 
 export default function Header() {
   const { toggleSidebar, toggleMobileSidebar, isMobileOpen } = useSidebar();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+
+  const profileName: string =
+    user?.full_name?.trim() || user?.username?.trim() || "User";
+  const initials: string = profileName.slice(0, 2).toUpperCase();
+  const roleLabel =
+    user?.role === "admin"
+      ? "Admin"
+      : user?.role === "sales_manager"
+        ? "Sales Manager"
+        : "Customer";
+
+  const handleLogout = () => {
+    logout();
+    toast.success("Signed out");
+    navigate("/login");
+  };
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -78,10 +96,10 @@ export default function Header() {
             className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-gray-100 dark:hover:bg-white/5"
           >
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-500 text-xs font-semibold text-white">
-              {INITIALS}
+              {initials}
             </span>
             <span className="hidden text-sm font-medium text-gray-700 dark:text-gray-200 sm:block">
-              {USER_NAME}
+              {profileName}
             </span>
             <ChevronDown
               className={[
@@ -92,7 +110,19 @@ export default function Header() {
           </button>
 
           {profileOpen && (
-            <div className="absolute right-0 mt-2 w-48 rounded-lg border border-gray-200 bg-white py-1.5 shadow-lg dark:border-white/10 dark:bg-gray-900">
+            <div className="absolute right-0 mt-2 w-56 rounded-lg border border-gray-200 bg-white py-1.5 shadow-lg dark:border-white/10 dark:bg-gray-900">
+              <div className="px-4 py-2">
+                <p className="truncate text-sm font-bold text-gray-800 dark:text-gray-100">
+                  {user?.full_name || profileName}
+                </p>
+                <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                  @{user?.username || "user"}
+                </p>
+                <span className="mt-1.5 inline-block rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
+                  {roleLabel}
+                </span>
+              </div>
+              <hr className="my-1.5 border-gray-100 dark:border-white/10" />
               {["Edit profile", "Account settings", "Support"].map((label) => (
                 <button
                   key={label}
@@ -105,9 +135,10 @@ export default function Header() {
               <hr className="my-1.5 border-gray-100 dark:border-white/10" />
               <button
                 type="button"
-                className="block w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
+                onClick={handleLogout}
+                className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
               >
-                Sign out
+                <LogOut size={15} /> Sign out
               </button>
             </div>
           )}

@@ -8,6 +8,7 @@ export interface NavSubItem {
   path?: string;
   badge?: string;
   otherSub?: NavSubItem[];
+  role?: string[];
 }
 
 /** A top-level sidebar entry. Either links directly to `path`,
@@ -19,6 +20,7 @@ export interface NavItem {
   path?: string;
   badge?: string;
   subItems?: NavSubItem[];
+  role?: string[];
 }
 
 /** A named group of nav items, rendered under its own section heading */
