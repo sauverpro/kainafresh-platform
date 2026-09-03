@@ -246,7 +246,7 @@ function DynamicForm<T extends Record<string, unknown> | unknown[]>({ data, onCh
 interface ActiveWorkspaceProps {
   section: CmsPageSection;
   pageId: number;
-  onSaveSuccess: (type: 'success' | 'error', message: string) => void;
+  onSaveSuccess: (type: 'success' | 'error', message: string, savedSection?: CmsPageSection) => void;
 }
 
 // Right Column: Workspace
@@ -273,7 +273,8 @@ function ActiveWorkspace({ section, pageId, onSaveSuccess }: ActiveWorkspaceProp
         });
       }
       if (res.success) {
-        onSaveSuccess('success', 'Changes saved successfully!');
+        const savedSec = (res.data as CmsPageSection) || undefined;
+        onSaveSuccess('success', 'Changes saved successfully!', savedSec);
       } else {
         onSaveSuccess('error', (res.message as string) || 'Failed to save changes.');
       }
@@ -556,7 +557,23 @@ function PageEditor() {
               key={activeSection.id} 
               section={activeSection} 
               pageId={page.id} 
-              onSaveSuccess={(type, message) => setToast({ type, message })}
+              onSaveSuccess={(type, message, savedSection) => {
+                setToast({ type, message });
+                if (savedSection && page) {
+                  setPage(prev => {
+                    if (!prev) return null;
+                    const updatedSections = prev.sections.map(s => 
+                      (s.id === activeSection.id || s.type === savedSection.type)
+                        ? { ...s, ...savedSection, id: savedSection.id }
+                        : s
+                    );
+                    return { ...prev, sections: updatedSections };
+                  });
+                  if (savedSection.id && savedSection.id > 0) {
+                    setActiveSectionId(savedSection.id);
+                  }
+                }
+              }}
             />
           ) : (
             <div className="cms-empty-state">

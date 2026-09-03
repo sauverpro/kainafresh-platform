@@ -157,6 +157,15 @@ function About() {
           setCmsMission(null);
         }
 
+        // team section
+        const teamSec = sections.find((sec) => sec.type === 'team' || sec.type === 'about-team');
+        if (teamSec?.content) {
+          const content = teamSec.content as Record<string, unknown>;
+          const members = (content.members || content.items || (Array.isArray(content) ? content : null)) as TeamContent[] | null;
+          if (Array.isArray(members) && members.length > 0) {
+            setCmsTeam(members);
+          }
+        }
       })
       .catch(() => { /* silently fall back to hardcoded defaults */ })
       .finally(() => { setLoading(false); });
@@ -197,8 +206,6 @@ function About() {
       description: v.description,
     }))
     : [];
-
-
 
   const ctaSection = getSection<CtaContent>('cta');
   // stat action bar 
