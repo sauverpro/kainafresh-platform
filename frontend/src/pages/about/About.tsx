@@ -379,8 +379,8 @@ function About() {
               <h2>Meet Our Team</h2>
             </div>
             <div className="team-grid">
-              {team.map((member) => (
-                <div key={member.name} className="team-card card">
+              {team.map((member, index) => (
+                <div key={`team-member-${member.name || index}`} className="team-card card">
                   <div className="team-avatar">{member.initials}</div>
                   <h3>{member.name}</h3>
                   <span className="team-role">{member.role}</span>

@@ -97,7 +97,7 @@ export default function PartnersSection({
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 items-stretch">
-            {partners.map((partner) => {
+            {partners.map((partner, index) => {
               const logoUrl = resolveLogo(partner.partner_logo || partner.logo);
               const partnerUrl = partner.partner_link || partner.link || '#';
               const hasLink = partnerUrl && partnerUrl !== '#';
@@ -128,9 +128,11 @@ export default function PartnersSection({
                 </div>
               );
 
+              const itemKey = `partner-${partner.id ?? partner.partner_name ?? index}`;
+
               return hasLink ? (
                 <a
-                  key={partner.id}
+                  key={itemKey}
                   href={partnerUrl}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -139,7 +141,7 @@ export default function PartnersSection({
                   {CardContent}
                 </a>
               ) : (
-                <div key={partner.id} className="h-full">
+                <div key={itemKey} className="h-full">
                   {CardContent}
                 </div>
               );

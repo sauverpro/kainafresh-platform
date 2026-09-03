@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { apiGet, apiPut } from '../../../api/client';
+import { apiGet, apiPut, apiPost } from '../../../api/client';
 import Loader from '../../../components/Loader/Loader';
 
 interface ApiResponse<T = unknown> {
@@ -12,7 +12,7 @@ interface ApiResponse<T = unknown> {
 import { 
   Save, AlertCircle, Plus, Trash2, ChevronDown, ChevronUp, GripVertical, 
   CheckCircle2, Layout, FileText, List, MessageSquare, Image as ImageIcon,
-  Leaf, Truck, ShieldCheck, Package
+  Leaf, Truck, ShieldCheck, Package, Users, Handshake
 } from 'lucide-react';
 import './PageEditor.css';
 
@@ -257,10 +257,21 @@ function ActiveWorkspace({ section, pageId, onSaveSuccess }: ActiveWorkspaceProp
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const res = await apiPut<ApiResponse>(`/api/pages/${pageId}/sections/${section.id}`, {
-        content: contentData,
-        settings: section.settings || {}
-      });
+      let res: ApiResponse;
+      if (typeof section.id === 'number' && section.id < 0) {
+        res = await apiPost<ApiResponse>(`/api/pages/${pageId}/sections`, {
+          type: section.type,
+          title: section.title,
+          content: contentData,
+          position: section.position || 0,
+          status: 'active'
+        });
+      } else {
+        res = await apiPut<ApiResponse>(`/api/pages/${pageId}/sections/${section.id}`, {
+          content: contentData,
+          settings: section.settings || {}
+        });
+      }
       if (res.success) {
         onSaveSuccess('success', 'Changes saved successfully!');
       } else {
@@ -358,6 +369,9 @@ interface CmsPageSection {
   type: string;
   content: Record<string, unknown>;
   settings?: Record<string, unknown>;
+  position?: number;
+  page_id?: number;
+  status?: string;
 }
 
 /**
@@ -402,11 +416,52 @@ function PageEditor() {
         // Query GET /api/pages/slug/:slug
         const res = await apiGet<ApiResponse<CmsPageData>>(`/api/pages/slug/${encodeURIComponent(slug ?? "")}`);
         if (res.success && res.data) {
-          setPage(res.data);
+          const sections = [...(res.data.sections || [])];
+          
+          // Guarantee 'team' section is available on 'about' page
+          if (slug === 'about' && !sections.some(s => s.type === 'team' || s.type === 'about-team')) {
+            sections.push({
+              id: -1,
+              page_id: res.data.id,
+              type: 'team',
+              title: 'Our Team',
+              content: {
+                tag: 'The People Behind the Farm',
+                heading: 'Meet Our Team',
+                members: [
+                  { name: 'Jean-Pierre Uwimana', role: 'Founder & Farm Director', initials: 'JU', email: 'jp.uwimana@kainafresh.rw', phone_number: '+250 788 123 456' }
+                ]
+              },
+              position: sections.length + 1,
+              status: 'active'
+            });
+          }
+
+          // Guarantee 'partners' section is available on 'home' and 'about' pages
+          if ((slug === 'home' || slug === 'about') && !sections.some(s => s.type === 'partners')) {
+            sections.push({
+              id: -2,
+              page_id: res.data.id,
+              type: 'partners',
+              title: 'Partners & Affiliates',
+              content: {
+                tag: 'Strategic Collaborations',
+                heading: 'Our Trusted Partners & Cooperatives',
+                subheading: 'Collaborating with certified farm cooperatives, exporters, and agricultural leaders across Rwanda.',
+                partners: [
+                  { partner_name: 'Musanze Organic Farmers Cooperative', partner_logo: '', partner_link: '#' }
+                ]
+              },
+              position: sections.length + 2,
+              status: 'active'
+            });
+          }
+
+          setPage({ ...res.data, sections });
           
           // Auto-select the first section by default
-          if (res.data.sections && res.data.sections.length > 0) {
-            setActiveSectionId(res.data.sections[0].id);
+          if (sections.length > 0) {
+            setActiveSectionId(sections[0].id);
           }
         } else {
           setError((res.message as string) || 'Page not found.');
@@ -435,6 +490,8 @@ function PageEditor() {
       case 'value_props': return <List size={18} />;
       case 'faqs': return <MessageSquare size={18} />;
       case 'story': return <FileText size={18} />;
+      case 'team': case 'about-team': return <Users size={18} />;
+      case 'partners': return <Handshake size={18} />;
       default: return <Layout size={18} />;
     }
   };
