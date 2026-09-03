@@ -19,7 +19,8 @@ import {
 export interface CustomerProfile {
   id: string | number;
   full_name: string;
-  username: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone: string;
   district: string;
@@ -32,6 +33,7 @@ export interface CustomerProfile {
   preferred_payment: string;
   registered_at: string;
   notes?: string;
+  username?: string;
 }
 
 interface CustomerDrawerProps {
@@ -85,6 +87,21 @@ export default function CustomerDrawer({
     }
   };
 
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200">
       <div className="fixed inset-y-0 right-0 flex max-w-full pl-10">
@@ -94,7 +111,7 @@ export default function CustomerDrawer({
             <div className="flex items-center justify-between border-b border-gray-100 pb-4 dark:border-white/10">
               <div className="flex items-center gap-2">
                 <span className="rounded-lg bg-[#076935]/10 px-2.5 py-1 text-xs font-bold text-[#076935] dark:bg-green-500/20 dark:text-green-300">
-                  Customer №{customer.id}
+                  Customer #{customer.id}
                 </span>
                 {customer.status === "active" ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700 dark:bg-green-500/15 dark:text-green-300">
@@ -123,9 +140,11 @@ export default function CustomerDrawer({
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                   {customer.full_name}
                 </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  @{customer.username}
-                </p>
+                {customer.username && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    @{customer.username}
+                  </p>
+                )}
                 <div className="mt-1.5">{getSegmentBadge(customer.segment)}</div>
               </div>
             </div>
@@ -137,7 +156,7 @@ export default function CustomerDrawer({
                   <ShoppingBag size={14} className="text-[#076935]" /> Total Orders
                 </span>
                 <p className="mt-1 text-xl font-bold text-gray-900 dark:text-white">
-                  {customer.total_orders}{" "}
+                  {customer.total_orders || 0}{" "}
                   <span className="text-xs font-normal text-gray-400">orders</span>
                 </p>
               </div>
@@ -147,7 +166,7 @@ export default function CustomerDrawer({
                   <CreditCard size={14} className="text-[#076935]" /> Lifetime Spend
                 </span>
                 <p className="mt-1 text-xl font-bold text-[#076935] dark:text-green-300">
-                  {customer.total_spent.toLocaleString()}{" "}
+                  {(customer.total_spent || 0).toLocaleString()}{" "}
                   <span className="text-xs font-normal text-gray-400">RWF</span>
                 </p>
               </div>
@@ -188,7 +207,7 @@ export default function CustomerDrawer({
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Email Address</p>
                   <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                    {customer.email}
+                    {customer.email || 'N/A'}
                   </p>
                 </div>
               </div>
@@ -200,7 +219,7 @@ export default function CustomerDrawer({
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Primary Delivery Address</p>
                   <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                    {customer.district} · {customer.address}
+                    {customer.district} · {customer.address || 'N/A'}
                   </p>
                 </div>
               </div>
@@ -212,7 +231,7 @@ export default function CustomerDrawer({
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Preferred Payment Method</p>
                   <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                    {customer.preferred_payment}
+                    {customer.preferred_payment || 'Cash on Delivery'}
                   </p>
                 </div>
               </div>
@@ -228,14 +247,16 @@ export default function CustomerDrawer({
                   <span className="text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
                     <Calendar size={14} className="text-gray-400" /> Account Created
                   </span>
-                  <span className="text-gray-400">{customer.registered_at}</span>
+                  <span className="text-gray-400">{formatDate(customer.registered_at)}</span>
                 </div>
-                <div className="flex items-center justify-between rounded-lg bg-gray-50 p-2.5 dark:bg-white/5">
-                  <span className="text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
-                    <Clock size={14} className="text-gray-400" /> Last Order Date
-                  </span>
-                  <span className="text-gray-400">{customer.last_order}</span>
-                </div>
+                {customer.last_order && (
+                  <div className="flex items-center justify-between rounded-lg bg-gray-50 p-2.5 dark:bg-white/5">
+                    <span className="text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                      <Clock size={14} className="text-gray-400" /> Last Order Date
+                    </span>
+                    <span className="text-gray-400">{formatDate(customer.last_order)}</span>
+                  </div>
+                )}
               </div>
             </div>
 
