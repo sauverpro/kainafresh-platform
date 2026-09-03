@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import { useProductStore, type Product } from "../../store/useProductStore";
 import Loader from "../Loader/Loader";
+import TableSkeleton from "../ui/TableSkeleton";
 import ConfirmDeleteModal from "../ui/ConfirmDeleteModal";
 
 interface ProductTableProps {
@@ -258,7 +259,9 @@ export default function ProductTable({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                {filteredProducts.length === 0 ? (
+                {loading ? (
+                  <TableSkeleton columns={6} rows={5} />
+                ) : filteredProducts.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-12 text-center text-gray-500 dark:text-gray-400">
                       <div className="flex flex-col items-center justify-center gap-2">

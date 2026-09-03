@@ -3,6 +3,7 @@ import { Search, ShoppingCart, Eye, Leaf, Check, X, Clock, SlidersHorizontal } f
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import Loader from '../../components/Loader/Loader';
+import ProductSkeleton from '../../components/ui/ProductSkeleton';
 import { apiGet } from '../../api/client';
 import { useCart, type CartProduct } from '../../context/CartContext';
 import { usePageTitle } from '../../hooks/usePageTitle';
@@ -406,7 +407,11 @@ export default function OurProducts() {
             </div>
 
             {/* Products Grid */}
-            {filteredProducts.length === 0 ? (
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <ProductSkeleton count={8} />
+              </div>
+            ) : filteredProducts.length === 0 ? (
               <div className="text-center py-16 px-4 bg-white rounded-3xl border border-[#076935]/10 shadow-xs">
                 <Leaf size={48} className="mx-auto mb-4 text-[#076935]" />
                 <h3 className="text-xl font-bold text-[#076935] mb-2" style={{ fontFamily: 'var(--font-heading)' }}>

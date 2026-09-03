@@ -22,6 +22,7 @@ import { apiGet, apiPost, apiPut, apiDelete } from "../../../api/client";
 import { useAuth } from "../../../auth/AuthContext";
 import { toast } from "sonner";
 import Modal from "../../../components/ui/Modal";
+import TableSkeleton from "../../../components/ui/TableSkeleton";
 import StatusDropdown, {
   type StatusOption,
 } from "../../../components/ui/StatusDropdown";
@@ -549,20 +550,7 @@ export default function UserManagement() {
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
               {loading ? (
-                <tr>
-                  <td colSpan={7} className="py-16 text-center text-gray-500">
-                    <Loader2
-                      size={32}
-                      className="mx-auto mb-3 animate-spin text-[#076935]"
-                    />
-                    <p
-                      className="font-bold text-base text-gray-700"
-                      style={{ fontFamily: "var(--font-heading)" }}
-                    >
-                      Loading users...
-                    </p>
-                  </td>
-                </tr>
+                <TableSkeleton columns={7} rows={5} />
               ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-16 text-center text-gray-500">
