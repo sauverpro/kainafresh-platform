@@ -110,6 +110,41 @@ private $tokenModel;
             ]
         ]);
     }
+    // get current authenticated user profile
+    public function me(){
+        $userId = $this->getAuthenticatedUserId();
+        if (!$userId) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'You must login!'
+            ], 401);
+
+            return;
+        }
+
+        $user = $this->userModel->findByUserId($userId);
+        if (!$user) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'User not found'
+            ], 404);
+
+            return;
+        }
+
+        // Never expose the password hash
+        if (isset($user['password'])) {
+            unset($user['password']);
+        }
+
+        $this->jsonResponse([
+            'success' => true,
+            'data' => [
+                'user' => $user
+            ]
+        ]);
+    }
+
 // list all user for admin
 public function users(){
     $userId = $this->getAuthenticatedUserId();
