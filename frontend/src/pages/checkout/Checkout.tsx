@@ -11,6 +11,10 @@ import {
   MapPin,
   User,
   ArrowLeft,
+  Users,
+  Building2,
+  Star,
+  Store,
 } from 'lucide-react';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
@@ -27,6 +31,7 @@ interface CheckoutForm {
   address: string;
   notes: string;
   paymentMethod: 'momo' | 'airtel' | 'cod' | 'card';
+  segment: 'retailer' | 'wholesaler' | 'distributor' | 'vip';
 }
 
 interface OrderConfirmation {
@@ -53,6 +58,7 @@ export default function Checkout() {
     address: '',
     notes: '',
     paymentMethod: 'momo',
+    segment: 'retailer',
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -74,179 +80,110 @@ export default function Checkout() {
     if (errorMsg) setErrorMsg(null);
   };
 
-  // const handleSubmitOrder = async (e: React.FormEvent) => {
-  //   e.preventDefault();
+  const handleSubmitOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  //   if (!form.fullName.trim() || !form.phone.trim() || !form.district.trim()) {
-  //     setErrorMsg('Please fill in your Full Name, Phone Number, and Delivery Address.');
-  //     return;
-  //   }
-
-  //   if (cartItems.length === 0) {
-  //     setErrorMsg('Your shopping basket is empty.');
-  //     return;
-  //   }
-
-  //   setSubmitting(true);
-
-  //   const randomRef = `KF-${Math.floor(10000 + Math.random() * 90000)}`;
-
-  //   const orderPayload = {
-  //     customer_name: form.fullName,
-  //     email: form.email,
-  //     phone: form.phone,
-  //     district: form.district,
-  //     address: form.address,
-  //     notes: form.notes,
-  //     payment_method: form.paymentMethod,
-  //     total_amount: cartTotal,
-  //     items: cartItems.map((item) => ({
-  //       product_id: item.product.id,
-  //       quantity: item.quantity,
-  //       price: item.product.price,
-  //     })),
-  //   };
-
-  //   try {
-  //     await apiPost('/api/orders', orderPayload);
-  //   } catch (err) {
-  //     console.debug('Order POST endpoint notification:', err);
-  //   }
-  //   // create customer
-  //   const customerPayload = {
-  //     name: form.fullName,
-  //     email: form.email,
-  //     phone: form.phone,
-  //   };
-  //   setTimeout(() => {
-  //     setOrderConfirmation({
-  //       orderRef: randomRef,
-  //       date: new Date().toLocaleDateString('en-US', {
-  //         year: 'numeric',
-  //         month: 'long',
-  //         day: 'numeric',
-  //         hour: '2-digit',
-  //         minute: '2-digit',
-  //       }),
-  //       form,
-  //       items: cartItems.map((item) => ({
-  //         name: item.product.name,
-  //         quantity: item.quantity,
-  //         price: Number(item.product.price) || 0,
-  //         unit: item.product.unit || 'kg',
-  //       })),
-  //       subtotal: cartSubtotal,
-  //       deliveryFee,
-  //       total: cartTotal,
-  //     });
-
-  //     clearCart();
-  //     setSubmitting(false);
-  //   }, 1200);
-  // };
-const handleSubmitOrder = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  if (!form.fullName.trim() || !form.phone.trim() || !form.district.trim()) {
-    setErrorMsg('Please fill in your Full Name, Phone Number, and Delivery Address.');
-    return;
-  }
-
-  if (cartItems.length === 0) {
-    setErrorMsg('Your shopping basket is empty.');
-    return;
-  }
-
-  setSubmitting(true);
-  setErrorMsg(null);
-
-  try {
-    // Step 1: Create Customer
-    const customerPayload = {
-      first_name: form.fullName.split(' ')[0] || '',
-      last_name: form.fullName.split(' ').slice(1).join(' ') || '',
-      phone: form.phone,
-      email: form.email || '',
-      address: `${form.address}, ${form.district}` || form.district,
-    };
-
-    const customerResponse = await apiPost<{ success?: boolean; message?: string; id?: number | string; data?: { id?: number | string } }>('/api/customers', customerPayload);
-    
-    if (!customerResponse.success) {
-      throw new Error(customerResponse.message || 'Failed to create customer');
+    if (!form.fullName.trim() || !form.phone.trim() || !form.district.trim()) {
+      setErrorMsg('Please fill in your Full Name, Phone Number, and Delivery Address.');
+      return;
     }
 
-    const customerId = customerResponse.data?.id || customerResponse.id;
-
-    // Step 2: Create Order
-    const orderPayload = {
-      user_id: 1, // You might want to get this from auth context
-      customer_id: customerId,
-      total: cartTotal,
-      status: 'pending',
-      order_source: 'ecommerce',
-    };
-
-    const orderResponse = await apiPost<{ success?: boolean; message?: string; id?: number | string; data?: { id?: number | string } }>('/api/orders', orderPayload);
-    
-    if (!orderResponse.success) {
-      throw new Error(orderResponse.message || 'Failed to create order');
+    if (cartItems.length === 0) {
+      setErrorMsg('Your shopping basket is empty.');
+      return;
     }
 
-    const orderId = orderResponse.data?.id || orderResponse.id;
+    setSubmitting(true);
+    setErrorMsg(null);
 
-    // Step 3: Create Order Items
-    const orderItemsPromises = cartItems.map(async (item) => {
-      const itemPayload = {
-        product_id: item.product.id,
-        quantity: item.quantity,
+    try {
+      // Step 1: Create Customer
+      const customerPayload = {
+        first_name: form.fullName.split(' ')[0] || '',
+        last_name: form.fullName.split(' ').slice(1).join(' ') || '',
+        phone: form.phone,
+        email: form.email || '',
+        address: `${form.address}, ${form.district}` || form.district,
+        segment: form.segment || 'retailer',
       };
 
-      const itemResponse = await apiPost<{ success?: boolean; message?: string; data?: unknown }>(`/api/orders/${orderId}/items`, itemPayload);
+      const customerResponse = await apiPost<{ success?: boolean; message?: string; id?: number | string; data?: { id?: number | string } }>('/api/customers', customerPayload);
       
-      if (!itemResponse.success) {
-        throw new Error(`Failed to add product ${item.product.name} to order`);
+      if (!customerResponse.success) {
+        throw new Error(customerResponse.message || 'Failed to create customer');
       }
 
-      return itemResponse.data;
-    });
+      const customerId = customerResponse.data?.id || customerResponse.id;
 
-    await Promise.all(orderItemsPromises);
+      // Step 2: Create Order
+      const orderPayload = {
+        user_id: 1,
+        customer_id: customerId,
+        total: cartTotal,
+        status: 'pending',
+        order_source: 'ecommerce',
+      };
 
-    // Step 4: Generate Order Reference
-    const randomRef = `KF-${String(orderId).padStart(5, '0')}`;
+      const orderResponse = await apiPost<{ success?: boolean; message?: string; id?: number | string; data?: { id?: number | string } }>('/api/orders', orderPayload);
+      
+      if (!orderResponse.success) {
+        throw new Error(orderResponse.message || 'Failed to create order');
+      }
 
-    // Step 5: Show Confirmation
-    setOrderConfirmation({
-      orderRef: randomRef,
-      date: new Date().toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      form,
-      items: cartItems.map((item) => ({
-        name: item.product.name,
-        quantity: item.quantity,
-        price: Number(item.product.price) || 0,
-        unit: item.product.unit || 'kg',
-      })),
-      subtotal: cartSubtotal,
-      deliveryFee,
-      total: cartTotal,
-    });
+      const orderId = orderResponse.data?.id || orderResponse.id;
 
-    clearCart();
+      // Step 3: Create Order Items
+      const orderItemsPromises = cartItems.map(async (item) => {
+        const itemPayload = {
+          product_id: item.product.id,
+          quantity: item.quantity,
+        };
 
-  } catch (error) {
-    console.error('Order creation failed:', error);
-    setErrorMsg(error instanceof Error ? error.message : 'Failed to create your order. Please try again.');
-  } finally {
-    setSubmitting(false);
-  }
-};
+        const itemResponse = await apiPost<{ success?: boolean; message?: string; data?: unknown }>(`/api/orders/${orderId}/items`, itemPayload);
+        
+        if (!itemResponse.success) {
+          throw new Error(`Failed to add product ${item.product.name} to order`);
+        }
+
+        return itemResponse.data;
+      });
+
+      await Promise.all(orderItemsPromises);
+
+      // Step 4: Generate Order Reference
+      const randomRef = `KF-${String(orderId).padStart(5, '0')}`;
+
+      // Step 5: Show Confirmation
+      setOrderConfirmation({
+        orderRef: randomRef,
+        date: new Date().toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        form,
+        items: cartItems.map((item) => ({
+          name: item.product.name,
+          quantity: item.quantity,
+          price: Number(item.product.price) || 0,
+          unit: item.product.unit || 'kg',
+        })),
+        subtotal: cartSubtotal,
+        deliveryFee,
+        total: cartTotal,
+      });
+
+      clearCart();
+
+    } catch (error) {
+      console.error('Order creation failed:', error);
+      setErrorMsg(error instanceof Error ? error.message : 'Failed to create your order. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -288,6 +225,10 @@ const handleSubmitOrder = async (e: React.FormEvent) => {
                   <p className="text-sm text-gray-600 mb-1">{orderConfirmation.form.district}</p>
                   <p className="text-sm text-gray-600 mb-1">Phone: {orderConfirmation.form.phone}</p>
                   {orderConfirmation.form.email && <p className="text-sm text-gray-600">Email: {orderConfirmation.form.email}</p>}
+                  <p className="text-sm text-gray-600 mt-2">
+                    <span className="font-semibold">Segment:</span>{' '}
+                    <span className="capitalize">{orderConfirmation.form.segment}</span>
+                  </p>
                 </div>
 
                 {/* Payment Info */}
@@ -341,10 +282,6 @@ const handleSubmitOrder = async (e: React.FormEvent) => {
                     <span>Subtotal</span>
                     <span>RWF {orderConfirmation.subtotal.toLocaleString()}</span>
                   </div>
-                  {/* <div className="flex justify-between">
-                    <span>Delivery Fee</span>
-                    <span>RWF {orderConfirmation.deliveryFee.toLocaleString()}</span>
-                  </div> */}
                   <div className="flex justify-between text-base font-bold text-gray-800 pt-2 border-t border-dashed border-gray-200">
                     <span>Total Amount</span>
                     <strong className="text-xl text-[#076935]" style={{ fontFamily: 'var(--font-heading)' }}>
@@ -491,8 +428,115 @@ const handleSubmitOrder = async (e: React.FormEvent) => {
                             onChange={handleChange}
                             placeholder="e.g. KG 123 St, House No. 4"
                             className="p-3.5 border border-gray-200 rounded-xl font-sans text-sm bg-white focus:outline-none focus:border-[#076935] focus:ring-2 focus:ring-[#076935]/10 transition-all"
-                            
                           />
+                        </div>
+                      </div>
+
+                      {/* Customer Segment Selection */}
+                      <div className="mb-4">
+                        <label className="text-xs font-semibold text-gray-800 mb-2 block" style={{ fontFamily: 'var(--font-heading)' }}>
+                          <Users size={14} className="inline mr-1 text-[#076935]" /> Customer Segment *
+                        </label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {/* Retailer */}
+                          <label
+                            className={`flex items-start gap-3 p-3 border-2 rounded-xl cursor-pointer transition-all ${
+                              form.segment === 'retailer'
+                                ? 'border-[#076935] bg-[#f4faf7]'
+                                : 'border-gray-200 bg-white hover:border-[#076935]'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="segment"
+                              value="retailer"
+                              checked={form.segment === 'retailer'}
+                              onChange={handleChange}
+                              className="mt-1 accent-[#076935]"
+                            />
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-0.5 text-sm font-bold text-gray-800" style={{ fontFamily: 'var(--font-heading)' }}>
+                                <Store size={16} className="text-emerald-500" />
+                                <strong>Retailer</strong>
+                              </div>
+                              <p className="text-xs text-gray-500 leading-snug">Individual purchases for personal use</p>
+                            </div>
+                          </label>
+
+                          {/* Wholesaler */}
+                          <label
+                            className={`flex items-start gap-3 p-3 border-2 rounded-xl cursor-pointer transition-all ${
+                              form.segment === 'wholesaler'
+                                ? 'border-[#076935] bg-[#f4faf7]'
+                                : 'border-gray-200 bg-white hover:border-[#076935]'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="segment"
+                              value="wholesaler"
+                              checked={form.segment === 'wholesaler'}
+                              onChange={handleChange}
+                              className="mt-1 accent-[#076935]"
+                            />
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-0.5 text-sm font-bold text-gray-800" style={{ fontFamily: 'var(--font-heading)' }}>
+                                <Building2 size={16} className="text-amber-500" />
+                                <strong>Wholesaler</strong>
+                              </div>
+                              <p className="text-xs text-gray-500 leading-snug">Bulk purchases for business resale</p>
+                            </div>
+                          </label>
+
+                          {/* Distributor */}
+                          <label
+                            className={`flex items-start gap-3 p-3 border-2 rounded-xl cursor-pointer transition-all ${
+                              form.segment === 'distributor'
+                                ? 'border-[#076935] bg-[#f4faf7]'
+                                : 'border-gray-200 bg-white hover:border-[#076935]'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="segment"
+                              value="distributor"
+                              checked={form.segment === 'distributor'}
+                              onChange={handleChange}
+                              className="mt-1 accent-[#076935]"
+                            />
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-0.5 text-sm font-bold text-gray-800" style={{ fontFamily: 'var(--font-heading)' }}>
+                                <Truck size={16} className="text-blue-500" />
+                                <strong>Distributor</strong>
+                              </div>
+                              <p className="text-xs text-gray-500 leading-snug">Supply chain and distribution partners</p>
+                            </div>
+                          </label>
+
+                          {/* VIP */}
+                          <label
+                            className={`flex items-start gap-3 p-3 border-2 rounded-xl cursor-pointer transition-all ${
+                              form.segment === 'vip'
+                                ? 'border-[#076935] bg-[#f4faf7]'
+                                : 'border-gray-200 bg-white hover:border-[#076935]'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="segment"
+                              value="vip"
+                              checked={form.segment === 'vip'}
+                              onChange={handleChange}
+                              className="mt-1 accent-[#076935]"
+                            />
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-0.5 text-sm font-bold text-gray-800" style={{ fontFamily: 'var(--font-heading)' }}>
+                                <Star size={16} className="text-purple-500" />
+                                <strong>VIP</strong>
+                              </div>
+                              <p className="text-xs text-gray-500 leading-snug">Premium access with exclusive benefits</p>
+                            </div>
+                          </label>
                         </div>
                       </div>
 
@@ -661,7 +705,7 @@ const handleSubmitOrder = async (e: React.FormEvent) => {
 
                             return (
                               <div key={product.id} className="flex items-center gap-3">
-                                <img src={itemImg} alt={product.name} className="w-12 h-12 rounded-xl object-cover bg-[#f4faf7] shrink-0" />
+                                {/* <img src={itemImg} alt={product.name} className="w-12 h-12 rounded-xl object-cover bg-[#f4faf7] shrink-0" /> */}
                                 <div className="flex-1 min-w-0">
                                   <span className="font-semibold text-sm text-gray-800 truncate block" style={{ fontFamily: 'var(--font-heading)' }}>
                                     {product.name}
@@ -683,10 +727,6 @@ const handleSubmitOrder = async (e: React.FormEvent) => {
                             <span>Subtotal</span>
                             <span>RWF {cartSubtotal.toLocaleString()}</span>
                           </div>
-                          {/* <div className="flex justify-between">
-                            <span>Delivery Fee</span>
-                            <span>RWF {deliveryFee.toLocaleString()}</span>
-                          </div> */}
                           <div className="flex justify-between text-base font-bold text-gray-800 pt-3 border-t border-dashed border-gray-200">
                             <span>Total</span>
                             <strong className="text-xl text-[#076935]" style={{ fontFamily: 'var(--font-heading)' }}>
@@ -704,7 +744,7 @@ const handleSubmitOrder = async (e: React.FormEvent) => {
                       </div>
                       <div className="flex items-center gap-2 text-xs text-gray-700">
                         <Truck size={16} className="text-[#076935]" />
-                        <span>24-Hour Cold Chain Fresh Delivery</span>
+                        <span>24-Hour  Fresh Delivery</span>
                       </div>
                     </div>
                   </div>
