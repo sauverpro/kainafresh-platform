@@ -80,8 +80,8 @@ export default function Checkout() {
     if (errorMsg) setErrorMsg(null);
   };
 
-  const handleSubmitOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // const handleSubmitOrder = async (e: React.FormEvent) => {
+  //   e.preventDefault();
 
   //   if (!form.fullName.trim() || !form.phone.trim() || !form.district.trim()) {
   //     setErrorMsg('Please fill in your Full Name, Phone Number, and Delivery Address.');
@@ -433,6 +433,10 @@ export default function Checkout() {
                       RWF {orderConfirmation.subtotal.toLocaleString()}
                     </span>
                   </div>
+                  {/* <div className="flex justify-between">
+                    <span>Delivery Fee</span>
+                    <span>RWF {orderConfirmation.deliveryFee.toLocaleString()}</span>
+                  </div> */}
                   <div className="flex justify-between text-base font-bold text-gray-800 pt-2 border-t border-dashed border-gray-200">
                     <span>Total Amount</span>
                     <strong
@@ -624,114 +628,6 @@ export default function Checkout() {
                             placeholder="e.g. KG 123 St, House No. 4"
                             className="p-3.5 border border-gray-200 rounded-xl font-sans text-sm bg-white focus:outline-none focus:border-[#076935] focus:ring-2 focus:ring-[#076935]/10 transition-all"
                           />
-                        </div>
-                      </div>
-
-                      {/* Customer Segment Selection */}
-                      <div className="mb-4">
-                        <label className="text-xs font-semibold text-gray-800 mb-2 block" style={{ fontFamily: 'var(--font-heading)' }}>
-                          <Users size={14} className="inline mr-1 text-[#076935]" /> Customer Segment *
-                        </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {/* Retailer */}
-                          <label
-                            className={`flex items-start gap-3 p-3 border-2 rounded-xl cursor-pointer transition-all ${
-                              form.segment === 'retailer'
-                                ? 'border-[#076935] bg-[#f4faf7]'
-                                : 'border-gray-200 bg-white hover:border-[#076935]'
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name="segment"
-                              value="retailer"
-                              checked={form.segment === 'retailer'}
-                              onChange={handleChange}
-                              className="mt-1 accent-[#076935]"
-                            />
-                            <div>
-                              <div className="flex items-center gap-1.5 mb-0.5 text-sm font-bold text-gray-800" style={{ fontFamily: 'var(--font-heading)' }}>
-                                <Store size={16} className="text-emerald-500" />
-                                <strong>Retailer</strong>
-                              </div>
-                              <p className="text-xs text-gray-500 leading-snug">Individual purchases for personal use</p>
-                            </div>
-                          </label>
-
-                          {/* Wholesaler */}
-                          <label
-                            className={`flex items-start gap-3 p-3 border-2 rounded-xl cursor-pointer transition-all ${
-                              form.segment === 'wholesaler'
-                                ? 'border-[#076935] bg-[#f4faf7]'
-                                : 'border-gray-200 bg-white hover:border-[#076935]'
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name="segment"
-                              value="wholesaler"
-                              checked={form.segment === 'wholesaler'}
-                              onChange={handleChange}
-                              className="mt-1 accent-[#076935]"
-                            />
-                            <div>
-                              <div className="flex items-center gap-1.5 mb-0.5 text-sm font-bold text-gray-800" style={{ fontFamily: 'var(--font-heading)' }}>
-                                <Building2 size={16} className="text-amber-500" />
-                                <strong>Wholesaler</strong>
-                              </div>
-                              <p className="text-xs text-gray-500 leading-snug">Bulk purchases for business resale</p>
-                            </div>
-                          </label>
-
-                          {/* Distributor */}
-                          <label
-                            className={`flex items-start gap-3 p-3 border-2 rounded-xl cursor-pointer transition-all ${
-                              form.segment === 'distributor'
-                                ? 'border-[#076935] bg-[#f4faf7]'
-                                : 'border-gray-200 bg-white hover:border-[#076935]'
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name="segment"
-                              value="distributor"
-                              checked={form.segment === 'distributor'}
-                              onChange={handleChange}
-                              className="mt-1 accent-[#076935]"
-                            />
-                            <div>
-                              <div className="flex items-center gap-1.5 mb-0.5 text-sm font-bold text-gray-800" style={{ fontFamily: 'var(--font-heading)' }}>
-                                <Truck size={16} className="text-blue-500" />
-                                <strong>Distributor</strong>
-                              </div>
-                              <p className="text-xs text-gray-500 leading-snug">Supply chain and distribution partners</p>
-                            </div>
-                          </label>
-
-                          {/* VIP */}
-                          <label
-                            className={`flex items-start gap-3 p-3 border-2 rounded-xl cursor-pointer transition-all ${
-                              form.segment === 'vip'
-                                ? 'border-[#076935] bg-[#f4faf7]'
-                                : 'border-gray-200 bg-white hover:border-[#076935]'
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name="segment"
-                              value="vip"
-                              checked={form.segment === 'vip'}
-                              onChange={handleChange}
-                              className="mt-1 accent-[#076935]"
-                            />
-                            <div>
-                              <div className="flex items-center gap-1.5 mb-0.5 text-sm font-bold text-gray-800" style={{ fontFamily: 'var(--font-heading)' }}>
-                                <Star size={16} className="text-purple-500" />
-                                <strong>VIP</strong>
-                              </div>
-                              <p className="text-xs text-gray-500 leading-snug">Premium access with exclusive benefits</p>
-                            </div>
-                          </label>
                         </div>
                       </div>
 
@@ -979,6 +875,10 @@ export default function Checkout() {
                             <span>Subtotal</span>
                             <span>RWF {cartSubtotal.toLocaleString()}</span>
                           </div>
+                          {/* <div className="flex justify-between">
+                            <span>Delivery Fee</span>
+                            <span>RWF {deliveryFee.toLocaleString()}</span>
+                          </div> */}
                           <div className="flex justify-between text-base font-bold text-gray-800 pt-3 border-t border-dashed border-gray-200">
                             <span>Total</span>
                             <strong
@@ -999,7 +899,7 @@ export default function Checkout() {
                       </div>
                       <div className="flex items-center gap-2 text-xs text-gray-700">
                         <Truck size={16} className="text-[#076935]" />
-                        <span>24-Hour  Fresh Delivery</span>
+                        <span>24-Hour Cold Chain Fresh Delivery</span>
                       </div>
                     </div>
                   </div>
