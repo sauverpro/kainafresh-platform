@@ -108,6 +108,7 @@ CREATE TABLE `customers` (
   `phone` varchar(30) NOT NULL,
   `email` varchar(255) DEFAULT NULL,
   `address` text DEFAULT NULL,
+  `segment` varchar(50) NOT NULL DEFAULT 'individual',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -116,8 +117,8 @@ CREATE TABLE `customers` (
 -- Dumping data for table `customers`
 --
 
-INSERT INTO `customers` (`id`, `first_name`, `last_name`, `phone`, `email`, `address`, `created_at`, `updated_at`) VALUES
-(1, 'Jeanluc', 'Mugisha', '+250788123456', 'jean@example.com', 'Kigali, Rwanda', '2026-08-26 10:50:12', '2026-08-26 10:50:39');
+INSERT INTO `customers` (`id`, `first_name`, `last_name`, `phone`, `email`, `address`, `segment`, `created_at`, `updated_at`) VALUES
+(1, 'Jeanluc', 'Mugisha', '+250788123456', 'jean@example.com', 'Kigali, Rwanda', 'individual', '2026-08-26 10:50:12', '2026-08-26 10:50:39');
 
 -- --------------------------------------------------------
 
