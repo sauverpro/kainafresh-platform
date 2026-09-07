@@ -452,12 +452,8 @@ function Home() {
             </Link>
           </div>
 
-          {/* ── UPDATED: Now using API products with 4 per row ── */}
-          <div className="fp-grid" style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(4, 1fr)', 
-            gap: '1.5rem' 
-          }}>
+         
+          <div className="fp-grid" >
             {featuredProducts.length > 0 ? (
               featuredProducts.map((product) => (
                 <div key={product.id} className="product-card card">
