@@ -14,6 +14,7 @@ export interface CartProduct {
   shelf_life?: number;
   description?: string;
   badge?: string;
+  purchaseType?: 'retail' | 'wholesale';
 }
 
 export interface CartItem {

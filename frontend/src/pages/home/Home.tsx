@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Leaf,
-  ShoppingCart,
   Truck,
   ShieldCheck,
   ChevronDown,
@@ -18,7 +17,7 @@ import Footer from "../../components/footer/Footer";
 import PartnersSection from "../../components/partners/PartnersSection";
 import { apiGet } from "../../api/client";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { useCart, type CartProduct } from '../../context/CartContext';
+import type { CartProduct } from '../../context/CartContext';
 
 /**
  * Home Page
@@ -125,7 +124,7 @@ import Loader from "../../components/Loader/Loader";
 function Home() {
   // Update document HTML title tag for SEO optimization
   usePageTitle("home", "Home");
-  const { addToCart } = useCart();
+  const navigate = useNavigate();
   // Dynamic CMS state definitions
   const [cmsHero, setCmsHero] = useState<HeroContent | null>(null);
   const [cmsValueProps, setCmsValueProps] = useState<ValuePropsContent | null>(null);
@@ -456,7 +455,12 @@ function Home() {
           <div className="fp-grid" >
             {featuredProducts.length > 0 ? (
               featuredProducts.map((product) => (
-                <div key={product.id} className="product-card card">
+                <div
+                  key={product.id}
+                  className="product-card card"
+                  onClick={() => navigate(`/product/${product.id}`)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="product-img-wrap">
                     <img
                       src={product.image}
@@ -480,19 +484,6 @@ function Home() {
                         </strong>
                         <span>{product.unit}</span>
                       </div>
-                      <button
-                        className="btn btn-primary product-order-btn"
-                        disabled={!product.inStock}
-                        onClick={() => addToCart(product)}
-                      >
-                        <ShoppingCart size={14} />
-                        Order
-                      </button>
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-gray-100 text-right">
-                      <Link to={`/products`} className="text-xs font-semibold text-[#076935] hover:text-[#F39927] inline-flex items-center gap-1">
-                        View Product Details <ArrowRight size={12} />
-                      </Link>
                     </div>
                   </div>
                 </div>

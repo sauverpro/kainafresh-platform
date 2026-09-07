@@ -16,6 +16,9 @@ import type { NavItem } from "./assets/data/sideNavData.types";
 // centered loader shown while each chunk loads during navigation.
 const Home = lazy(() => import("./pages/home/Home"));
 const OurProducts = lazy(() => import("./pages/products/OurProducts"));
+const ProductDetailPage = lazy(
+  () => import("./pages/products/ProductDetailPage"),
+);
 const Checkout = lazy(() => import("./pages/checkout/Checkout"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const Signup = lazy(() => import("./pages/auth/Signup"));
@@ -120,6 +123,7 @@ function App() {
               {/* Public E-Commerce & Info Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/products" element={<OurProducts />} />
+              <Route path="/product/:id" element={<ProductDetailPage />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
