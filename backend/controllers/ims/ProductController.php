@@ -85,6 +85,12 @@ class ProductController extends BaseController
                 return;
             }
         }
+        error_log('Product store data: ' . print_r($data, true));
+
+    // Check if wholesale_price exists
+    if (!isset($data['wholesale_price'])) {
+        error_log('wholesale_price is missing from request data');
+    }
 
         /*
          * Validate required fields
@@ -95,7 +101,10 @@ class ProductController extends BaseController
                 'name',
                 'unit_id',
                 'shelf_life',
-                'price'
+                'price',
+                'wholesale_price',
+                'wholesale_min_qty',
+                'retail_min_qty'
             ]
         );
 

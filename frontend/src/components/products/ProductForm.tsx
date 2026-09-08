@@ -14,9 +14,12 @@ const emptyForm = {
   name: "",
   description: "",
   unit_id: 0,
-  shelf_life: 0,
-  price: 0,
+  shelf_life: "0",
+  price: "0",
   status: "active" as "active" | "inactive",
+  wholesale_price: "0",
+  wholesale_min_qty: "1",
+  retail_min_qty: "1"
 };
 
 export default function ProductForm({
@@ -31,12 +34,15 @@ export default function ProductForm({
   const [form, setForm] = useState(() =>
     initial
       ? {
-          name: initial.name,
+          name: initial.name || "",
           description: initial.description ?? "",
-          unit_id: initial.unit_id,
-          shelf_life: initial.shelf_life ?? 0,
-          price: Number(initial.price) ?? 0,
-          status: initial.status,
+          unit_id: initial.unit_id || 0,
+          shelf_life: initial.shelf_life?.toString() ?? "0",
+          price: initial.price?.toString() ?? "0",
+          status: initial.status || "active",
+          wholesale_price: initial.wholesale_price?.toString() ?? "0",
+          wholesale_min_qty: initial.wholesale_min_qty?.toString() ?? "1",
+          retail_min_qty: initial.retail_min_qty?.toString() ?? "1"
         }
       : emptyForm,
   );
@@ -81,7 +87,10 @@ export default function ProductForm({
   const handleAddUnit = async () => {
     const name = newUnit.name.trim();
     const symbol = newUnit.symbol.trim();
-    if (!name || !symbol) return;
+    if (!name || !symbol) {
+      toast.error("Please enter both unit name and symbol");
+      return;
+    }
     const created = await createUnit({ code: unitCode, name, symbol });
     if (created) {
       toast.success(`Unit "${created.name}" added successfully`);
@@ -97,14 +106,53 @@ export default function ProductForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim()) return;
+    
+    // Validate required fields
+    if (!form.name.trim()) {
+      toast.error("Product name is required");
+      return;
+    }
+
+    if (!form.unit_id || form.unit_id === 0) {
+      toast.error("Please select a unit");
+      return;
+    }
+
+    // Parse numeric values with proper fallbacks
+    const price = parseFloat(form.price) || 0;
+    const wholesalePrice = parseFloat(form.wholesale_price) || 0;
+    const wholesaleMinQty = parseInt(form.wholesale_min_qty) || 1;
+    const retailMinQty = parseInt(form.retail_min_qty) || 1;
+    const shelfLife = parseInt(form.shelf_life) || 0;
+
+    // Validate that wholesale price is not negative
+    if (wholesalePrice < 0) {
+      toast.error("Wholesale price cannot be negative");
+      return;
+    }
+
+    // Validate that wholesale min qty is not less than 1
+    if (wholesaleMinQty < 1) {
+      toast.error("Wholesale minimum quantity must be at least 1");
+      return;
+    }
+
+    // Validate that retail min qty is not less than 1
+    if (retailMinQty < 1) {
+      toast.error("Retail minimum quantity must be at least 1");
+      return;
+    }
+
     const input = {
       name: form.name.trim(),
       description: form.description.trim() || undefined,
       unit_id: form.unit_id,
-      shelf_life: Number(form.shelf_life),
-      price: Number(form.price),
+      shelf_life: shelfLife,
+      price: price,
       status: form.status,
+      wholesale_price: wholesalePrice,
+      wholesale_min_qty: wholesaleMinQty,
+      retail_min_qty: retailMinQty,
     };
     let ok = false;
     if (initial) {
@@ -114,6 +162,7 @@ export default function ProductForm({
     } else {
       ok = await createProduct(input, image ?? null);
     }
+    
     if (ok) {
       toast.success(
         initial ? "Product updated successfully" : "Product created successfully",
@@ -198,160 +247,209 @@ export default function ProductForm({
         </div>
       </div>
 
-          <div className="form-group">
-            <label>Product Name</label>
-            <input
-              type="text"
-              className="panel-input"
-              value={form.name}
-              onChange={(e) => set("name", e.target.value)}
-              placeholder="e.g. Organic Hass Avocados"
-              required
-            />
-          </div>
+      <div className="form-group">
+        <label>Product Name</label>
+        <input
+          type="text"
+          className="panel-input"
+          value={form.name}
+          onChange={(e) => set("name", e.target.value)}
+          placeholder="e.g. Organic Hass Avocados"
+          required
+        />
+      </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label>Unit</label>
-              <select
-                className="panel-input"
-                value={form.unit_id}
-                onChange={(e) => set("unit_id", Number(e.target.value))}
-              >
-                <option value={0}>Select unit...</option>
-                {units.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name} ({u.symbol})
-                  </option>
-                ))}
-              </select>
+      <div className="form-row">
+        <div className="form-group">
+          <label>Unit</label>
+          <select
+            className="panel-input"
+            value={form.unit_id}
+            onChange={(e) => set("unit_id", Number(e.target.value))}
+          >
+            <option value={0}>Select unit...</option>
+            {units.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name} ({u.symbol})
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="unit-add-toggle"
+            onClick={() => {
+              resetError();
+              setShowAddUnit((v) => !v);
+            }}
+          >
+            <Plus size={14} /> {showAddUnit ? "Cancel" : "Add new unit"}
+          </button>
+
+          {showAddUnit && (
+            <div className="unit-add-box">
+              <div className="form-row">
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <input
+                    type="text"
+                    className="panel-input"
+                    placeholder="Symbol, e.g. kg"
+                    value={newUnit.symbol}
+                    onChange={(e) =>
+                      setNewUnit((v) => ({ ...v, symbol: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="unit-add-codelabel">
+                    Code <em>(auto)</em>
+                  </label>
+                  <input
+                    type="text"
+                    className="panel-input unit-add-code"
+                    value={unitCode}
+                    readOnly
+                  />
+                </div>
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <input
+                  type="text"
+                  className="panel-input"
+                  placeholder="Unit name, e.g. Kilogram"
+                  value={newUnit.name}
+                  onChange={(e) =>
+                    setNewUnit((v) => ({ ...v, name: e.target.value }))
+                  }
+                />
+              </div>
+              {error && (
+                <div className="unit-add-error">{error}</div>
+              )}
               <button
                 type="button"
-                className="unit-add-toggle"
-                onClick={() => {
-                  resetError();
-                  setShowAddUnit((v) => !v);
-                }}
+                className="btn-primary-dark unit-add-save"
+                onClick={handleAddUnit}
+                disabled={creating}
               >
-                <Plus size={14} /> {showAddUnit ? "Cancel" : "Add new unit"}
+                {creating && <span className="spinner" style={{ marginRight: 8 }} />}
+                Save unit
               </button>
-
-                  {showAddUnit && (
-                    <div className="unit-add-box">
-                      <div className="form-row">
-                        <div className="form-group" style={{ marginBottom: 0 }}>
-                          <input
-                            type="text"
-                            className="panel-input"
-                            placeholder="Symbol, e.g. kg"
-                            value={newUnit.symbol}
-                            onChange={(e) =>
-                              setNewUnit((v) => ({ ...v, symbol: e.target.value }))
-                            }
-                          />
-                        </div>
-                        <div className="form-group" style={{ marginBottom: 0 }}>
-                          <label className="unit-add-codelabel">
-                            Code <em>(auto)</em>
-                          </label>
-                          <input
-                            type="text"
-                            className="panel-input unit-add-code"
-                            value={unitCode}
-                            readOnly
-                          />
-                        </div>
-                      </div>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <input
-                      type="text"
-                      className="panel-input"
-                      placeholder="Unit name, e.g. Kilogram"
-                      value={newUnit.name}
-                      onChange={(e) =>
-                        setNewUnit((v) => ({ ...v, name: e.target.value }))
-                      }
-                    />
-                  </div>
-                  {error && (
-                    <div className="unit-add-error">{error}</div>
-                  )}
-                  <button
-                    type="button"
-                    className="btn-primary-dark unit-add-save"
-                    onClick={handleAddUnit}
-                    disabled={creating}
-                  >
-                    {creating && <span className="spinner" style={{ marginRight: 8 }} />}
-                    Save unit
-                  </button>
-                </div>
-              )}
             </div>
-            <div className="form-group">
-              <label>Status</label>
-              <select
-                className="panel-input"
-                value={form.status}
-                onChange={(e) => set("status", e.target.value as "active" | "inactive")}
-              >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
-          </div>
+          )}
+        </div>
+        <div className="form-group">
+          <label>Status</label>
+          <select
+            className="panel-input"
+            value={form.status}
+            onChange={(e) => set("status", e.target.value as "active" | "inactive")}
+          >
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label>Price ($)</label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                className="panel-input"
-                value={form.price}
-                onChange={(e) => set("price", Number(e.target.value))}
-                placeholder="0.00"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Shelf Life (days)</label>
-              <input
-                type="number"
-                min="0"
-                className="panel-input"
-                value={form.shelf_life}
-                onChange={(e) => set("shelf_life", Number(e.target.value))}
-                placeholder="0"
-                required
-              />
-            </div>
-          </div>
+      <div className="form-row">
+        <div className="form-group">
+          <label>Retail Price (Frw) *</label>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            className="panel-input"
+            value={form.price}
+            onChange={(e) => set("price", e.target.value)}
+            placeholder="0.00"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Wholesale Price (Frw) *</label>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            className="panel-input"
+            value={form.wholesale_price}
+            onChange={(e) => set("wholesale_price", e.target.value)}
+            placeholder="0.00"
+            required
+          />
+          <span className="text-xs text-gray-500">Set to 0 if not applicable</span>
+        </div>
+      </div>
 
-          <div className="form-group">
-            <label>Description</label>
-            <textarea
-              className="panel-input panel-textarea"
-              value={form.description}
-              onChange={(e) => set("description", e.target.value)}
-              placeholder="Short product description..."
-            />
-          </div>
+      <div className="form-row">
+        <div className="form-group">
+          <label>Wholesale Minimum Qty (MOQ) *</label>
+          <input
+            type="number"
+            step="1"
+            min="1"
+            className="panel-input"
+            value={form.wholesale_min_qty}
+            onChange={(e) => set("wholesale_min_qty", e.target.value)}
+            placeholder="1"
+            required
+          />
+          <span className="text-xs text-gray-500">Minimum quantity for wholesale orders</span>
+        </div>
+        <div className="form-group">
+          <label>Retail Minimum Qty (MOQ) *</label>
+          <input
+            type="number"
+            step="1"
+            min="1"
+            className="panel-input"
+            value={form.retail_min_qty}
+            onChange={(e) => set("retail_min_qty", e.target.value)}
+            placeholder="1"
+            required
+          />
+          <span className="text-xs text-gray-500">Minimum quantity for retail orders</span>
+        </div>
+      </div>
 
-          <div className="panel-footer" style={{ padding: "1rem 0 0" }}>
-            <button type="button" className="btn-outline-dark" onClick={onCancel}>
-              Cancel
-            </button>
-            <button type="submit" className="btn-primary-dark" disabled={saving}>
-              {saving ? (
-                <span className="spinner" style={{ marginRight: 8 }} />
-              ) : (
-                <Save size={16} style={{ marginRight: 8 }} />
-              )}
-              {initial ? "Save Changes" : "Save Product"}
-            </button>
-          </div>
-        </form>
+      <div className="form-row">
+        <div className="form-group">
+          <label>Shelf Life (days)</label>
+          <input
+            type="number"
+            min="0"
+            className="panel-input"
+            value={form.shelf_life}
+            onChange={(e) => set("shelf_life", e.target.value)}
+            placeholder="0"
+          />
+          <span className="text-xs text-gray-500">Number of days product stays fresh</span>
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label>Description</label>
+        <textarea
+          className="panel-input panel-textarea"
+          value={form.description}
+          onChange={(e) => set("description", e.target.value)}
+          placeholder="Short product description..."
+          rows={4}
+        />
+      </div>
+
+      <div className="panel-footer" style={{ padding: "1rem 0 0" }}>
+        <button type="button" className="btn-outline-dark" onClick={onCancel}>
+          Cancel
+        </button>
+        <button type="submit" className="btn-primary-dark" disabled={saving}>
+          {saving ? (
+            <span className="spinner" style={{ marginRight: 8 }} />
+          ) : (
+            <Save size={16} style={{ marginRight: 8 }} />
+          )}
+          {initial ? "Save Changes" : "Save Product"}
+        </button>
+      </div>
+    </form>
   );
 }

@@ -64,7 +64,7 @@ function ProductPanel({ isOpen, onClose }: ProductPanelProps) {
             {/* Pricing & Stock */}
             <div className="form-row">
               <div className="form-group">
-                <label>Price ($)</label>
+                <label>Price (Frw)</label>
                 <input type="number" step="0.01" className="panel-input" placeholder="0.00" />
               </div>
               <div className="form-group">
@@ -72,6 +72,7 @@ function ProductPanel({ isOpen, onClose }: ProductPanelProps) {
                 <input type="number" className="panel-input" placeholder="0" />
               </div>
             </div>
+            
 
             {/* Description */}
             <div className="form-group">

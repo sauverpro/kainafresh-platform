@@ -156,7 +156,7 @@ export default function ProductTable({
         </div>
 
         {/* Card 3: Avg Unit Price */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
+        {/* <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400">
             <Tag className="h-5.5 w-5.5" />
           </div>
@@ -171,7 +171,7 @@ export default function ProductTable({
               Catalog Avg
             </span>
           </div>
-        </div>
+        </div> */}
 
         {/* Card 4: Unit Types */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
