@@ -118,6 +118,25 @@ export const getCurrentUser = (): UserProfile | null => {
  */
 export const removeCurrentUser = (): void => localStorage.removeItem(USER_KEY);
 
+/**
+ * Custom window event fired whenever the stored session is found to be
+ * expired/invalid (HTTP 401 with a token present). AuthProvider listens
+ * for it to clear auth state and redirect to /login.
+ */
+export const SESSION_EXPIRED_EVENT = 'kainafresh:session-expired';
+
+/**
+ * Clears stored auth data and notifies the app that the session has expired.
+ * Called automatically when the backend rejects an authenticated request with 401.
+ */
+export const clearExpiredSession = (): void => {
+  removeToken();
+  removeCurrentUser();
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
+  }
+};
+
 // ---------------------------------------------------------------------------
 // Core Internal HTTP Fetch Engine Wrapper
 // ---------------------------------------------------------------------------
@@ -146,12 +165,22 @@ async function request<T = unknown>(endpoint: string, options: RequestInit = {})
     headers,
   });
 
-  // Decode JSON response payload returned by PHP backend
-  const data = await response.json();
+  // Decode JSON response payload returned by PHP backend (may be empty on errors)
+  let data: unknown = null;
+  try {
+    data = await response.json();
+  } catch {
+    data = {};
+  }
 
   // If HTTP status code is outside the success 2xx range, throw ApiError exception
   if (!response.ok) {
-    throw new ApiError(data.message || 'Something went wrong', response.status, data);
+    // Auto-logout when the session token has expired/been revoked.
+    if (response.status === 401 && token) {
+      clearExpiredSession();
+    }
+
+    throw new ApiError((data as { message?: string })?.message || 'Something went wrong', response.status, data);
   }
 
   // Return parsed typed data object
@@ -212,12 +241,22 @@ export const apiPostFormData = async <T = unknown>(endpoint: string, formData: F
     body: formData,
   });
 
-  // Parse JSON response payload
-  const data = await response.json();
+  // Parse JSON response payload (may be empty on errors)
+  let data: unknown = null;
+  try {
+    data = await response.json();
+  } catch {
+    data = {};
+  }
 
   // Check for HTTP errors
   if (!response.ok) {
-    throw new ApiError(data.message || 'Upload failed', response.status, data);
+    // Auto-logout when the session token has expired/been revoked.
+    if (response.status === 401 && token) {
+      clearExpiredSession();
+    }
+
+    throw new ApiError((data as { message?: string })?.message || 'Upload failed', response.status, data);
   }
 
   // Return parsed response

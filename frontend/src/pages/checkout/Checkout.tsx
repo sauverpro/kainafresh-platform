@@ -48,6 +48,15 @@ export default function Checkout() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // Any line whose quantity is below the purchase-type minimum blocks checkout.
+  const belowMinItems = cartItems.filter((item) => {
+    const minQty =
+      item.product.purchaseType === "wholesale"
+        ? item.product.wholesale_min_qty ?? 1
+        : item.product.retail_min_qty ?? 1;
+    return item.quantity < minQty;
+  });
+
   const [form, setForm] = useState<CheckoutForm>({
     fullName: "",
     email: "",
@@ -162,6 +171,13 @@ export default function Checkout() {
 
     if (cartItems.length === 0) {
       setErrorMsg("Your shopping basket is empty.");
+      return;
+    }
+
+    if (belowMinItems.length > 0) {
+      setErrorMsg(
+        "One or more items are below their minimum quantity. Adjust the quantity before placing the order.",
+      );
       return;
     }
 
@@ -789,7 +805,7 @@ export default function Checkout() {
                     <button
                       type="submit"
                       className="w-full inline-flex items-center justify-center gap-2 bg-[#076935] hover:bg-[#055028] text-white font-bold text-lg py-4 px-6 rounded-full shadow-lg hover:shadow-xl transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed mt-2"
-                      disabled={submitting || cartItems.length === 0}
+                      disabled={submitting || cartItems.length === 0 || belowMinItems.length > 0}
                       style={{ fontFamily: "var(--font-heading)" }}
                     >
                       {submitting ? (
@@ -835,10 +851,19 @@ export default function Checkout() {
                               product.image || product.product_image,
                             );
                             const price = Number(product.price) || 0;
+                            const purchaseLabel =
+                              product.purchaseType === "wholesale"
+                                ? "Wholesale"
+                                : "Retail";
+                            const minQty =
+                              product.purchaseType === "wholesale"
+                                ? product.wholesale_min_qty ?? 1
+                                : product.retail_min_qty ?? 1;
+                            const belowMin = quantity < minQty;
 
                             return (
                               <div
-                                key={product.id}
+                                key={`${product.id}|${product.purchaseType ?? "retail"}`}
                                 className="flex items-center gap-3"
                               >
                                 <img
@@ -856,8 +881,14 @@ export default function Checkout() {
                                     {product.name}
                                   </span>
                                   <span className="text-xs text-gray-500">
-                                    Qty: {quantity} {product.unit || "kg"}
+                                    Qty: {quantity} {product.unit || "kg"} ·{" "}
+                                    {purchaseLabel} · Min {minQty}
                                   </span>
+                                  {belowMin && (
+                                    <span className="block text-[11px] font-semibold text-amber-600">
+                                      Below minimum quantity ({minQty})
+                                    </span>
+                                  )}
                                 </div>
                                 <strong
                                   className="font-bold text-sm text-[#076935]"

@@ -364,6 +364,9 @@ CREATE TABLE `products` (
   `unit_id` int(11) NOT NULL,
   `shelf_life` int(11) NOT NULL,
   `price` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `wholesale_price` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `wholesale_min_qty` int(11) NOT NULL DEFAULT 1,
+  `retail_min_qty` int(11) NOT NULL DEFAULT 1,
   `status` enum('active','inactive') DEFAULT 'active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -373,9 +376,9 @@ CREATE TABLE `products` (
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `name`, `description`, `product_image`, `unit_id`, `shelf_life`, `price`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Fresh Potatoes ', 'Farm fresh Potatoes', NULL, 1, 14, 2500.00, 'active', '2026-08-24 11:22:00', '2026-08-24 11:37:53'),
-(2, 'Avocado products', 'best avocado -african', '/uploads/products/6a8c2ae47bbfe.jpg', 1, 10, 30000.00, 'active', '2026-08-24 11:28:36', '2026-09-03 08:21:46');
+INSERT INTO `products` (`id`, `name`, `description`, `product_image`, `unit_id`, `shelf_life`, `price`, `wholesale_price`, `wholesale_min_qty`, `retail_min_qty`, `status`, `created_at`, `updated_at`) VALUES
+(1, 'Fresh Potatoes ', 'Farm fresh Potatoes', NULL, 1, 14, 2500.00, 2250.00, 50, 1, 'active', '2026-08-24 11:22:00', '2026-08-24 11:37:53'),
+(2, 'Avocado products', 'best avocado -african', '/uploads/products/6a8c2ae47bbfe.jpg', 1, 10, 30000.00, 27000.00, 20, 1, 'active', '2026-08-24 11:28:36', '2026-09-03 08:21:46');
 
 -- --------------------------------------------------------
 

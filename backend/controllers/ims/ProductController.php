@@ -87,11 +87,6 @@ class ProductController extends BaseController
         }
         error_log('Product store data: ' . print_r($data, true));
 
-    // Check if wholesale_price exists
-    if (!isset($data['wholesale_price'])) {
-        error_log('wholesale_price is missing from request data');
-    }
-
         /*
          * Validate required fields
          */
@@ -101,10 +96,7 @@ class ProductController extends BaseController
                 'name',
                 'unit_id',
                 'shelf_life',
-                'price',
-                'wholesale_price',
-                'wholesale_min_qty',
-                'retail_min_qty'
+                'price'
             ]
         );
 
@@ -219,6 +211,15 @@ class ProductController extends BaseController
         $data['unit_id'] = $unitId;
         $data['shelf_life'] = (int) $data['shelf_life'];
         $data['price'] = (float) $data['price'];
+        $data['wholesale_price'] = isset($data['wholesale_price']) && $data['wholesale_price'] !== ''
+            ? (float) $data['wholesale_price']
+            : 0.00;
+        $data['wholesale_min_qty'] = isset($data['wholesale_min_qty']) && $data['wholesale_min_qty'] !== ''
+            ? max(1, (int) $data['wholesale_min_qty'])
+            : 1;
+        $data['retail_min_qty'] = isset($data['retail_min_qty']) && $data['retail_min_qty'] !== ''
+            ? max(1, (int) $data['retail_min_qty'])
+            : 1;
 
         /*
          * Create product
@@ -407,6 +408,27 @@ class ProductController extends BaseController
             ], 422);
 
             return;
+        }
+
+        /*
+         * Normalize min/wholesale quantities if provided.
+         */
+        if (isset($data['wholesale_price'])) {
+            $data['wholesale_price'] = $data['wholesale_price'] !== ''
+                ? (float) $data['wholesale_price']
+                : 0.00;
+        }
+
+        if (isset($data['wholesale_min_qty'])) {
+            $data['wholesale_min_qty'] = $data['wholesale_min_qty'] !== ''
+                ? max(1, (int) $data['wholesale_min_qty'])
+                : 1;
+        }
+
+        if (isset($data['retail_min_qty'])) {
+            $data['retail_min_qty'] = $data['retail_min_qty'] !== ''
+                ? max(1, (int) $data['retail_min_qty'])
+                : 1;
         }
 
         /*
