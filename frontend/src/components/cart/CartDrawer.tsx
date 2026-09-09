@@ -1,110 +1,16 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { X, ShoppingBag, Plus, Minus, Trash2, ArrowRight, AlertCircle } from 'lucide-react';
-import { useCart, type CartProduct } from '../../context/CartContext';
+import { X, ShoppingBag, Trash2, ArrowRight } from 'lucide-react';
+import { useCart } from '../../context/CartContext';
+import QtyStepper from '../products/QtyStepper';
 import placeholderImg from '../../assets/images/placeholder.png';
 
-function CartQtyControl({
-  product,
-  quantity,
-}: {
-  product: CartProduct;
-  quantity: number;
-}) {
-  const { updateQuantity } = useCart();
-  const minQty =
-    product.purchaseType === 'wholesale'
-      ? (product.wholesale_min_qty ?? 1)
-      : (product.retail_min_qty ?? 1);
-  const unitLabel = product.unit || product.unit_name || 'kg';
-
-  const snap = (value: number) => {
-    const min = Math.max(1, minQty);
-    return Math.max(min, Math.round(Math.floor(value) / min) * min || min);
-  };
-
-  const [value, setValue] = useState<string>(String(quantity));
-  const [warning, setWarning] = useState<string | null>(null);
-
-  const parsed = parseInt(value, 10);
-
-  const handleChange = (v: string) => {
-    const digits = v.replace(/[^0-9]/g, '');
-    setValue(digits);
-    const p = parseInt(digits, 10);
-    if (Number.isFinite(p)) {
-      setWarning(
-        p > 0 && p < minQty
-          ? `Minimum quantity is ${minQty} ${unitLabel}(s).`
-          : p > 0 && p % minQty !== 0
-            ? `Quantity must be a multiple of ${minQty} ${unitLabel}(s).`
-            : null,
-      );
-    } else {
-      setWarning(null);
-    }
-  };
-
-  const commit = () => {
-    const next = Number.isFinite(parsed) ? snap(parsed) : snap(quantity);
-    setValue(String(next));
-    setWarning(
-      Number.isFinite(parsed) && parsed >= minQty && snap(parsed) !== parsed
-        ? `Adjusted to ${next} (multiple of ${minQty}).`
-        : null,
-    );
-    updateQuantity(product.id, next);
-  };
-
-  const step = (delta: number) => {
-    const base = snap(delta < 0 ? parsed : parsed || minQty);
-    const next = snap(base + delta);
-    setValue(String(next));
-    setWarning(null);
-    updateQuantity(product.id, next);
-  };
-
-  return (
-    <div className="flex flex-col items-end gap-1.5">
-      <div className="flex items-center gap-1.5 bg-[#f4faf7] px-2 py-1 rounded-full border border-[#076935]/15">
-        <button
-          className="w-6 h-6 rounded-full border-0 bg-white text-[#076935] flex items-center justify-center hover:bg-[#076935] hover:text-white transition-colors cursor-pointer disabled:opacity-40"
-          onClick={() => step(-minQty)}
-          disabled={parsed <= minQty}
-          aria-label="Decrease quantity"
-        >
-          <Minus size={14} />
-        </button>
-        <input
-          value={value}
-          onChange={(e) => handleChange(e.target.value)}
-          onBlur={commit}
-          inputMode="numeric"
-          className="font-bold text-xs min-w-[32px] w-10 bg-transparent text-center outline-none text-gray-800"
-          style={{ fontFamily: 'var(--font-heading)' }}
-        />
-        <button
-          className="w-6 h-6 rounded-full border-0 bg-white text-[#076935] flex items-center justify-center hover:bg-[#076935] hover:text-white transition-colors cursor-pointer"
-          onClick={() => step(minQty)}
-          aria-label="Increase quantity"
-        >
-          <Plus size={14} />
-        </button>
-      </div>
-      {warning && (
-        <p className="text-[10px] text-red-600 font-medium text-right flex items-center gap-1 max-w-[220px]">
-          <AlertCircle size={11} /> {warning}
-        </p>
-      )}
-    </div>
-  );
-}
 
 export default function CartDrawer() {
   const {
     cartItems,
     isCartOpen,
     closeCart,
+    updateQuantity,
     removeFromCart,
     cartSubtotal,
     cartTotal,
@@ -217,7 +123,13 @@ export default function CartDrawer() {
                     </div>
 
                     <div className="flex flex-col items-end gap-2">
-                      <CartQtyControl product={product} quantity={quantity} />
+                      <QtyStepper
+                        value={quantity}
+                        onChange={(next) => updateQuantity(product, next)}
+                        min={minQty}
+                        unit={unitLabel}
+                        size="sm"
+                      />
 
                       <button
                         className="bg-transparent border-0 text-red-500 opacity-70 hover:opacity-100 transition-opacity p-1 cursor-pointer"

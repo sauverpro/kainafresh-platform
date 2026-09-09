@@ -10,13 +10,11 @@ import {
   Building2,
   Truck,
   ShieldCheck,
-  Minus,
-  Plus,
-  AlertCircle,
 } from "lucide-react";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import Loader from "../../components/Loader/Loader";
+import QtyStepper from "../../components/products/QtyStepper";
 import { apiGet } from "../../api/client";
 import { useCart, type CartProduct } from "../../context/CartContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
@@ -64,8 +62,6 @@ export default function ProductDetailPage() {
     "wholesale",
   );
   const [addedToast, setAddedToast] = useState<string | null>(null);
-  const [qtyInput, setQtyInput] = useState<string>("1");
-  const [qtyWarning, setQtyWarning] = useState<string | null>(null);
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || window.location.origin;
 
@@ -150,9 +146,9 @@ export default function ProductDetailPage() {
 
         if (!cancelled) {
           setProduct(resolved);
-          const min = resolved.wholesale_min_qty ?? DEFAULT_WHOLESALE_MIN_QTY;
-          setQuantity(min);
-          setQtyInput(String(min));
+          setQuantity(
+            resolved.wholesale_min_qty ?? DEFAULT_WHOLESALE_MIN_QTY,
+          );
           setPurchaseType("wholesale");
         }
       } catch (err) {
@@ -195,9 +191,7 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     if (!product) return;
-    const qty = snapToMin(quantity);
-    setQuantity(qty);
-    setQtyInput(String(qty));
+    const qty = Math.max(minQty, Math.floor(quantity) || minQty);
     addToCart(
       {
         ...product,
@@ -212,42 +206,6 @@ export default function ProductDetailPage() {
       })`,
     );
     setTimeout(() => setAddedToast(null), 3000);
-  };
-
-  const snapToMin = (value: number): number => {
-    const min = Math.max(minQty, 1);
-    const clamped = Math.max(min, Math.floor(value) || 0);
-    return Math.round(clamped / min) * min;
-  };
-
-  const commitQtyInput = () => {
-    const parsed = parseInt(qtyInput, 10);
-    const next = Number.isFinite(parsed) ? snapToMin(parsed) : minQty;
-    setQuantity(next);
-    setQtyInput(String(next));
-    setQtyWarning(
-      Number.isFinite(parsed) && parsed >= minQty && snapToMin(parsed) !== parsed
-        ? `Quantity must be a multiple of ${minQty}. Adjusted to ${next}.`
-        : null,
-    );
-  };
-
-  const handleQtyChange = (value: string) => {
-    const digits = value.replace(/[^0-9]/g, "");
-    setQtyInput(digits);
-    const parsed = parseInt(digits, 10);
-    if (Number.isFinite(parsed)) {
-      setQuantity(parsed);
-      setQtyWarning(
-        parsed > 0 && parsed < minQty
-          ? `Minimum quantity is ${minQty} ${product?.unit || "unit"}(s).`
-          : parsed > 0 && parsed % minQty !== 0
-            ? `Quantity must be a multiple of ${minQty} ${product?.unit || "unit"}(s).`
-            : null,
-      );
-    } else {
-      setQtyWarning(null);
-    }
   };
 
   if (loading) {
@@ -392,11 +350,9 @@ export default function ProductDetailPage() {
                           type="button"
                           onClick={() => {
                             setPurchaseType("retail");
-                            const min =
-                              product.retail_min_qty ?? DEFAULT_RETAIL_MIN_QTY;
-                            setQuantity(min);
-                            setQtyInput(String(min));
-                            setQtyWarning(null);
+                            setQuantity(
+                              product.retail_min_qty ?? DEFAULT_RETAIL_MIN_QTY,
+                            );
                           }}
                           className={`flex items-start gap-3 p-4 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                             purchaseType === "retail"
@@ -426,12 +382,10 @@ export default function ProductDetailPage() {
                           type="button"
                           onClick={() => {
                             setPurchaseType("wholesale");
-                            const min =
+                            setQuantity(
                               product.wholesale_min_qty ??
-                              DEFAULT_WHOLESALE_MIN_QTY;
-                            setQuantity(min);
-                            setQtyInput(String(min));
-                            setQtyWarning(null);
+                                DEFAULT_WHOLESALE_MIN_QTY,
+                            );
                           }}
                           className={`flex items-start gap-3 p-4 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                             purchaseType === "wholesale"
@@ -502,57 +456,13 @@ export default function ProductDetailPage() {
                           Min {minQty} · increments of {minQty}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-full w-fit">
-                        <button
-                          type="button"
-                          className="w-8 h-8 rounded-full border-0 bg-white font-bold cursor-pointer hover:bg-[#076935] hover:text-white transition-colors disabled:opacity-40"
-                          onClick={() => {
-                            const next = Math.max(
-                              minQty,
-                              snapToMin(quantity) - minQty,
-                            );
-                            setQuantity(next);
-                            setQtyInput(String(next));
-                            setQtyWarning(null);
-                          }}
-                          disabled={!product.inStock || quantity <= minQty}
-                        >
-                          <Minus size={14} className="mx-auto" />
-                        </button>
-                        <input
-                          value={qtyInput}
-                          onChange={(e) => handleQtyChange(e.target.value)}
-                          onBlur={commitQtyInput}
-                          inputMode="numeric"
-                          className="font-bold text-sm min-w-[52px] bg-transparent text-center outline-none"
-                          style={{ fontFamily: "var(--font-heading)" }}
-                        />
-                        <button
-                          type="button"
-                          className="w-8 h-8 rounded-full border-0 bg-white font-bold cursor-pointer hover:bg-[#076935] hover:text-white transition-colors"
-                          onClick={() => {
-                            const base = Math.max(
-                              minQty,
-                              snapToMin(quantity) || minQty,
-                            );
-                            const next =
-                              quantity < minQty || quantity % minQty !== 0
-                                ? base
-                                : base + minQty;
-                            setQuantity(next);
-                            setQtyInput(String(next));
-                            setQtyWarning(null);
-                          }}
-                          disabled={!product.inStock}
-                        >
-                          <Plus size={14} className="mx-auto" />
-                        </button>
-                      </div>
-                      {qtyWarning && (
-                        <p className="text-[11px] text-red-600 font-medium mt-2 flex items-center gap-1">
-                          <AlertCircle size={13} /> {qtyWarning}
-                        </p>
-                      )}
+                      <QtyStepper
+                        key={`${purchaseType}-${minQty}`}
+                        value={quantity}
+                        onChange={setQuantity}
+                        min={minQty}
+                        unit={product.unit || "kg"}
+                      />
                     </div>
 
                     <button
