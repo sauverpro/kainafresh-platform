@@ -25,6 +25,9 @@ interface ApiProduct {
   status?: string;
   badge?: string;
   description?: string;
+  wholesale_price?: number | string;
+  wholesale_min_qty?: number | string;
+  retail_min_qty?: number | string;
 }
 
 // Curated fallback produce items if database is empty or seeding is needed
@@ -225,6 +228,18 @@ export default function OurProducts() {
                 shelf_life: item.shelf_life
                   ? Number(item.shelf_life)
                   : undefined,
+                wholesale_price:
+                  Number(item.wholesale_price) > 0
+                    ? Number(item.wholesale_price)
+                    : undefined,
+                wholesale_min_qty:
+                  Number(item.wholesale_min_qty) > 0
+                    ? Number(item.wholesale_min_qty)
+                    : undefined,
+                retail_min_qty:
+                  Number(item.retail_min_qty) > 0
+                    ? Number(item.retail_min_qty)
+                    : undefined,
               };
             });
             setProducts(mapped);
@@ -509,6 +524,11 @@ export default function OurProducts() {
                             / {product.unit || "kg"}
                           </span>
                         </div>
+                        <span className="text-[11px] text-gray-400 text-right leading-snug">
+                          Min Retail: {product.retail_min_qty ?? 1}
+                          <br />
+                          Min Wholesale: {product.wholesale_min_qty ?? 1}
+                        </span>
                       </div>
                     </div>
                   </div>

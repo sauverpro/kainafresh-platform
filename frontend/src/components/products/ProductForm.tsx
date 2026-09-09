@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Save, Upload, X, Plus, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useProductStore, type Product } from "../../store/useProductStore";
@@ -49,6 +49,9 @@ export default function ProductForm({
   const [image, setImage] = useState<File | null>(null);
   const [showAddUnit, setShowAddUnit] = useState(false);
   const [newUnit, setNewUnit] = useState({ name: "", symbol: "" });
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const openImagePicker = () => imageInputRef.current?.click();
 
   useEffect(() => {
     fetchUnits();
@@ -209,8 +212,10 @@ export default function ProductForm({
                 alt={initial.name}
                 style={{ maxHeight: 140, objectFit: "cover", borderRadius: 8 }}
               />
-              <label
+              <button
+                type="button"
                 className="btn-outline"
+                onClick={openImagePicker}
                 style={{
                   position: "absolute",
                   bottom: 8,
@@ -223,27 +228,30 @@ export default function ProductForm({
                 }}
               >
                 <Upload size={14} style={{ marginRight: 4 }} /> Change Image
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-                />
-              </label>
+              </button>
             </div>
           ) : (
-            <label className="upload-placeholder" style={{ cursor: "pointer" }}>
+            <div
+              className="upload-placeholder"
+              style={{ cursor: "pointer" }}
+              onClick={openImagePicker}
+            >
               <Upload size={28} color="var(--color-text-light)" />
               <p>Click to upload product image</p>
               <span>PNG, JPG up to 5MB</span>
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-              />
-            </label>
+            </div>
           )}
+
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              setImage(e.target.files?.[0] ?? null);
+              e.target.value = "";
+            }}
+          />
         </div>
       </div>
 
@@ -289,10 +297,11 @@ export default function ProductForm({
             <div className="unit-add-box">
               <div className="form-row">
                 <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>Symbol</label>
                   <input
                     type="text"
                     className="panel-input"
-                    placeholder="Symbol, e.g. kg"
+                    placeholder="e.g. kg"
                     value={newUnit.symbol}
                     onChange={(e) =>
                       setNewUnit((v) => ({ ...v, symbol: e.target.value }))
@@ -312,10 +321,11 @@ export default function ProductForm({
                 </div>
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
+                <label>Unit Name</label>
                 <input
                   type="text"
                   className="panel-input"
-                  placeholder="Unit name, e.g. Kilogram"
+                  placeholder="e.g. Kilogram"
                   value={newUnit.name}
                   onChange={(e) =>
                     setNewUnit((v) => ({ ...v, name: e.target.value }))

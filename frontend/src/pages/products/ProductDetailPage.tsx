@@ -10,12 +10,11 @@ import {
   Building2,
   Truck,
   ShieldCheck,
-  Minus,
-  Plus,
 } from "lucide-react";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import Loader from "../../components/Loader/Loader";
+import QtyStepper from "../../components/products/QtyStepper";
 import { apiGet } from "../../api/client";
 import { useCart, type CartProduct } from "../../context/CartContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
@@ -41,9 +40,13 @@ interface ApiProduct {
   shelf_life?: number | string;
   status?: string;
   category?: string;
+  wholesale_price?: number | string;
+  wholesale_min_qty?: number | string;
+  retail_min_qty?: number | string;
 }
 
-const WHOLESALE_DISCOUNT = 0.9;
+const DEFAULT_RETAIL_MIN_QTY = 1;
+const DEFAULT_WHOLESALE_MIN_QTY = 1;
 
 export default function ProductDetailPage() {
   usePageTitle("product", "Product Details");
@@ -127,11 +130,25 @@ export default function ProductDetailPage() {
           image: imgUrl,
           inStock: item.status !== "inactive",
           shelf_life: item.shelf_life ? Number(item.shelf_life) : undefined,
+          wholesale_price:
+            Number(item.wholesale_price) > 0
+              ? Number(item.wholesale_price)
+              : undefined,
+          wholesale_min_qty:
+            Number(item.wholesale_min_qty) > 0
+              ? Number(item.wholesale_min_qty)
+              : DEFAULT_WHOLESALE_MIN_QTY,
+          retail_min_qty:
+            Number(item.retail_min_qty) > 0
+              ? Number(item.retail_min_qty)
+              : DEFAULT_RETAIL_MIN_QTY,
         };
 
         if (!cancelled) {
           setProduct(resolved);
-          setQuantity(Math.max(10, Math.ceil(100 / (Number(resolved.price) || 100))));
+          setQuantity(
+            resolved.wholesale_min_qty ?? DEFAULT_WHOLESALE_MIN_QTY,
+          );
           setPurchaseType("wholesale");
         }
       } catch (err) {
@@ -153,7 +170,18 @@ export default function ProductDetailPage() {
   const unitPrice = useMemo(() => {
     if (!product) return 0;
     const base = Number(product.price) || 0;
-    return purchaseType === "wholesale" ? base * WHOLESALE_DISCOUNT : base;
+    if (purchaseType === "wholesale") {
+      const ws = Number(product.wholesale_price) || 0;
+      return ws > 0 ? ws : base;
+    }
+    return base;
+  }, [product, purchaseType]);
+
+  const minQty = useMemo(() => {
+    if (!product) return 1;
+    return purchaseType === "wholesale"
+      ? (product.wholesale_min_qty ?? DEFAULT_WHOLESALE_MIN_QTY)
+      : (product.retail_min_qty ?? DEFAULT_RETAIL_MIN_QTY);
   }, [product, purchaseType]);
 
   const lineTotal = useMemo(
@@ -163,16 +191,17 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     if (!product) return;
+    const qty = Math.max(minQty, Math.floor(quantity) || minQty);
     addToCart(
       {
         ...product,
         price: unitPrice,
         purchaseType,
       },
-      quantity,
+      qty,
     );
     setAddedToast(
-      `Added ${quantity} ${product.unit || "item"} of ${product.name} (${
+      `Added ${qty} ${product.unit || "item"} of ${product.name} (${
         purchaseType === "wholesale" ? "Wholesale" : "Retail"
       })`,
     );
@@ -209,11 +238,15 @@ export default function ProductDetailPage() {
           <section className="pt-14 px-6 md:px-[5%] pb-24">
             <div className="max-w-3xl mx-auto text-center bg-white rounded-3xl border border-[#076935]/10 p-12 shadow-xs">
               <Leaf size={48} className="mx-auto mb-4 text-[#076935]" />
-              <h2 className="text-2xl font-bold text-[#076935] mb-2" style={{ fontFamily: "var(--font-heading)" }}>
+              <h2
+                className="text-2xl font-bold text-[#076935] mb-2"
+                style={{ fontFamily: "var(--font-heading)" }}
+              >
                 {error ?? "Product not found."}
               </h2>
               <p className="text-gray-500 text-sm mb-6">
-                The product you are looking for may have been removed or is unavailable.
+                The product you are looking for may have been removed or is
+                unavailable.
               </p>
               <Link
                 to="/products"
@@ -244,7 +277,10 @@ export default function ProductDetailPage() {
                       alt={product.name}
                       className="w-full max-h-96 object-cover rounded-2xl"
                     />
-                    <span className="absolute top-5 left-5 bg-[#076935] text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xs" style={{ fontFamily: "var(--font-heading)" }}>
+                    <span
+                      className="absolute top-5 left-5 bg-[#076935] text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xs"
+                      style={{ fontFamily: "var(--font-heading)" }}
+                    >
                       <Leaf size={12} /> 100% Organic
                     </span>
                     {!product.inStock && (
@@ -256,10 +292,16 @@ export default function ProductDetailPage() {
 
                   {/* ── Product Info & Purchase ── */}
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#F39927] block mb-2" style={{ fontFamily: "var(--font-heading)" }}>
+                    <span
+                      className="text-xs font-bold uppercase tracking-wider text-[#F39927] block mb-2"
+                      style={{ fontFamily: "var(--font-heading)" }}
+                    >
                       {product.category || "Organic Produce"}
                     </span>
-                    <h1 className="text-3xl md:text-4xl font-bold text-[#076935] mb-3" style={{ fontFamily: "var(--font-heading)" }}>
+                    <h1
+                      className="text-3xl md:text-4xl font-bold text-[#076935] mb-3"
+                      style={{ fontFamily: "var(--font-heading)" }}
+                    >
                       {product.name}
                     </h1>
 
@@ -269,17 +311,21 @@ export default function ProductDetailPage() {
                           <Star key={i} size={16} fill="currentColor" />
                         ))}
                       </div>
-                      <span className="text-xs text-gray-500">Premium quality farm produce</span>
+                      <span className="text-xs text-gray-500">
+                        Premium quality farm produce
+                      </span>
                     </div>
 
                     <p className="text-gray-600 text-sm leading-relaxed mb-6">
-                      {product.description || "Description not available for this product. Check back soon."}
+                      {product.description ||
+                        "Description not available for this product. Check back soon."}
                     </p>
 
                     <div className="flex flex-wrap gap-4 mb-7 p-4 bg-[#f4faf7] rounded-xl text-xs text-gray-800">
                       <span className="flex items-center gap-1.5">
                         <Clock size={15} className="text-[#076935]" />
-                        Shelf Life: <strong>{product.shelf_life ?? 7} days</strong>
+                        Shelf Life:{" "}
+                        <strong>{product.shelf_life ?? 7} days</strong>
                       </span>
                       <span className="flex items-center gap-1.5">
                         <Truck size={15} className="text-[#076935]" />
@@ -293,42 +339,77 @@ export default function ProductDetailPage() {
 
                     {/* ── Retail / Wholesale selector ── */}
                     <div className="mb-6">
-                      <span className="block text-sm font-semibold text-gray-800 mb-2" style={{ fontFamily: "var(--font-heading)" }}>
+                      <span
+                        className="block text-sm font-semibold text-gray-800 mb-2"
+                        style={{ fontFamily: "var(--font-heading)" }}
+                      >
                         Buy As:
                       </span>
                       <div className="grid grid-cols-2 gap-3">
                         <button
                           type="button"
-                          onClick={() => setPurchaseType("retail")}
+                          onClick={() => {
+                            setPurchaseType("retail");
+                            setQuantity(
+                              product.retail_min_qty ?? DEFAULT_RETAIL_MIN_QTY,
+                            );
+                          }}
                           className={`flex items-start gap-3 p-4 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                             purchaseType === "retail"
                               ? "border-[#076935] bg-[#f4faf7]"
                               : "border-gray-200 bg-white hover:border-[#076935]/40"
                           }`}
                         >
-                          <Store size={20} className={`mt-0.5 ${purchaseType === "retail" ? "text-[#076935]" : "text-gray-400"}`} />
+                          <Store
+                            size={20}
+                            className={`mt-0.5 ${purchaseType === "retail" ? "text-[#076935]" : "text-gray-400"}`}
+                          />
                           <span>
-                            <strong className="block text-sm text-gray-800" style={{ fontFamily: "var(--font-heading)" }}>
+                            <strong
+                              className="block text-sm text-gray-800"
+                              style={{ fontFamily: "var(--font-heading)" }}
+                            >
                               Retail
                             </strong>
-                            <span className="text-xs text-gray-500">Single / small quantity pricing</span>
+                            <span className="text-xs text-gray-500">
+                              Min.{" "}
+                              {product.retail_min_qty ?? DEFAULT_RETAIL_MIN_QTY}{" "}
+                              {product.unit || "unit"}(s)
+                            </span>
                           </span>
                         </button>
                         <button
                           type="button"
-                          onClick={() => setPurchaseType("wholesale")}
+                          onClick={() => {
+                            setPurchaseType("wholesale");
+                            setQuantity(
+                              product.wholesale_min_qty ??
+                                DEFAULT_WHOLESALE_MIN_QTY,
+                            );
+                          }}
                           className={`flex items-start gap-3 p-4 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                             purchaseType === "wholesale"
                               ? "border-[#F39927] bg-amber-50"
                               : "border-gray-200 bg-white hover:border-[#F39927]/40"
                           }`}
                         >
-                          <Building2 size={20} className={`mt-0.5 ${purchaseType === "wholesale" ? "text-[#F39927]" : "text-gray-400"}`} />
+                          <Building2
+                            size={20}
+                            className={`mt-0.5 ${purchaseType === "wholesale" ? "text-[#F39927]" : "text-gray-400"}`}
+                          />
                           <span>
-                            <strong className="block text-sm text-gray-800" style={{ fontFamily: "var(--font-heading)" }}>
+                            <strong
+                              className="block text-sm text-gray-800"
+                              style={{ fontFamily: "var(--font-heading)" }}
+                            >
                               Wholesale
                             </strong>
-                            <span className="text-xs text-gray-500">Bulk pricing · min. {Math.max(10, Math.ceil(100 / (Number(product.price) || 100)))} units</span>
+                            <span className="text-xs text-gray-500">
+                              Bulk pricing · min.{" "}
+                              {product.wholesale_min_qty ??
+                                DEFAULT_WHOLESALE_MIN_QTY}{" "}
+                              {product.unit || "unit"}(s)
+                            </span>
                           </span>
                         </button>
                       </div>
@@ -336,45 +417,52 @@ export default function ProductDetailPage() {
 
                     {/* ── Price ── */}
                     <div className="mb-6">
-                      <span className="text-xs text-gray-500 block mb-1">{purchaseType === "wholesale" ? "Wholesale price" : "Retail price"} / {product.unit || "kg"}</span>
+                      <span className="text-xs text-gray-500 block mb-1">
+                        {purchaseType === "wholesale"
+                          ? "Wholesale price"
+                          : "Retail price"}{" "}
+                        / {product.unit || "kg"}
+                      </span>
                       <div className="flex items-end gap-3">
-                        <strong className="text-4xl font-bold text-[#076935]" style={{ fontFamily: "var(--font-heading)" }}>
-                          RWF {unitPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        <strong
+                          className="text-4xl font-bold text-[#076935]"
+                          style={{ fontFamily: "var(--font-heading)" }}
+                        >
+                          RWF{" "}
+                          {unitPrice.toLocaleString(undefined, {
+                            maximumFractionDigits: 0,
+                          })}
                         </strong>
-                        {purchaseType === "wholesale" && Number(product.price) !== unitPrice && (
-                          <span className="text-base font-semibold text-gray-400 line-through mb-1">
-                            RWF {(Number(product.price) || 0).toLocaleString()}
-                          </span>
-                        )}
+                        {purchaseType === "wholesale" &&
+                          Number(product.price) !== unitPrice && (
+                            <span className="text-base font-semibold text-gray-400 line-through mb-1">
+                              RWF{" "}
+                              {(Number(product.price) || 0).toLocaleString()}
+                            </span>
+                          )}
                       </div>
                     </div>
 
                     {/* ── Quantity selector ── */}
-                    <div className="flex items-center justify-between mb-7">
-                      <label className="text-sm font-semibold text-gray-800" style={{ fontFamily: "var(--font-heading)" }}>
-                        Quantity ({product.unit || "kg"}):
-                      </label>
-                      <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-full">
-                        <button
-                          type="button"
-                          className="w-8 h-8 rounded-full border-0 bg-white font-bold cursor-pointer hover:bg-[#076935] hover:text-white transition-colors"
-                          onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                          disabled={!product.inStock}
+                    <div className="mb-7">
+                      <div className="flex items-center justify-between mb-2">
+                        <label
+                          className="text-sm font-semibold text-gray-800"
+                          style={{ fontFamily: "var(--font-heading)" }}
                         >
-                          <Minus size={14} className="mx-auto" />
-                        </button>
-                        <span className="font-bold text-sm min-w-[28px] text-center" style={{ fontFamily: "var(--font-heading)" }}>
-                          {quantity}
+                          Quantity ({product.unit || "kg"}):
+                        </label>
+                        <span className="text-[11px] text-gray-400">
+                          Min {minQty} · increments of {minQty}
                         </span>
-                        <button
-                          type="button"
-                          className="w-8 h-8 rounded-full border-0 bg-white font-bold cursor-pointer hover:bg-[#076935] hover:text-white transition-colors"
-                          onClick={() => setQuantity((q) => q + 1)}
-                          disabled={!product.inStock}
-                        >
-                          <Plus size={14} className="mx-auto" />
-                        </button>
                       </div>
+                      <QtyStepper
+                        key={`${purchaseType}-${minQty}`}
+                        value={quantity}
+                        onChange={setQuantity}
+                        min={minQty}
+                        unit={product.unit || "kg"}
+                      />
                     </div>
 
                     <button
@@ -392,10 +480,12 @@ export default function ProductDetailPage() {
 
                     <div className="flex flex-col gap-1.5 mt-6 text-xs text-gray-500">
                       <span className="flex items-center gap-1.5">
-                        <ShieldCheck size={14} className="text-[#076935]" /> 100% Organic Quality Guarantee
+                        <ShieldCheck size={14} className="text-[#076935]" />{" "}
+                        100% Organic Quality Guarantee
                       </span>
                       <span className="flex items-center gap-1.5">
-                        <Truck size={14} className="text-[#076935]" /> 24-Hour Cold Chain Fresh Delivery
+                        <Truck size={14} className="text-[#076935]" /> 24-Hour
+                        Cold Chain Fresh Delivery
                       </span>
                     </div>
                   </div>

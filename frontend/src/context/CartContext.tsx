@@ -15,6 +15,9 @@ export interface CartProduct {
   description?: string;
   badge?: string;
   purchaseType?: 'retail' | 'wholesale';
+  retail_min_qty?: number;
+  wholesale_min_qty?: number;
+  wholesale_price?: number;
 }
 
 export interface CartItem {
@@ -26,7 +29,7 @@ interface CartContextType {
   cartItems: CartItem[];
   addToCart: (product: CartProduct, quantity?: number) => void;
   removeFromCart: (productId: number | string) => void;
-  updateQuantity: (productId: number | string, quantity: number) => void;
+  updateQuantity: (product: CartProduct, quantity: number) => void;
   clearCart: () => void;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
@@ -63,18 +66,38 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [cartItems]);
 
+  const minQtyFor = (product: CartProduct): number =>
+    product.purchaseType === 'wholesale'
+      ? (product.wholesale_min_qty ?? 1)
+      : (product.retail_min_qty ?? 1);
+
+  const snapToMin = (value: number, product: CartProduct): number => {
+    const min = Math.max(1, minQtyFor(product));
+    const snapped = Math.round(Math.max(1, Math.floor(value)) / min) * min;
+    return Math.max(min, snapped || min);
+  };
+
   const addToCart = (product: CartProduct, quantity: number = 1) => {
+    const snapped = snapToMin(quantity, product);
     setCartItems((prev) => {
-      const existingIndex = prev.findIndex((item) => String(item.product.id) === String(product.id));
+      // Same product added under a different purchase type (retail vs
+      // wholesale) stays as its own line because price/step differ.
+      const key = `${product.id}|${product.purchaseType ?? 'retail'}`;
+      const existingIndex = prev.findIndex(
+        (item) => `${item.product.id}|${item.product.purchaseType ?? 'retail'}` === key,
+      );
       if (existingIndex > -1) {
         const updated = [...prev];
         updated[existingIndex] = {
           ...updated[existingIndex],
-          quantity: updated[existingIndex].quantity + quantity,
+          quantity: snapToMin(
+            updated[existingIndex].quantity + snapped,
+            updated[existingIndex].product,
+          ),
         };
         return updated;
       }
-      return [...prev, { product, quantity }];
+      return [...prev, { product, quantity: snapped }];
     });
     setIsCartOpen(true);
   };
@@ -83,15 +106,21 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCartItems((prev) => prev.filter((item) => String(item.product.id) !== String(productId)));
   };
 
-  const updateQuantity = (productId: number | string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
+  const updateQuantity = (product: CartProduct, quantity: number) => {
+    if (quantity < 1) {
       return;
     }
+    const key = `${product.id}|${product.purchaseType ?? 'retail'}`;
     setCartItems((prev) =>
-      prev.map((item) =>
-        String(item.product.id) === String(productId) ? { ...item, quantity } : item
-      )
+      prev.map((item) => {
+        if (`${item.product.id}|${item.product.purchaseType ?? 'retail'}` !== key) {
+          return item;
+        }
+        return {
+          ...item,
+          quantity: snapToMin(quantity, item.product),
+        };
+      })
     );
   };
 

@@ -1,10 +1,12 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   getCurrentUser,
   removeCurrentUser,
   removeToken,
   setCurrentUser,
   isAuthenticated as hasToken,
+  SESSION_EXPIRED_EVENT,
   type UserProfile,
 } from "../api/client";
 import { normalizeRole, type UserRole } from "./roleAccess";
@@ -20,6 +22,7 @@ interface AuthContextValue {
 const AuthContext = React.createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate();
   const [user, setUserState] = React.useState<UserProfile | null>(() =>
     getCurrentUser(),
   );
@@ -41,6 +44,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     removeToken();
     setUserState(null);
   }, []);
+
+  // Automatic logout when the backend reports an expired/revoked session (401).
+  React.useEffect(() => {
+    const onSessionExpired = () => {
+      logout();
+      navigate("/login", {
+        replace: true,
+        state: { from: window.location.pathname, sessionExpired: true },
+      });
+    };
+    window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+    return () =>
+      window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+  }, [logout, navigate]);
 
   const value = React.useMemo<AuthContextValue>(
     () => ({

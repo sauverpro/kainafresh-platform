@@ -8,7 +8,6 @@ import {
   Pencil,
   Package,
   CheckCircle,
-  Tag,
   Layers,
   RefreshCw,
   XCircle,
@@ -66,9 +65,6 @@ export default function ProductTable({
   // Bento Card Statistics
   const totalProducts = products.length;
   const activeProducts = products.filter((p) => p.status === "active").length;
-  const avgPrice = products.length
-    ? (products.reduce((sum, p) => sum + Number(p.price), 0) / products.length).toFixed(0)
-    : "0";
   const uniqueUnitsCount = new Set(
     products.map((p) => p.unit_name ?? p.unit_code ?? "—"),
   ).size;
@@ -254,16 +250,18 @@ export default function ProductTable({
                   <th className="px-5 py-3.5 font-semibold">Produce Name</th>
                   <th className="px-5 py-3.5 font-semibold">Measurement Unit</th>
                   <th className="px-5 py-3.5 font-semibold">Price (RWF)</th>
+                  <th className="px-5 py-3.5 font-semibold">Min Retail Qty</th>
+                  <th className="px-5 py-3.5 font-semibold">Min Wholesale Qty</th>
                   <th className="px-5 py-3.5 font-semibold">Status</th>
                   <th className="px-5 py-3.5 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-white/5">
                 {loading ? (
-                  <TableSkeleton columns={6} rows={5} />
+                  <TableSkeleton columns={8} rows={5} />
                 ) : filteredProducts.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={8} className="py-12 text-center text-gray-500 dark:text-gray-400">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <Package className="h-8 w-8 text-gray-300" />
                         <p className="text-sm font-medium">No products found</p>
@@ -309,6 +307,12 @@ export default function ProductTable({
                         </td>
                         <td className="px-5 py-4 font-bold text-gray-900 dark:text-white">
                           {Number(product.price).toLocaleString()} RWF
+                        </td>
+                        <td className="px-5 py-4 font-medium text-gray-700 dark:text-gray-300">
+                          {product.retail_min_qty ?? "—"}
+                        </td>
+                        <td className="px-5 py-4 font-medium text-gray-700 dark:text-gray-300">
+                          {product.wholesale_min_qty ?? "—"}
                         </td>
                         <td className="px-5 py-4">
                           {product.status === "active" ? (

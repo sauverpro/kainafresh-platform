@@ -5,7 +5,6 @@ import {
   Pencil,
   Trash2,
   ImageOff,
-  Tag,
   Calendar,
   Boxes,
   AlertCircle,
