@@ -4,11 +4,13 @@ class ProductController extends BaseController
 {
     private $productModel;
     private $unitModel;
+    private $userModel;
 
     public function __construct()
     {
         $this->productModel = new Product();
         $this->unitModel = new Unit();
+        $this->userModel = new User();
     }
 
     /**
@@ -55,7 +57,28 @@ class ProductController extends BaseController
      */
     public function store()
     {
-       if (!empty($_POST)) {
+         // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+    //   check if user is admin or sales_manager
+      if ($user['role'] !== 'admin' && $user['role'] !== 'sales_manager') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unathorized access.'
+            ]);
+            return;
+      }
+
+    if (!empty($_POST)) {
     $data = $_POST;
 } else {
     $data = $this->getRequestData();
@@ -96,7 +119,11 @@ class ProductController extends BaseController
                 'name',
                 'unit_id',
                 'shelf_life',
-                'price'
+                'price',
+                'wholesale_price',
+                'wholesale_min_qty',
+                'retail_min_qty'
+
             ]
         );
 
@@ -259,6 +286,26 @@ class ProductController extends BaseController
      */
     public function update($id)
     {
+         // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+    //   check if user is admin or sales_manager
+      if ($user['role'] !== 'admin' && $user['role'] !== 'sales_manager') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unathorized access.'
+            ]);
+            return;
+      }
         $id = (int) $id;
 
         $existingProduct = $this->productModel->find($id);
@@ -486,6 +533,26 @@ class ProductController extends BaseController
      */
     public function destroy($id)
     {
+         // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+    //   check if user is admin or sales_manager
+      if ($user['role'] !== 'admin' && $user['role'] !== 'sales_manager') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unathorized access.'
+            ]);
+            return;
+      }
         $id = (int) $id;
 
         $existingProduct = $this->productModel->find($id);
