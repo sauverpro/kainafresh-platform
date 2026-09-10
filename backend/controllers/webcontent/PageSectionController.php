@@ -1,14 +1,15 @@
 <?php
 
-class PageSectionController
+class PageSectionController extends BaseController
 {
     protected $page;
     protected $section;
-
+    protected $userModel;
     public function __construct()
     {
         $this->page = new Page();
         $this->section = new PageSection();
+        $this->userModel = new User();
     }
 
     /**
@@ -74,6 +75,26 @@ class PageSectionController
      */
     public function store($pageId)
     {
+        // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+    //   check if user is admin
+      if ($user['role'] !== 'admin') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unathorized access.'
+            ]);
+            return;
+      }
         $pageId = (int) $pageId;
 
         $page = $this->page->find($pageId);
@@ -166,6 +187,26 @@ class PageSectionController
      */
     public function update($pageId, $sectionId)
     {
+        // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+    //   check if user is admin
+      if ($user['role'] !== 'admin') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unathorized access.'
+            ]);
+            return;
+      }
         $pageId = (int) $pageId;
         $sectionId = (int) $sectionId;
 
@@ -264,6 +305,26 @@ class PageSectionController
      */
     public function destroy($pageId, $sectionId)
     {
+        // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+    //   check if user is admin
+      if ($user['role'] !== 'admin') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unathorized access.'
+            ]);
+            return;
+      }
         $pageId = (int) $pageId;
         $sectionId = (int) $sectionId;
 

@@ -32,19 +32,19 @@ $router->addRoute(
 $router->addRoute(
     'POST',
     '/api/pages',
-    'PageController@store'
+    'PageController@store','auth'
 );
 
 $router->addRoute(
     'PUT',
     '/api/pages/{id}',
-    'PageController@update'
+    'PageController@update','auth'
 );
 
 $router->addRoute(
     'DELETE',
     '/api/pages/{id}',
-    'PageController@destroy'
+    'PageController@destroy','auth'
 );
 
 /*
@@ -68,24 +68,24 @@ $router->addRoute(
 $router->addRoute(
     'POST',
     '/api/pages/{pageId}/sections',
-    'PageSectionController@store'
+    'PageSectionController@store','auth'
 );
 
 $router->addRoute(
     'PUT',
     '/api/pages/{pageId}/sections/{sectionId}',
-    'PageSectionController@update'
+    'PageSectionController@update','auth'
 );
 
 $router->addRoute(
     'DELETE',
     '/api/pages/{pageId}/sections/{sectionId}',
-    'PageSectionController@destroy'
+    'PageSectionController@destroy','auth'
 );
 $router->addRoute(
     'PUT',
     '/api/pages/{pageId}/sections/reorder',
-    'PageSectionController@reorder'
+    'PageSectionController@reorder','auth'
 );
 $router->addRoute('GET','/api/settings','SettingController@index');
 $router->addRoute('GET','/api/navlinks','NavLinkController@index');
@@ -114,41 +114,24 @@ $router->addRoute('POST','/api/admin/users/new','AuthController@createuser','aut
 $router->addRoute('PUT','/api/admin/users/update/{id}','AuthController@updateuser','auth');
 $router->addRoute('DELETE','/api/admin/users/delete/{id}','AuthController@destroy','auth');
 $router->addRoute('POST','/api/auth/change_password/{id}','AuthController@updatepassword','auth');
+// units protected routes
+$router->addRoute('POST','/api/units','UnitController@store','auth');
+
+$router->addRoute('PUT','/api/units/{id}','UnitController@update','auth');
+
+$router->addRoute('DELETE','/api/units/{id}','UnitController@destroy','auth');
+
+// end of units protected routes
 /*
 |--------------------------------------------------------------------------
 | Units
 |--------------------------------------------------------------------------
 */
 
-$router->addRoute(
-    'GET',
-    '/api/units',
-    'UnitController@index'
-);
+$router->addRoute( 'GET','/api/units','UnitController@index');
 
-$router->addRoute(
-    'GET',
-    '/api/units/{id}',
-    'UnitController@show'
-);
+$router->addRoute('GET','/api/units/{id}','UnitController@show');
 
-$router->addRoute(
-    'POST',
-    '/api/units',
-    'UnitController@store'
-);
-
-$router->addRoute(
-    'PUT',
-    '/api/units/{id}',
-    'UnitController@update'
-);
-
-$router->addRoute(
-    'DELETE',
-    '/api/units/{id}',
-    'UnitController@destroy'
-);
 
 /*
 |--------------------------------------------------------------------------
@@ -171,25 +154,25 @@ $router->addRoute(
 $router->addRoute(
     'POST',
     '/api/products',
-    'ProductController@store'
+    'ProductController@store','auth'
 );
 
 $router->addRoute(
     'PUT',
     '/api/products/{id}',
-    'ProductController@update'
+    'ProductController@update','auth'
 );
 
 $router->addRoute(
     'POST',
     '/api/products/{id}',
-    'ProductController@update'
+    'ProductController@update','auth'
 );
 
 $router->addRoute(
     'DELETE',
     '/api/products/{id}',
-    'ProductController@destroy'
+    'ProductController@destroy','auth'
 );
 
 
@@ -202,31 +185,31 @@ $router->addRoute(
 $router->addRoute(
     'GET',
     '/api/stocks',
-    'StockController@index'
+    'StockController@index','auth'
 );
 
 $router->addRoute(
     'GET',
     '/api/stocks/{id}',
-    'StockController@show'
+    'StockController@show','auth'
 );
 
 $router->addRoute(
     'POST',
     '/api/stocks',
-    'StockController@store'
+    'StockController@store','auth'
 );
 
 $router->addRoute(
     'PUT',
     '/api/stocks/{id}',
-    'StockController@update'
+    'StockController@update','auth'
 );
 
 $router->addRoute(
     'DELETE',
     '/api/stocks/{id}',
-    'StockController@destroy'
+    'StockController@destroy','auth'
 );
 
 /*
@@ -238,31 +221,31 @@ $router->addRoute(
 $router->addRoute(
     'GET',
     '/api/customers',
-    'CustomerController@index'
+    'CustomerController@index','auth'
 );
 
 $router->addRoute(
     'GET',
     '/api/customers/{id}',
-    'CustomerController@show'
+    'CustomerController@show','auth'
 );
 
 $router->addRoute(
     'POST',
     '/api/customers',
-    'CustomerController@store'
+    'CustomerController@store','auth'
 );
 
 $router->addRoute(
     'PUT',
     '/api/customers/{id}',
-    'CustomerController@update'
+    'CustomerController@update','auth'
 );
 
 $router->addRoute(
     'DELETE',
     '/api/customers/{id}',
-    'CustomerController@destroy'
+    'CustomerController@destroy','auth'
 );
 
 /*
@@ -274,13 +257,13 @@ $router->addRoute(
 $router->addRoute(
     'GET',
     '/api/orders',
-    'OrderController@index'
+    'OrderController@index','auth'
 );
 
 $router->addRoute(
     'GET',
     '/api/orders/{id}',
-    'OrderController@show'
+    'OrderController@show','auth'
 );
 
 $router->addRoute(
@@ -292,13 +275,13 @@ $router->addRoute(
 $router->addRoute(
     'PUT',
     '/api/orders/{id}',
-    'OrderController@update'
+    'OrderController@update','auth'
 );
 
 $router->addRoute(
     'DELETE',
     '/api/orders/{id}',
-    'OrderController@destroy'
+    'OrderController@destroy','auth'
 );
 
 /*
@@ -310,19 +293,19 @@ $router->addRoute(
 $router->addRoute(
     'GET',
     '/api/order-items',
-    'OrderItemController@index'
+    'OrderItemController@index','auth'
 );
 
 $router->addRoute(
     'GET',
     '/api/order-items/{id}',
-    'OrderItemController@show'
+    'OrderItemController@show','auth'
 );
 
 $router->addRoute(
     'GET',
     '/api/orders/{orderId}/items',
-    'OrderItemController@indexByOrder'
+    'OrderItemController@indexByOrder','auth'
 );
 
 $router->addRoute(
@@ -334,11 +317,11 @@ $router->addRoute(
 $router->addRoute(
     'PUT',
     '/api/order-items/{id}',
-    'OrderItemController@update'
+    'OrderItemController@update','auth'
 );
 
 $router->addRoute(
     'DELETE',
     '/api/order-items/{id}',
-    'OrderItemController@destroy'
+    'OrderItemController@destroy','auth'
 );
