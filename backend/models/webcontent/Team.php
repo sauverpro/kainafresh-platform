@@ -7,13 +7,13 @@ class Team extends Model{
 //    create team
 
 public function createTeam($data){
-    $this->create($data);
+    return $this->create($data);
 }
 public function updateTeam($id,$data){
-    $this->update($id,$data);
+    return $this->update($id,$data);
 }
 public function deleteTeam($id){
-    $this->delete($id);
+    return $this->delete($id);
 }
 // get team
 public function getTeams(){

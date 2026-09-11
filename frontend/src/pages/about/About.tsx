@@ -91,85 +91,104 @@ function About() {
 
   // Lifecycle effect: Query MariaDB for 'about' page CMS sections on mount
   useEffect(() => {
+    let cancelled = false;
 
     async function loadData() {
+      let sectionTeam: TeamContent[] | null = null;
+
+      try {
+        const res = await apiGet<{ success: boolean; data: { sections: CmsSection[] } }>('/api/pages/slug/about');
+        if (res.success && res.data?.sections) {
+          const sections = res.data.sections;
+          if (!cancelled) setSections(sections);
+          const find = <T,>(type: string): T | null => {
+            const s = sections.find((sec) => sec.type === type);
+            return s ? (s.content as T) : null;
+          };
+          // check if section type is about-hero
+          if (!cancelled) setCmsAboutHero(find<HeroContent>('about-hero'));
+          // now let's check if section type is about-stats-bar
+          const stats_value = sections.find((sec) => sec.type === 'about-stats-bar');
+
+          const StatValue = stats_value?.content;
+          if (!cancelled) {
+            setCmsStat(
+              Array.isArray(StatValue)
+                ? { items: StatValue as StatsContentItem[] } :
+                (StatValue as StatsContent) ?? null
+            );
+          }
+          // our story section
+          if (!cancelled) setCmsStory(find<StoryContent>('about-story'));
+          // mission and vision
+          const mission_content = sections.find((sec) => sec.type === 'about-values');
+          const missionValue = mission_content?.content;
+
+          // Properly handle the values content
+          if (!cancelled) {
+            if (Array.isArray(missionValue)) {
+              // If it's an array, wrap it in an object with items
+              setCmsMission({ items: missionValue as ValuesContentItem[] });
+            } else if (missionValue && typeof missionValue === 'object') {
+              // If it's an object with items property
+              if ('items' in missionValue && Array.isArray(missionValue.items)) {
+                setCmsMission(missionValue as ValuesContent);
+              } else {
+                // If it's an object but no items, treat it as the content with tag, heading, etc.
+                const mv = missionValue as ValuesContent;
+                setCmsMission({
+                  tag: mv.tag,
+                  heading: mv.heading,
+                  subheading: mv.subheading,
+                  vision: mv.vision,
+                  mission: mv.mission,
+                  items: mv.items || []
+                });
+              }
+            } else {
+              setCmsMission(null);
+            }
+          }
+
+          // team section (fallback source only)
+          const teamSec = sections.find((sec) => sec.type === 'team' || sec.type === 'about-team');
+          if (teamSec?.content) {
+            const content = teamSec.content as Record<string, unknown>;
+            const members = (content.members || content.items || (Array.isArray(content) ? content : null)) as TeamContent[] | null;
+            if (Array.isArray(members) && members.length > 0) {
+              sectionTeam = members;
+            }
+          }
+        }
+      } catch (error) {
+        console.debug('Failed to load about sections', error);
+      }
+
+      // DB team table is the single source of truth; fall back to the CMS section only when empty.
+      let dbTeam: TeamContent[] | null = null;
       try {
         const teams = await apiGet<{ status: boolean; data: TeamContent[] }>('/api/team');
         if (teams?.status && Array.isArray(teams?.data)) {
-          setCmsTeam(teams.data);
+          dbTeam = teams.data;
         }
-
-
       } catch (error) {
-        console.debug('Failed to load', error);
-        setCmsTeam([]);
+        console.debug('Failed to load team', error);
       }
 
+      if (!cancelled) {
+        setCmsTeam(
+          (dbTeam && dbTeam.length > 0)
+            ? dbTeam
+            : (sectionTeam && sectionTeam.length > 0 ? sectionTeam : null)
+        );
+        setLoading(false);
+      }
     }
 
-    apiGet<{ success: boolean; data: { sections: CmsSection[] } }>('/api/pages/slug/about')
-      .then((res) => {
-        if (!res.success || !res.data?.sections) return;
-        const sections = res.data.sections;
-        setSections(sections);
-        const find = <T,>(type: string): T | null => {
-          const s = sections.find((sec) => sec.type === type);
-          return s ? (s.content as T) : null;
-        };
-        // check if section type is about-hero
-        setCmsAboutHero(find<HeroContent>('about-hero'));
-        // now let's check if section type is about-stats-bar
-        const stats_value = sections.find((sec) => sec.type === 'about-stats-bar');
-
-        const StatValue = stats_value?.content;
-        setCmsStat(
-          Array.isArray(StatValue)
-            ? { items: StatValue as StatsContentItem[] } :
-            (StatValue as StatsContent) ?? null
-        );
-        // our story section
-        setCmsStory(find<StoryContent>('about-story'));
-        // mission and vission
-        const mission_content = sections.find((sec) => sec.type === 'about-values');
-        const missionValue = mission_content?.content;
-
-        // Properly handle the values content
-        if (Array.isArray(missionValue)) {
-          // If it's an array, wrap it in an object with items
-          setCmsMission({ items: missionValue as ValuesContentItem[] });
-        } else if (missionValue && typeof missionValue === 'object') {
-          // If it's an object with items property
-          if ('items' in missionValue && Array.isArray(missionValue.items)) {
-            setCmsMission(missionValue as ValuesContent);
-          } else {
-            // If it's an object but no items, treat it as the content with tag, heading, etc.
-            const mv = missionValue as ValuesContent;
-            setCmsMission({
-              tag: mv.tag,
-              heading: mv.heading,
-              subheading: mv.subheading,
-              vision: mv.vision,
-              mission: mv.mission,
-              items: mv.items || []
-            });
-          }
-        } else {
-          setCmsMission(null);
-        }
-
-        // team section
-        const teamSec = sections.find((sec) => sec.type === 'team' || sec.type === 'about-team');
-        if (teamSec?.content) {
-          const content = teamSec.content as Record<string, unknown>;
-          const members = (content.members || content.items || (Array.isArray(content) ? content : null)) as TeamContent[] | null;
-          if (Array.isArray(members) && members.length > 0) {
-            setCmsTeam(members);
-          }
-        }
-      })
-      .catch(() => { /* silently fall back to hardcoded defaults */ })
-      .finally(() => { setLoading(false); });
     loadData();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Helper method: Extracts specific CMS section content by type string

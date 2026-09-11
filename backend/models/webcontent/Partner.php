@@ -13,7 +13,7 @@ class Partner extends Model {
     
     public function getPartners() {
         $all = $this->all();
-        return !empty($all) ? $all[0] : null;
+        return !empty($all) ? $all : null;
     }
 
     public function addPartner($data) {

@@ -104,7 +104,9 @@ $router->addRoute('POST','/api/navlinks/create','NavLinkController@store','auth'
 $router->addRoute('PUT','/api/navlinks/update/{id}','NavLinkController@update','auth');
 $router->addRoute('DELETE','/api/navlinks/delete/{id}','NavLinkController@delete','auth');
 // create team
-$router->addRoute('POST','/api/team/new','TeamController@create');
+$router->addRoute('POST','/api/team/new','TeamController@create','auth');
+$router->addRoute('POST','/api/team/edit/{id}','TeamController@update','auth');
+$router->addRoute('DELETE','/api/team/delete/{id}','TeamController@destroy','auth');
 $router->addRoute('POST','/api/partners/new','PartnerController@store','auth');
 $router->addRoute('POST','/api/partners/edit/{id}','PartnerController@partner','auth');
 $router->addRoute('DELETE','/api/partners/delete/{id}','PartnerController@destroy','auth');

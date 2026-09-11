@@ -41,6 +41,7 @@ const GlobalSettings = lazy(
   () => import("./pages/admin/Settings/GlobalSettings"),
 );
 const UserManagement = lazy(() => import("./pages/admin/Users/UserManagement"));
+const TeamManagement = lazy(() => import("./pages/admin/Team/TeamManagement"));
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -142,6 +143,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/settings" element={<GlobalSettings />} />
                 <Route path="/admin/users" element={<UserManagement />} />
+                <Route path="/admin/team" element={<TeamManagement />} />
                 <Route path="/cms/settings" element={<GlobalSettings />} />
                 <Route path="/cms/:slug" element={<CmsPage />} />
                 <Route path="/admin/products" element={<ProductsList />} />

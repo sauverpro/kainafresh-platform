@@ -9,9 +9,9 @@ interface QtyStepperProps {
   size?: "sm" | "md";
 }
 
-const snap = (value: number, min: number): number => {
+const clampToMin = (value: number, min: number): number => {
   const m = Math.max(1, min);
-  return Math.max(m, Math.round(Math.floor(value) / m) * m || m);
+  return Number.isFinite(value) ? Math.max(m, Math.floor(value)) : m;
 };
 
 export default function QtyStepper({
@@ -35,30 +35,23 @@ export default function QtyStepper({
       setWarning(
         p < minQty
           ? `Minimum quantity is ${minQty} ${unit}(s).`
-          : p % minQty !== 0
-            ? `Quantity must be a multiple of ${minQty} ${unit}(s).`
             : null,
       );
-      onChange(snap(p, minQty));
+      onChange(clampToMin(p, minQty));
     } else {
       setWarning(null);
     }
   };
 
   const commit = () => {
-    const next = Number.isFinite(parsed) ? snap(parsed, minQty) : snap(value, minQty);
+    const next = clampToMin(Number.isFinite(parsed) && parsed > 0 ? parsed : minQty, minQty);
     setText(String(next));
-    setWarning(
-      Number.isFinite(parsed) && parsed >= minQty && snap(parsed, minQty) !== parsed
-        ? `Adjusted to ${next} (multiple of ${minQty}).`
-        : null,
-    );
     onChange(next);
   };
 
   const step = (delta: number) => {
-    const base = snap(delta < 0 ? parsed : parsed || minQty, minQty);
-    const next = snap(base + delta, minQty);
+    const base = clampToMin(delta < 0 ? parsed : parsed || minQty, minQty);
+    const next = clampToMin(base + delta, minQty);
     setText(String(next));
     setWarning(null);
     onChange(next);
@@ -81,7 +74,7 @@ export default function QtyStepper({
               ? "w-6 h-6 text-[#076935] hover:bg-[#076935] hover:text-white"
               : "w-8 h-8 hover:bg-[#076935] hover:text-white"
           }`}
-          onClick={() => step(-minQty)}
+          onClick={() => step(-1)}
           disabled={parsed <= minQty}
           aria-label="Decrease quantity"
         >
@@ -102,7 +95,7 @@ export default function QtyStepper({
               ? "w-6 h-6 text-[#076935] hover:bg-[#076935] hover:text-white"
               : "w-8 h-8 hover:bg-[#076935] hover:text-white"
           }`}
-          onClick={() => step(minQty)}
+          onClick={() => step(1)}
           aria-label="Increase quantity"
         >
           <Plus size={14} className="mx-auto" />
