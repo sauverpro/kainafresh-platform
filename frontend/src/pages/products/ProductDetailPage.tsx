@@ -453,7 +453,7 @@ export default function ProductDetailPage() {
                           Quantity ({product.unit || "kg"}):
                         </label>
                         <span className="text-[11px] text-gray-400">
-                          Min {minQty} · increments of {minQty}
+                          Min {minQty}
                         </span>
                       </div>
                       <QtyStepper

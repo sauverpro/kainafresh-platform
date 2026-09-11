@@ -71,14 +71,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ? (product.wholesale_min_qty ?? 1)
       : (product.retail_min_qty ?? 1);
 
-  const snapToMin = (value: number, product: CartProduct): number => {
+  const clampToMin = (value: number, product: CartProduct): number => {
     const min = Math.max(1, minQtyFor(product));
-    const snapped = Math.round(Math.max(1, Math.floor(value)) / min) * min;
-    return Math.max(min, snapped || min);
+    return Math.max(min, Math.floor(value));
   };
 
   const addToCart = (product: CartProduct, quantity: number = 1) => {
-    const snapped = snapToMin(quantity, product);
+    const clamped = clampToMin(quantity, product);
     setCartItems((prev) => {
       // Same product added under a different purchase type (retail vs
       // wholesale) stays as its own line because price/step differ.
@@ -90,14 +89,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const updated = [...prev];
         updated[existingIndex] = {
           ...updated[existingIndex],
-          quantity: snapToMin(
-            updated[existingIndex].quantity + snapped,
+          quantity: clampToMin(
+            updated[existingIndex].quantity + clamped,
             updated[existingIndex].product,
           ),
         };
         return updated;
       }
-      return [...prev, { product, quantity: snapped }];
+      return [...prev, { product, quantity: clamped }];
     });
     setIsCartOpen(true);
   };
@@ -118,7 +117,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         return {
           ...item,
-          quantity: snapToMin(quantity, item.product),
+          quantity: clampToMin(quantity, item.product),
         };
       })
     );
