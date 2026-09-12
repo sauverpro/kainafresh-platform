@@ -16,7 +16,7 @@ import Footer from "../../components/footer/Footer";
 import Loader from "../../components/Loader/Loader";
 import QtyStepper from "../../components/products/QtyStepper";
 import { apiGet } from "../../api/client";
-import { useCart, type CartProduct } from "../../context/CartContext";
+import { useCart, type CartProduct, type PurchaseType } from "../../context/CartContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import productPlaceholder from "../../assets/images/placeholder.png";
 
@@ -58,8 +58,8 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [purchaseType, setPurchaseType] = useState<"retail" | "wholesale">(
-    "wholesale",
+  const [purchaseType, setPurchaseType] = useState<PurchaseType>(
+    "retail",
   );
   const [addedToast, setAddedToast] = useState<string | null>(null);
 
@@ -199,6 +199,7 @@ export default function ProductDetailPage() {
         purchaseType,
       },
       qty,
+      purchaseType,
     );
     setAddedToast(
       `Added ${qty} ${product.unit || "item"} of ${product.name} (${

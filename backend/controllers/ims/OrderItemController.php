@@ -136,26 +136,7 @@ class OrderItemController extends BaseController
      */
     public function store($orderId)
     {
-         // get user id
-     $userid = $this->getAuthenticatedUserId();
-      $user = $this->userModel->findByUserId($userid);
-      if (!$user) {
-            http_response_code(401);
-            echo json_encode([
-                'success' => false,
-                'message' => 'You must be logged in'
-            ]);
-            return;
-      }
-    //   check if user is admin or sales_manager
-      if ($user['role'] !== 'admin' && $user['role'] !== 'sales_manager') {
-            http_response_code(403);
-            echo json_encode([
-                'success' => false,
-                'message' => 'Unathorized access.'
-            ]);
-            return;
-      }
+      
         $orderId = (int) $orderId;
 
         if (!$this->orderItemModel->orderExists($orderId)) {

@@ -31,7 +31,7 @@ class TeamController extends BaseController {
         }
 
         $data = $this->getRequestData();
-
+    //  check if phone number is unique
         $validation = $this->validateRequired($data,['name','role','phone_number','email']);
 
         if ($validation) {

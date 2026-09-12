@@ -43,7 +43,7 @@ interface OrderConfirmation {
 export default function Checkout() {
   usePageTitle("checkout", "Checkout");
 
-  const { cartItems, cartSubtotal, deliveryFee, cartTotal, clearCart } =
+  const { cartItems, cartSubtotal, deliveryFee, cartTotal, clearCart, orderSegment } =
     useCart();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -202,7 +202,7 @@ export default function Checkout() {
         phone: form.phone,
         email: form.email || "",
         address: `${form.address}, ${form.district}` || form.district,
-        segment: "individual",
+        segment:orderSegment === 'wholesale' ? 'wholesaler' : 'retailer',
       };
 
       const customerResponse = await apiPost<{
