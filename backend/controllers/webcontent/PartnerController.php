@@ -26,20 +26,16 @@ class PartnerController extends BaseController {
     }
     $data = array_merge($this->getRequestData(),$_POST);
 
-    if (!isset($_FILES['partner_logo'])) {
-        $this->jsonResponse([
-            'success' => false,
-            'message' => 'The partner_logo file is required.'
-        ], 422);
+    if (isset($_FILES['partner_logo']) && $_FILES['partner_logo']['error'] === UPLOAD_ERR_OK) {
+        try {
+        $uploadHelper = new UploadHelper();
+        $uploadResult = $uploadHelper->uploadLogo($_FILES['partner_logo']);
+        // store the public/path value expected by DB (Partner::$fillable includes partner_logo)
+        $data['partner_logo'] = $uploadResult['path'];
+    } catch (Exception $e) {
+        return $this->jsonResponse(['success' => false, 'message' => $e->getMessage()], 422);
     }
-    try {
-    $uploadHelper = new UploadHelper();
-    $uploadResult = $uploadHelper->uploadLogo($_FILES['partner_logo']);
-    // store the public/path value expected by DB (Partner::$fillable includes partner_logo)
-    $data['partner_logo'] = $uploadResult['path'];
-} catch (Exception $e) {
-    return $this->jsonResponse(['success' => false, 'message' => $e->getMessage()], 422);
-}
+    }
     $createdata = $this->partner->create($data);
     if($createdata){
         return $this->jsonResponse(['status'=>true,'data'=>$createdata],200);
