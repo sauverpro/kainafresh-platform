@@ -32,7 +32,7 @@ class TeamController extends BaseController {
 
         $data = $this->getRequestData();
 
-        $validation = $this->validateRequired($data,['name','role','initials','phone_number','email']);
+        $validation = $this->validateRequired($data,['name','role','phone_number','email']);
 
         if ($validation) {
             return $this->jsonResponse([
@@ -40,6 +40,13 @@ class TeamController extends BaseController {
                 'message' => $validation
             ], 422);
         }
+        // get initials from name
+        $nameParts = explode(' ', $data['name']);
+        $initials = '';
+        foreach ($nameParts as $part) {
+            $initials .= strtoupper(substr($part, 0, 1));
+        }
+        $data['initials'] = $initials;
 
         $team = $this->team_model->createTeam($data);
         if ($team) {
