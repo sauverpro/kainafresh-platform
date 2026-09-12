@@ -5,7 +5,8 @@ import { CartProvider } from "./context/CartContext";
 import { Toaster } from "sonner";
 import AppLayout from "./components/layout/AppLayout";
 import Placeholder from "./pages/Placeholder";
-import Loader from "./components/Loader/Loader";
+import PageShellSkeleton from "./components/skeletons/PageShellSkeleton";
+import ScrollToTop from "./components/common/ScrollToTop";
 import { isAuthenticated } from "./api/client";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import { canAccessPath, normalizeRole, DEFAULT_HOME } from "./auth/roleAccess";
@@ -25,6 +26,7 @@ const Signup = lazy(() => import("./pages/auth/Signup"));
 const About = lazy(() => import("./pages/about/About"));
 const Contact = lazy(() => import("./pages/contact/Contact"));
 const Wholesale = lazy(() => import("./pages/wholesale/Wholesale"));
+const TrackOrder = lazy(() => import("./pages/orders/TrackOrder"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 const CmsPage = lazy(() => import("./pages/cms/CmsPage"));
 const ProductsList = lazy(() => import("./pages/admin/Products/ProductsList"));
@@ -109,17 +111,12 @@ const routes = sideNavData
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Toaster position="top-right" richColors />
       <AuthProvider>
         <SidebarProvider>
           <CartProvider>
-          <Suspense
-            fallback={
-              <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-                <Loader text="Loading page..." />
-              </div>
-            }
-          >
+          <Suspense fallback={<PageShellSkeleton />}>
             <Routes>
               {/* Public E-Commerce & Info Routes */}
               <Route path="/" element={<Home />} />
@@ -131,6 +128,7 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/wholesale" element={<Wholesale />} />
+              <Route path="/track-order" element={<TrackOrder />} />
 
               {/* Authenticated Dashboard */}
               <Route

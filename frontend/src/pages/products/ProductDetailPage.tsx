@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
-import Loader from "../../components/Loader/Loader";
+import ProductDetailSkeleton from "../../components/skeletons/ProductDetailSkeleton";
 import QtyStepper from "../../components/products/QtyStepper";
 import { apiGet } from "../../api/client";
 import { useCart, type CartProduct, type PurchaseType } from "../../context/CartContext";
@@ -214,8 +214,9 @@ export default function ProductDetailPage() {
       <>
         <Navbar />
         <main className="pt-20 overflow-x-hidden font-sans bg-[#FFFDF9] min-h-screen">
-          <Loader text="Loading fresh organic product..." />
+          <ProductDetailSkeleton />
         </main>
+        <Footer />
       </>
     );
   }
@@ -493,6 +494,43 @@ export default function ProductDetailPage() {
                 </div>
               </div>
             </section>
+
+            {/* Mobile App Floating Sticky Purchase Bar */}
+            <div className="md:hidden fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] left-0 right-0 z-[80] bg-white/95 backdrop-blur-md border-t border-gray-200/80 px-4 py-2.5 shadow-lg flex items-center justify-between gap-3 animate-fade-in-up">
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                  {purchaseType === "wholesale" ? "Wholesale Total" : "Retail Total"}
+                </span>
+                <strong
+                  className="text-lg font-bold text-[#076935] truncate"
+                  style={{ fontFamily: "var(--font-heading)" }}
+                >
+                  RWF {lineTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </strong>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <QtyStepper
+                  key={`mobile-${purchaseType}-${minQty}`}
+                  value={quantity}
+                  onChange={setQuantity}
+                  min={minQty}
+                  unit={product.unit || "kg"}
+                  size="sm"
+                />
+
+                <button
+                  type="button"
+                  disabled={!product.inStock}
+                  onClick={handleAddToCart}
+                  className="inline-flex items-center justify-center gap-1.5 bg-[#076935] active:scale-95 text-white py-2.5 px-4 rounded-xl font-bold text-xs shadow-sm transition-all disabled:opacity-50 shrink-0 cursor-pointer"
+                  style={{ fontFamily: "var(--font-heading)" }}
+                >
+                  <ShoppingCart size={15} />
+                  {product.inStock ? "Add" : "Out"}
+                </button>
+              </div>
+            </div>
           </>
         )}
       </main>

@@ -1,0 +1,125 @@
+/**
+ * Mobile Bottom Navigation Dock Styling
+ */
+
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 990;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(7, 105, 53, 0.12);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+  padding-bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));
+  padding-top: 0.35rem;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Hide on tablet and desktop screens */
+@media (min-width: 768px) {
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+}
+
+.mobile-bottom-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 0.5rem;
+}
+
+.mobile-nav-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  background: transparent;
+  border: none;
+  color: #6B7280;
+  text-decoration: none;
+  font-family: var(--font-body, inherit);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+  border-radius: 14px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  flex: 1;
+  max-width: 80px;
+}
+
+.mobile-nav-tab:active {
+  transform: scale(0.90);
+}
+
+.tab-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 28px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.tab-label {
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+/* Active State */
+.mobile-nav-tab.active {
+  color: #076935;
+  font-weight: 700;
+}
+
+.mobile-nav-tab.active .tab-icon-wrapper {
+  background: rgba(7, 105, 53, 0.1);
+  color: #076935;
+}
+
+/* Badge for Cart */
+.cart-badge-pill {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: #E53E3E;
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 999px;
+  box-shadow: 0 2px 5px rgba(229, 62, 62, 0.4);
+  border: 1.5px solid #ffffff;
+}
+
+/* Dark mode overrides */
+.dark .mobile-bottom-nav {
+  background: rgba(15, 23, 42, 0.94);
+  border-top-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark .mobile-nav-tab {
+  color: #94A3B8;
+}
+
+.dark .mobile-nav-tab.active {
+  color: #10B981;
+}
+
+.dark .mobile-nav-tab.active .tab-icon-wrapper {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+}

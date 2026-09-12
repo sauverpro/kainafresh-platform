@@ -109,8 +109,9 @@
   gap: 0.75rem;
 }
 
-/* Shopping Cart Button */
-.nav-cart-btn {
+/* Shopping Cart & Action Icon Buttons */
+.nav-cart-btn,
+.nav-action-btn {
   position: relative;
   width: 40px;
   height: 40px;
@@ -122,10 +123,12 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  text-decoration: none;
   transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
-.nav-cart-btn:hover {
+.nav-cart-btn:hover,
+.nav-action-btn:hover {
   background: var(--color-primary);
   color: white;
   transform: translateY(-2px);
@@ -197,6 +200,187 @@
   transform: scale(1.05);
 }
 
+/* ── User Profile Dropdown ────────────────────────────── */
+.profile-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.nav-profile-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.55rem 0.25rem 0.35rem;
+  height: 40px;
+  border-radius: 50px;
+  background: rgba(7, 105, 53, 0.08);
+  border: 1px solid rgba(7, 105, 53, 0.18);
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-profile-btn:hover,
+.nav-profile-btn.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(7, 105, 53, 0.2);
+}
+
+.nav-profile-btn .user-initials {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.nav-profile-btn:hover .user-initials,
+.nav-profile-btn.active .user-initials {
+  background: var(--color-secondary);
+  color: white;
+}
+
+.nav-profile-btn .chevron-icon {
+  transition: transform 0.25s ease;
+  opacity: 0.8;
+}
+
+.nav-profile-btn .chevron-icon.open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Card */
+.profile-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 240px;
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid rgba(7, 105, 53, 0.15);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(7, 105, 53, 0.05);
+  padding: 0.75rem;
+  z-index: 1100;
+}
+
+.profile-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.25rem 0.75rem 0.25rem;
+}
+
+.profile-header-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #076935 0%, #15803d 100%);
+  color: white;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(7, 105, 53, 0.25);
+  flex-shrink: 0;
+}
+
+.profile-header-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.profile-user-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-user-role {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #076935;
+  background: rgba(7, 105, 53, 0.08);
+  padding: 0.1rem 0.5rem;
+  border-radius: 12px;
+  display: inline-block;
+  margin-top: 0.15rem;
+  width: fit-content;
+}
+
+.profile-menu-divider {
+  height: 1px;
+  background: #f3f4f6;
+  margin: 0.4rem 0;
+}
+
+.profile-menu-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.profile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 12px;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.profile-menu-item:hover {
+  background: rgba(7, 105, 53, 0.06);
+  color: #076935;
+  transform: translateX(2px);
+}
+
+.profile-menu-item svg {
+  color: #076935;
+}
+
+.profile-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 12px;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e11d48;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.profile-logout-btn:hover {
+  background: #fff1f2;
+  color: #be123c;
+}
+
 /* Hamburger toggle — hidden on desktop */
 .navbar-toggle {
   display: none;
@@ -243,15 +427,16 @@
     top: 0;
     right: -100%;
     height: 100dvh;
-    width: 72%;
-    max-width: 280px;
+    width: 78%;
+    max-width: 300px;
     background-color: var(--color-background);
     flex-direction: column;
-    justify-content: center;
-    padding: 2rem;
-    box-shadow: -6px 0 30px rgba(0, 0, 0, 0.08);
+    justify-content: flex-start;
+    padding: 5rem 1.75rem 2rem 1.75rem;
+    box-shadow: -6px 0 30px rgba(0, 0, 0, 0.12);
     transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1000;
+    overflow-y: auto;
   }
 
   .navbar-links.active {
@@ -262,23 +447,49 @@
     position: static;
     transform: none;
     flex-direction: column;
-    gap: 1.75rem;
+    align-items: flex-start;
+    gap: 1.5rem;
+    width: 100%;
     margin-bottom: 2rem;
   }
 
-  .navbar-links a {
-    font-size: 1.15rem;
+  .nav-icon-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.35rem 0;
+    font-size: 1.1rem;
+  }
+
+  .nav-icon-link svg {
+    font-size: 1.25rem;
+    shrink: 0;
   }
 
   .navbar-actions {
-    flex-direction: column;
+    flex-direction: flex-start;
+    align-items: flex-start;
     width: 100%;
+    gap: 1rem;
     margin-left: 0;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(7, 105, 53, 0.12);
   }
 
   .navbar-actions .btn,
   .navbar-actions .btn-outline {
     width: 100%;
-    text-align: center;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .profile-dropdown-menu {
+    right: auto;
+    left: 0;
+    width: 100%;
+    max-width: 250px;
   }
 }

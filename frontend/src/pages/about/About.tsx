@@ -67,8 +67,7 @@ interface CmsSection { type: string; content: HeroContent & StatsContent & Story
  * 3. Integrated glassmorphic page loading screen during database fetch.
  */
 
-// Import centered page loader component
-import Loader from '../../components/Loader/Loader';
+import PageShellSkeleton from '../../components/skeletons/PageShellSkeleton';
 
 /**
  * About Functional Component.
@@ -234,14 +233,7 @@ function About() {
 
   // Render a stable page shell (header) with a centered loader while fetching
   if (loading) {
-    return (
-      <>
-        <Navbar />
-        <main className="about-page">
-          <Loader text="Loading farm story and credentials from database..." />
-        </main>
-      </>
-    );
+    return <PageShellSkeleton />;
   }
 
   return (

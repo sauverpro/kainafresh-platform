@@ -25,6 +25,7 @@ import { usePageTitle } from '../../../hooks/usePageTitle';
 import { apiGet, apiPut } from '../../../api/client';
 import { toast } from "sonner";
 import StatusDropdown, { type StatusOption } from '../../../components/ui/StatusDropdown';
+import TableSkeleton from '../../../components/ui/TableSkeleton';
 
 // Backend order item shape: GET /api/orders/{orderId}/items
 interface BackendOrderItem {
@@ -617,14 +618,7 @@ export default function OrdersList() {
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
               {loading ? (
-                <tr>
-                  <td colSpan={8} className="py-16 text-center text-gray-500">
-                    <Loader2 size={32} className="mx-auto mb-3 animate-spin text-[#076935]" />
-                    <p className="font-bold text-base text-gray-700" style={{ fontFamily: 'var(--font-heading)' }}>
-                      Loading orders...
-                    </p>
-                  </td>
-                </tr>
+                <TableSkeleton columns={8} rows={5} />
               ) : filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-16 text-center text-gray-500">

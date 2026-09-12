@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Search, Leaf, X, Clock, SlidersHorizontal } from "lucide-react";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
-import Loader from "../../components/Loader/Loader";
 import ProductSkeleton from "../../components/ui/ProductSkeleton";
 import { apiGet } from "../../api/client";
 import type { CartProduct } from "../../context/CartContext";
@@ -309,9 +308,25 @@ export default function OurProducts() {
     return (
       <>
         <Navbar />
-        <main className="pt-20 overflow-x-hidden font-sans bg-[#FFFDF9] min-h-screen">
-          <Loader text="Loading fresh organic products from database..." />
+        <main
+          className="pt-20 overflow-x-hidden font-sans bg-[#FFFDF9] min-h-screen"
+          style={{ fontFamily: "var(--font-body)" }}
+        >
+          <section className="py-10 px-6 md:px-[5%] pb-24">
+            <div className="max-w-7xl mx-auto space-y-6">
+              <div className="skeleton-shimmer h-12 max-w-2xl mx-auto rounded-full my-4" />
+              <div className="flex gap-3 overflow-x-auto py-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="skeleton-shimmer h-9 w-28 rounded-full shrink-0" />
+                ))}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-4">
+                <ProductSkeleton count={8} />
+              </div>
+            </div>
+          </section>
         </main>
+        <Footer />
       </>
     );
   }

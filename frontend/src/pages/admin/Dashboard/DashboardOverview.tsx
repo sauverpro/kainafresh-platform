@@ -24,6 +24,7 @@ import {
 
 // Import Bento grid dashboard stylesheet
 import './DashboardOverview.css';
+import DashboardSkeleton from '../../../components/skeletons/DashboardSkeleton';
 
 /**
  * Mock Recent Orders Dataset representing order transactions.
@@ -36,12 +37,20 @@ const RECENT_ORDERS = [
   { id: 'ORD-8443', customer: 'Michael Brown', date: '24.08.2026', total: 35.50, status: 'delivered' },
 ];
 
+interface DashboardOverviewProps {
+  isLoading?: boolean;
+}
+
 /**
  * DashboardOverview Functional Component.
  */
-function DashboardOverview() {
+function DashboardOverview({ isLoading = false }: DashboardOverviewProps) {
   // Calendar day selector active index state
   const [activeDay, setActiveDay] = useState(19);
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
 
   /**
    * Helper function to render styled status badge pills with Lucide icons.

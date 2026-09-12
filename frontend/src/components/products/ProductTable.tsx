@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductStore, type Product } from "../../store/useProductStore";
-import Loader from "../Loader/Loader";
 import TableSkeleton from "../ui/TableSkeleton";
 import ConfirmDeleteModal from "../ui/ConfirmDeleteModal";
 
@@ -238,11 +237,8 @@ export default function ProductTable({
       </div>
 
       {/* 3. Products Data Table */}
-      {loading ? (
-        <Loader text="Loading catalog..." />
-      ) : (
-        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-gray-900">
-          <div className="overflow-x-auto">
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-gray-900">
+        <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase tracking-wider dark:bg-white/5 dark:border-white/10 dark:text-gray-400">
                 <tr>
@@ -358,7 +354,6 @@ export default function ProductTable({
             </table>
           </div>
         </div>
-      )}
 
       {/* Delete Confirmation Modal */}
       <ConfirmDeleteModal

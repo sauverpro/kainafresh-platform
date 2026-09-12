@@ -115,8 +115,7 @@ interface ApiUnit {
  * 5. Full glassmorphic page loading overlay while data retrieves.
  */
 
-// Import centered page loader for smooth database retrieval loading states
-import Loader from "../../components/Loader/Loader";
+import PageShellSkeleton from "../../components/skeletons/PageShellSkeleton";
 
 /**
  * Main Home Landing Page Functional Component.
@@ -309,14 +308,7 @@ function Home() {
 
   // Render a stable page shell (header) with a centered loader while fetching
   if (loading) {
-    return (
-      <>
-        <Navbar />
-        <main className="home-page">
-          <Loader text="Fetching fresh produce data from database..." />
-        </main>
-      </>
-    );
+    return <PageShellSkeleton />;
   }
 
   return (

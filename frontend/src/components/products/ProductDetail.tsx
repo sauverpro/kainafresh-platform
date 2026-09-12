@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductStore } from "../../store/useProductStore";
-import Loader from "../Loader/Loader";
+import ProductDetailSkeleton from "../skeletons/ProductDetailSkeleton";
 import Modal from "../ui/Modal";
 import ConfirmDeleteModal from "../ui/ConfirmDeleteModal";
 import ProductForm from "./ProductForm";
@@ -63,7 +63,7 @@ export default function ProductDetail() {
   return (
     <>
       {loading ? (
-        <Loader text="Loading product..." />
+        <ProductDetailSkeleton />
       ) : error || !selected ? (
         <div className="products-dashboard">
           <div className="auth-error-banner">

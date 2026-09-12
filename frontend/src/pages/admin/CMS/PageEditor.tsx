@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiGet, apiPut, apiPost } from '../../../api/client';
-import Loader from '../../../components/Loader/Loader';
+import DashboardSkeleton from '../../../components/skeletons/DashboardSkeleton';
 import TeamManagement from '../Team/TeamManagement';
 import PartnerManagement from '../Partners/PartnerManagement';
 
@@ -501,8 +501,8 @@ function PageEditor() {
     fetchPageData();
   }, [slug]);
 
-  // Display the custom centered page loader while the schema is loading
-  if (loading) return <Loader text="Loading CMS page schema & sections from database..." />;
+  // Display the custom centered page skeleton while the schema is loading
+  if (loading) return <DashboardSkeleton />;
   if (error) return <div className="cms-error"><AlertCircle /> {error}</div>;
   if (!page) return <div className="cms-error">Page not found.</div>;
 

@@ -3,7 +3,7 @@ import { X, ShoppingBag, Trash2, ArrowRight } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import QtyStepper from '../products/QtyStepper';
 import placeholderImg from '../../assets/images/placeholder.png';
-
+import './CartDrawer.css';
 
 export default function CartDrawer() {
   const {
@@ -36,15 +36,18 @@ export default function CartDrawer() {
 
   return (
     <div
-      className="fixed inset-0 bg-black/45 backdrop-blur-xs z-[1000] flex justify-end transition-opacity duration-300"
+      className="cart-drawer-overlay"
       onClick={closeCart}
     >
       <div
-        className="w-full max-w-[440px] h-full bg-[#FFFDF9] flex flex-col shadow-2xl font-sans transform transition-transform duration-300 ease-out"
+        className="cart-drawer-panel bg-[#FFFDF9] flex flex-col shadow-2xl font-sans"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-label="Shopping Basket"
       >
+        {/* Mobile Drag Handle Indicator */}
+        <div className="mobile-drag-handle" />
+
         {/* Header */}
         <div className="p-5 flex items-center justify-between border-b border-[#076935]/15 bg-white">
           <div className="flex items-center gap-3">
