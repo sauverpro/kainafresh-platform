@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 10, 2026 at 03:34 PM
+-- Generation Time: Sep 12, 2026 at 11:46 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -78,7 +78,8 @@ INSERT INTO `auth_tokens` (`id`, `user_id`, `token`, `ip_address`, `user_agent`,
 (33, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg4OTQ5NTI2LCJpYXQiOjE3ODg5NDU5MjYsImlzcyI6ImxvY2FsaG9zdCJ9.fo4G4c0ivwftZKkTJsb6ei0B59ohikVFV0KoSIGdEfo', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-09 10:25:26', '2026-09-09 09:25:26', '2026-09-09 09:25:26'),
 (34, 6, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo2LCJ1c2VybmFtZSI6ImFuZ2UiLCJlbWFpbCI6ImFuZ2VAZ21haWwuY29tIiwiZXhwIjoxNzg4OTUwMDI4LCJpYXQiOjE3ODg5NDY0MjgsImlzcyI6ImxvY2FsaG9zdCJ9.w8INHsZB-nIBob4OvkbrutN_ybNgTLIK26Bf4GnxcYA', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-09 10:33:48', '2026-09-09 09:33:48', '2026-09-09 09:33:48'),
 (35, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg5MDQ4OTE4LCJpYXQiOjE3ODkwNDUzMTgsImlzcyI6ImxvY2FsaG9zdCJ9.w8hW9fUjLYPGIZfTMvOyo9uT4mzREF5wL5XLfL7Aw_8', '127.0.0.1', 'PostmanRuntime/7.49.1', '2026-09-10 14:01:58', '2026-09-10 13:01:58', '2026-09-10 13:01:58'),
-(36, 7, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo3LCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIzIiwiZW1haWwiOiJpcmFkdTJAa2FpbmFmcmVzaC5ydyIsImV4cCI6MTc4OTA0ODk3OCwiaWF0IjoxNzg5MDQ1Mzc4LCJpc3MiOiJsb2NhbGhvc3QifQ.uXBpZosIwgXHSt0up6KMWwvPAoWCDPk3zp5nchZUV1A', '127.0.0.1', 'PostmanRuntime/7.49.1', '2026-09-10 14:02:58', '2026-09-10 13:02:58', '2026-09-10 13:02:58');
+(36, 7, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo3LCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIzIiwiZW1haWwiOiJpcmFkdTJAa2FpbmFmcmVzaC5ydyIsImV4cCI6MTc4OTA0ODk3OCwiaWF0IjoxNzg5MDQ1Mzc4LCJpc3MiOiJsb2NhbGhvc3QifQ.uXBpZosIwgXHSt0up6KMWwvPAoWCDPk3zp5nchZUV1A', '127.0.0.1', 'PostmanRuntime/7.49.1', '2026-09-10 14:02:58', '2026-09-10 13:02:58', '2026-09-10 13:02:58'),
+(37, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg5MjAzNjUzLCJpYXQiOjE3ODkyMDAwNTMsImlzcyI6ImxvY2FsaG9zdCJ9.C0HJhrBfw5LFmSj-K1xDBsC8XBU0ZiPFeKnyuvUzvA8', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-12 09:00:53', '2026-09-12 08:00:53', '2026-09-12 08:00:53');
 
 -- --------------------------------------------------------
 
@@ -135,7 +136,9 @@ INSERT INTO `customers` (`id`, `first_name`, `last_name`, `phone`, `email`, `add
 (4, 'Aimable', 'SHYAKA', '0798844551', 'iradukunda2@kainafresh.rw', ', Other District (Upcountry)', 'wholesaler', '2026-09-07 12:37:15', '2026-09-07 12:37:15'),
 (12, 'Jane', 'Doe', '799966777', 'jane@gmail.com', ', Bugesera / Outer Kigali', 'distributor', '2026-09-07 12:47:28', '2026-09-07 12:47:28'),
 (13, 'joe', 'do', '07899999', 'joedon@gmail.com', ', Kigali - Gasabo', 'individual', '2026-09-08 07:52:24', '2026-09-08 07:52:24'),
-(14, 'Uwimana', 'Fulgence', '250788860610', 'iradukundaflu2@gmail.com', ', Kigali - Gasabo', 'individual', '2026-09-09 13:40:50', '2026-09-09 13:40:50');
+(14, 'Uwimana', 'Fulgence', '250788860610', 'iradukundaflu2@gmail.com', 'Kigali - Gasabo', 'individual', '2026-09-09 13:40:50', '2026-09-12 08:26:01'),
+(15, 'Arsene MUSAFIRI', 'INGENZI', '+250788860612', 'arsenem@kainafresh.rw', ', Kigali - Gasabo', 'individual', '2026-09-12 08:23:34', '2026-09-12 08:23:34'),
+(16, 'Arsene MUSAFIRI', 'INGENZI', '+2507888606123', 'delphineuwera01@gmail.com', ', Kigali - Gasabo', 'wholesaler', '2026-09-12 09:39:56', '2026-09-12 09:39:56');
 
 -- --------------------------------------------------------
 
@@ -256,7 +259,9 @@ INSERT INTO `orders` (`id`, `user_id`, `customer_id`, `order_date`, `status`, `t
 (3, 1, 4, '2026-09-07 17:37:15', 'pending', 30000.00, 'ecommerce', '2026-09-07 12:37:15', '2026-09-07 12:37:15'),
 (4, 1, 12, '2026-09-07 17:47:28', 'pending', 42500.00, 'ecommerce', '2026-09-07 12:47:28', '2026-09-07 12:47:28'),
 (5, 2, 13, '2026-09-08 12:52:24', 'pending', 225000.00, 'ecommerce', '2026-09-08 07:52:24', '2026-09-08 07:52:24'),
-(6, 6, 14, '2026-09-09 18:40:50', 'pending', 750000.00, 'ecommerce', '2026-09-09 13:40:50', '2026-09-09 13:40:50');
+(6, 6, 14, '2026-09-09 18:40:50', 'pending', 750000.00, 'ecommerce', '2026-09-09 13:40:50', '2026-09-09 13:40:50'),
+(7, 2, 15, '2026-09-12 13:23:34', 'pending', 2000000.00, 'ecommerce', '2026-09-12 08:23:34', '2026-09-12 08:23:34'),
+(8, 1, 16, '2026-09-12 14:39:56', 'pending', 680000.00, 'ecommerce', '2026-09-12 09:39:56', '2026-09-12 09:39:56');
 
 -- --------------------------------------------------------
 
@@ -286,7 +291,9 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `unit_pri
 (4, 4, 2, 1.000, 30000.00, 30000.00, '2026-09-07 12:47:28', '2026-09-07 12:47:28'),
 (5, 4, 1, 5.000, 2500.00, 12500.00, '2026-09-07 12:47:28', '2026-09-07 12:47:28'),
 (6, 5, 3, 10.000, 25000.00, 250000.00, '2026-09-08 07:52:24', '2026-09-08 07:52:24'),
-(7, 6, 3, 30.000, 25000.00, 750000.00, '2026-09-09 13:40:50', '2026-09-09 13:40:50');
+(7, 6, 3, 30.000, 25000.00, 750000.00, '2026-09-09 13:40:50', '2026-09-09 13:40:50'),
+(8, 7, 3, 100.000, 25000.00, 2500000.00, '2026-09-12 08:23:34', '2026-09-12 08:23:34'),
+(9, 8, 3, 34.000, 25000.00, 850000.00, '2026-09-12 09:39:56', '2026-09-12 09:39:56');
 
 -- --------------------------------------------------------
 
@@ -378,7 +385,9 @@ CREATE TABLE `partners` (
 --
 
 INSERT INTO `partners` (`id`, `partner_name`, `partner_logo`, `partner_link`, `created_at`, `updated_at`) VALUES
-(2, 'ICT CHamber', '/uploads/logos/6a95ec22dc6be.jpeg', 'ictchamber', '2026-08-31 21:03:30', '2026-08-31 21:03:30');
+(2, 'ICT CHamber', '/uploads/logos/6a95ec22dc6be.jpeg', 'ictchamber', '2026-08-31 21:03:30', '2026-08-31 21:03:30'),
+(3, 'NAEB', '/uploads/logos/6aa50726ef70d.png', 'https://www.naeb.gov.rw/', '2026-09-12 08:02:46', '2026-09-12 08:02:46'),
+(4, 'REMA', '/uploads/logos/6aa507a36be7c.png', 'https://www.rema.gov.rw/home', '2026-09-12 08:04:51', '2026-09-12 08:04:51');
 
 -- --------------------------------------------------------
 
@@ -494,7 +503,8 @@ CREATE TABLE `team` (
 
 INSERT INTO `team` (`id`, `name`, `role`, `initials`, `phone_number`, `email`, `status`, `created_at`, `updated_at`) VALUES
 (1, 'Esther Esther', 'Founder & Farm Director', 'EE', '078888888', 'esther@kainafresh.rw', 'active', '2026-08-22 19:05:46', '2026-08-22 19:05:46'),
-(2, 'IRADUKUNDA Fulgence', 'IT Support  Director', 'IF', '078888888', 'ira@kainafresh.rw', 'active', '2026-08-23 14:17:54', '2026-08-23 14:17:54');
+(2, 'IRADUKUNDA Fulgence', 'IT Support  Director', 'IF', '078888888', 'ira@kainafresh.rw', 'active', '2026-08-23 14:17:54', '2026-08-23 14:17:54'),
+(3, 'Arsene MUSAFIRI INGENZI', 'Marketing Officer', 'AMI', '+250788860611', 'arsenem@kainafresh.rw', 'active', '2026-09-12 08:07:03', '2026-09-12 08:07:03');
 
 -- --------------------------------------------------------
 
@@ -678,7 +688,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `auth_tokens`
 --
 ALTER TABLE `auth_tokens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `contacts`
@@ -690,7 +700,7 @@ ALTER TABLE `contacts`
 -- AUTO_INCREMENT for table `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `inquiry`
@@ -714,13 +724,13 @@ ALTER TABLE `navlinks`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `pages`
@@ -738,7 +748,7 @@ ALTER TABLE `page_sections`
 -- AUTO_INCREMENT for table `partners`
 --
 ALTER TABLE `partners`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -762,7 +772,7 @@ ALTER TABLE `stocks`
 -- AUTO_INCREMENT for table `team`
 --
 ALTER TABLE `team`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `units`
