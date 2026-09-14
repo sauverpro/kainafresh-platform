@@ -327,3 +327,50 @@ $router->addRoute(
     '/api/order-items/{id}',
     'OrderItemController@destroy','auth'
 );
+
+
+/*
+|--------------------------------------------------------------------------
+| HR - Departments
+|--------------------------------------------------------------------------
+*/
+
+// Get all departments
+$router->addRoute(
+    'GET',
+    '/api/departments',
+    'DepartmentController@index',
+    
+);
+
+// Get single department
+$router->addRoute(
+    'GET',
+    '/api/departments/{id}',
+    'DepartmentController@show',
+    'auth'
+);
+
+// Create department
+$router->addRoute(
+    'POST',
+    '/api/departments',
+    'DepartmentController@store',
+    // 'auth'
+);
+
+// Update department
+$router->addRoute(
+    'PUT',
+    '/api/departments/{id}',
+    'DepartmentController@update',
+    'auth'
+);
+
+// Delete department
+$router->addRoute(
+    'DELETE',
+    '/api/departments/{id}',
+    'DepartmentController@delete',
+    'auth'
+);
