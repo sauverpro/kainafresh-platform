@@ -1,12 +1,13 @@
 <?php
 
-class PageController
+class PageController extends BaseController
 {
     protected $page;
-
+    protected $userModel;
     public function __construct()
     {
         $this->page = new Page();
+        $this->userModel = new User();
     }
 
     /**
@@ -75,6 +76,27 @@ class PageController
      */
     public function store()
     {
+
+    // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in to create a page'
+            ]);
+            return;
+      }
+    //   check if user is admin
+      if ($user['role'] !== 'admin') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You do not have permission to create a page'
+            ]);
+            return;
+      }
         $data = json_decode(file_get_contents('php://input'), true);
 
         if (!is_array($data)) {
@@ -163,6 +185,27 @@ class PageController
      */
     public function update($id)
     {
+
+    // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+    //   check if user is admin
+      if ($user['role'] !== 'admin') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unauthorized access.'
+            ]);
+            return;
+      }
         $id = (int) $id;
 
         $existingPage = $this->page->find($id);
@@ -267,6 +310,27 @@ class PageController
      */
     public function destroy($id)
     {
+
+    // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+    //   check if user is admin
+      if ($user['role'] !== 'admin') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unathorized access.'
+            ]);
+            return;
+      }
         $id = (int) $id;
 
         $existingPage = $this->page->find($id);

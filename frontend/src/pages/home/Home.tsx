@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Leaf,
-  ShoppingCart,
   Truck,
   ShieldCheck,
   ChevronDown,
@@ -18,7 +17,7 @@ import Footer from "../../components/footer/Footer";
 import PartnersSection from "../../components/partners/PartnersSection";
 import { apiGet } from "../../api/client";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { useCart, type CartProduct } from '../../context/CartContext';
+import type { CartProduct } from '../../context/CartContext';
 
 /**
  * Home Page
@@ -116,8 +115,7 @@ interface ApiUnit {
  * 5. Full glassmorphic page loading overlay while data retrieves.
  */
 
-// Import centered page loader for smooth database retrieval loading states
-import Loader from "../../components/Loader/Loader";
+import PageShellSkeleton from "../../components/skeletons/PageShellSkeleton";
 
 /**
  * Main Home Landing Page Functional Component.
@@ -125,7 +123,7 @@ import Loader from "../../components/Loader/Loader";
 function Home() {
   // Update document HTML title tag for SEO optimization
   usePageTitle("home", "Home");
-  const { addToCart } = useCart();
+  const navigate = useNavigate();
   // Dynamic CMS state definitions
   const [cmsHero, setCmsHero] = useState<HeroContent | null>(null);
   const [cmsValueProps, setCmsValueProps] = useState<ValuePropsContent | null>(null);
@@ -310,14 +308,7 @@ function Home() {
 
   // Render a stable page shell (header) with a centered loader while fetching
   if (loading) {
-    return (
-      <>
-        <Navbar />
-        <main className="home-page">
-          <Loader text="Fetching fresh produce data from database..." />
-        </main>
-      </>
-    );
+    return <PageShellSkeleton />;
   }
 
   return (
@@ -452,15 +443,16 @@ function Home() {
             </Link>
           </div>
 
-          {/* ── UPDATED: Now using API products with 4 per row ── */}
-          <div className="fp-grid" style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(4, 1fr)', 
-            gap: '1.5rem' 
-          }}>
+         
+          <div className="fp-grid" >
             {featuredProducts.length > 0 ? (
               featuredProducts.map((product) => (
-                <div key={product.id} className="product-card card">
+                <div
+                  key={product.id}
+                  className="product-card card"
+                  onClick={() => navigate(`/product/${product.id}`)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="product-img-wrap">
                     <img
                       src={product.image}
@@ -484,19 +476,6 @@ function Home() {
                         </strong>
                         <span>{product.unit}</span>
                       </div>
-                      <button
-                        className="btn btn-primary product-order-btn"
-                        disabled={!product.inStock}
-                        onClick={() => addToCart(product)}
-                      >
-                        <ShoppingCart size={14} />
-                        Order
-                      </button>
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-gray-100 text-right">
-                      <Link to={`/products`} className="text-xs font-semibold text-[#076935] hover:text-[#F39927] inline-flex items-center gap-1">
-                        View Product Details <ArrowRight size={12} />
-                      </Link>
                     </div>
                   </div>
                 </div>

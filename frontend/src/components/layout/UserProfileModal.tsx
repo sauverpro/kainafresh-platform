@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X, AlertCircle, Loader2, KeyRound, UserRoundPen, Mail, Phone, User } from "lucide-react";
-import { apiPost, apiPut } from "../../api/client";
+import { apiGet, apiPost, apiPut, type UserProfile } from "../../api/client";
 import { useAuth } from "../../auth/AuthContext";
 import { toast } from "sonner";
 import Modal from "../ui/Modal";
@@ -27,7 +27,52 @@ export default function UserProfileModal({ open, onClose }: UserProfileModalProp
     new_password: "",
   });
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const applyUser = (data: UserProfile | null | undefined) => {
+    setProfile({
+      username: data?.username || "",
+      full_name: data?.full_name || "",
+      email: data?.email || "",
+      phone_number: data?.phone_number || "",
+      current_password: "",
+      new_password: "",
+    });
+  };
+
+  // Refresh the profile with fresh data from the backend whenever the modal opens.
+  useEffect(() => {
+    if (!open) return;
+
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    const load = async () => {
+      try {
+        const res = await apiGet<{
+          success?: boolean;
+          data?: { user?: UserProfile };
+        }>("/api/auth/me");
+        const freshUser = res.data?.user;
+        if (!cancelled) {
+          if (freshUser) setUser(freshUser);
+          applyUser(freshUser ?? user);
+        }
+      } catch {
+        if (!cancelled) applyUser(user);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const setField = (field: keyof typeof profile, value: string) => {
     setProfile((prev) => ({ ...prev, [field]: value }));
@@ -97,6 +142,12 @@ export default function UserProfileModal({ open, onClose }: UserProfileModalProp
           <span>{error}</span>
         </div>
       )}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center gap-3 py-12 text-gray-500">
+          <Loader2 size={24} className="animate-spin" />
+          <span className="text-sm">Loading your profile...</span>
+        </div>
+      ) : (
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
@@ -194,6 +245,7 @@ export default function UserProfileModal({ open, onClose }: UserProfileModalProp
           </button>
         </div>
       </form>
+      )}
     </Modal>
   );
 }

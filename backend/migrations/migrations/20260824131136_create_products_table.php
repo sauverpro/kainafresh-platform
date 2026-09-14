@@ -51,6 +51,28 @@ class CreateProductsTable extends Migration
                 'name' => 'status',
                 'type' => "ENUM('active','inactive')",
                 'default' => 'active'
+            ],
+            
+            [
+                'name' => 'wholesale_price',
+                'type' => 'DECIMAL',
+                'length' => '12,2',
+                'nullable' => false,
+                'default' => '0.00'
+            ],
+
+            [
+                'name' => 'wholesale_min_qty',
+                'type' => 'INT',
+                'nullable' => false,
+                'default' => 1
+            ],
+
+            [
+                'name' => 'retail_min_qty',
+                'type' => 'INT',
+                'nullable' => false,
+                'default' => 1
             ]
         ]);
 

@@ -235,3 +235,18 @@ a {
     animation: none !important;
   }
 }
+
+/* ── Mobile App Touch & Scroll Optimizations ── */
+@media (max-width: 767px) {
+  html, body {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Ensure page content has bottom padding so mobile dock does not obscure footers */
+  main.wholesale-page,
+  main.track-order-page,
+  main {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}

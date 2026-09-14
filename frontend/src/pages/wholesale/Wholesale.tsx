@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
+import PageShellSkeleton from "../../components/skeletons/PageShellSkeleton";
 import { apiGet,apiPost } from "../../api/client";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import "./Wholesale.css";
@@ -177,8 +178,7 @@ const PRODUCT_CATEGORIES = [
  * 3. Integrated glassmorphic page loading screen during database fetch.
  */
 
-// Import PageLoader component for database retrieval loading overlay
-import Loader from "../../components/Loader/Loader";
+
 
 
 
@@ -375,14 +375,7 @@ function Wholesale() {
   };
 
   if (pageLoading) {
-    return (
-      <>
-        <Navbar />
-        <main className="wholesale-page">
-          <Loader text="Loading wholesale catalog and export details..." />
-        </main>
-      </>
-    );
+    return <PageShellSkeleton />;
   }
 
   return (

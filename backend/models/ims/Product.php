@@ -13,7 +13,11 @@ class Product extends Model
         'unit_id',
         'shelf_life',
         'price',
-        'status'
+        'status',
+        'wholesale_price',
+        'wholesale_min_qty',
+        'retail_min_qty'
+
     ];
 
     /**

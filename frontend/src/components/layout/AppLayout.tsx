@@ -12,7 +12,7 @@ export default function AppLayout() {
   const railExpanded = isExpanded || isHovered;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
       <Sidebar />
 
       {/* Mobile backdrop */}
@@ -25,12 +25,12 @@ export default function AppLayout() {
 
       <div
         className={[
-          "transition-all duration-300 ease-in-out",
+          "flex flex-1 flex-col min-h-screen bg-gray-50 dark:bg-gray-950 transition-all duration-300 ease-in-out",
           railExpanded ? "lg:ml-[260px]" : "lg:ml-[84px]",
         ].join(" ")}
       >
         <Header onOpenProfile={() => setProfileOpen(true)} />
-        <main className="px-6 py-4 lg:px-8 lg:py-6 animate-fade-in-up">
+        <main className="flex-1 px-6 py-4 lg:px-8 lg:py-6 animate-fade-in-up">
           <Outlet />
         </main>
       </div>

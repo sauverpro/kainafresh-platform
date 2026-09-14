@@ -10,8 +10,8 @@ if (-not (Get-NetTCPConnection -LocalPort 3306 -State Listen -EA SilentlyContinu
 
 # 2) Start PHP backend (only if not already running)
 if (-not (Get-NetTCPConnection -LocalPort 8000 -State Listen -EA SilentlyContinue)) {
-    Start-Process "C:\xampp\php\php.exe" "-S" "127.0.0.1:8000" `
-        -WorkingDirectory "D:\ICT Chamber\kainafresh-platform\backend"
+    Start-Process "C:\xampp\php\php.exe" -ArgumentList "-S 127.0.0.1:8000 index.php" `
+        -WorkingDirectory "$PSScriptRoot\backend" -WindowStyle Hidden
     Start-Sleep 2
     Write-Host "PHP backend started on http://127.0.0.1:8000"
 } else {

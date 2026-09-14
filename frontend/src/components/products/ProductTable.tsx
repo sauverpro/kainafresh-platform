@@ -8,14 +8,12 @@ import {
   Pencil,
   Package,
   CheckCircle,
-  Tag,
   Layers,
   RefreshCw,
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductStore, type Product } from "../../store/useProductStore";
-import Loader from "../Loader/Loader";
 import TableSkeleton from "../ui/TableSkeleton";
 import ConfirmDeleteModal from "../ui/ConfirmDeleteModal";
 
@@ -66,9 +64,6 @@ export default function ProductTable({
   // Bento Card Statistics
   const totalProducts = products.length;
   const activeProducts = products.filter((p) => p.status === "active").length;
-  const avgPrice = products.length
-    ? (products.reduce((sum, p) => sum + Number(p.price), 0) / products.length).toFixed(0)
-    : "0";
   const uniqueUnitsCount = new Set(
     products.map((p) => p.unit_name ?? p.unit_code ?? "—"),
   ).size;
@@ -156,7 +151,7 @@ export default function ProductTable({
         </div>
 
         {/* Card 3: Avg Unit Price */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
+        {/* <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400">
             <Tag className="h-5.5 w-5.5" />
           </div>
@@ -171,7 +166,7 @@ export default function ProductTable({
               Catalog Avg
             </span>
           </div>
-        </div>
+        </div> */}
 
         {/* Card 4: Unit Types */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
@@ -242,11 +237,8 @@ export default function ProductTable({
       </div>
 
       {/* 3. Products Data Table */}
-      {loading ? (
-        <Loader text="Loading catalog..." />
-      ) : (
-        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-gray-900">
-          <div className="overflow-x-auto">
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-gray-900">
+        <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase tracking-wider dark:bg-white/5 dark:border-white/10 dark:text-gray-400">
                 <tr>
@@ -254,16 +246,18 @@ export default function ProductTable({
                   <th className="px-5 py-3.5 font-semibold">Produce Name</th>
                   <th className="px-5 py-3.5 font-semibold">Measurement Unit</th>
                   <th className="px-5 py-3.5 font-semibold">Price (RWF)</th>
+                  <th className="px-5 py-3.5 font-semibold">Min Retail Qty</th>
+                  <th className="px-5 py-3.5 font-semibold">Min Wholesale Qty</th>
                   <th className="px-5 py-3.5 font-semibold">Status</th>
                   <th className="px-5 py-3.5 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-white/5">
                 {loading ? (
-                  <TableSkeleton columns={6} rows={5} />
+                  <TableSkeleton columns={8} rows={5} />
                 ) : filteredProducts.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={8} className="py-12 text-center text-gray-500 dark:text-gray-400">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <Package className="h-8 w-8 text-gray-300" />
                         <p className="text-sm font-medium">No products found</p>
@@ -310,6 +304,12 @@ export default function ProductTable({
                         <td className="px-5 py-4 font-bold text-gray-900 dark:text-white">
                           {Number(product.price).toLocaleString()} RWF
                         </td>
+                        <td className="px-5 py-4 font-medium text-gray-700 dark:text-gray-300">
+                          {product.retail_min_qty ?? "—"}
+                        </td>
+                        <td className="px-5 py-4 font-medium text-gray-700 dark:text-gray-300">
+                          {product.wholesale_min_qty ?? "—"}
+                        </td>
                         <td className="px-5 py-4">
                           {product.status === "active" ? (
                             <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700 dark:bg-green-500/15 dark:text-green-300">
@@ -354,7 +354,6 @@ export default function ProductTable({
             </table>
           </div>
         </div>
-      )}
 
       {/* Delete Confirmation Modal */}
       <ConfirmDeleteModal

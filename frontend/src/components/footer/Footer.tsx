@@ -165,6 +165,7 @@ export default function Footer() {
         <div>
           <h3 className="font-semibold text-lg mb-6 tracking-wide text-[#076935]" style={{ fontFamily: 'var(--font-heading)' }}>Legal & Info</h3>
           <ul className="flex flex-col gap-3 mb-6">
+            <li><Link to="/track-order" className="text-[#076935] text-sm hover:text-[#F39927] hover:translate-x-1 inline-block transition-all font-semibold">Track Your Order</Link></li>
             <li><Link to="#" className="text-[#374151] text-sm hover:text-[#F39927] hover:translate-x-1 inline-block transition-all">Privacy Policy</Link></li>
             <li><Link to="#" className="text-[#374151] text-sm hover:text-[#F39927] hover:translate-x-1 inline-block transition-all">Terms of Service</Link></li>
             <li><Link to="#" className="text-[#374151] text-sm hover:text-[#F39927] hover:translate-x-1 inline-block transition-all">Refund Policy</Link></li>

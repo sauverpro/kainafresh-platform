@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 03, 2026 at 06:22 PM
+-- Generation Time: Sep 12, 2026 at 11:46 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -67,7 +67,19 @@ INSERT INTO `auth_tokens` (`id`, `user_id`, `token`, `ip_address`, `user_agent`,
 (22, 3, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjozLCJ1c2VybmFtZSI6IkFsaWNlIiwiZW1haWwiOiJhbGljZUBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg4NDU0NDYxLCJpYXQiOjE3ODg0NTA4NjEsImlzcyI6ImxvY2FsaG9zdCJ9.-Vf0TZ3ybS_JNdhx-SBedb8RGJua3z1XAWjVIpunVlU', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-03 16:54:21', '2026-09-03 15:54:21', '2026-09-03 15:54:21'),
 (23, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg4NDU2MDcyLCJpYXQiOjE3ODg0NTI0NzIsImlzcyI6ImxvY2FsaG9zdCJ9.oGh3f7EYk_X7201w49mo2advEW-JbKf6-yXUTqF4oio', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-03 17:21:12', '2026-09-03 16:21:12', '2026-09-03 16:21:12'),
 (24, 3, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjozLCJ1c2VybmFtZSI6IkFsaWNlIiwiZW1haWwiOiJhbGljZUBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg4NDU2MTI3LCJpYXQiOjE3ODg0NTI1MjcsImlzcyI6ImxvY2FsaG9zdCJ9.KYmFpDWYTK5FuTqgVMNySnGHuh-YLxdtWz8mNIamfDg', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-03 17:22:07', '2026-09-03 16:22:07', '2026-09-03 16:22:07'),
-(25, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg4NDU2MTQwLCJpYXQiOjE3ODg0NTI1NDAsImlzcyI6ImxvY2FsaG9zdCJ9.bZ7nTbRH7H8pCkRfMpzAecvhmWMi2VmuS_S8SmJoWlg', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-03 17:22:20', '2026-09-03 16:22:20', '2026-09-03 16:22:20');
+(25, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg4NDU2MTQwLCJpYXQiOjE3ODg0NTI1NDAsImlzcyI6ImxvY2FsaG9zdCJ9.bZ7nTbRH7H8pCkRfMpzAecvhmWMi2VmuS_S8SmJoWlg', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-03 17:22:20', '2026-09-03 16:22:20', '2026-09-03 16:22:20'),
+(26, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg4NDYzNzEyLCJpYXQiOjE3ODg0NjAxMTIsImlzcyI6ImxvY2FsaG9zdCJ9.S21hWIuJGvuX_iTr1KBg3igPNGokk3v3EDpMRFb1r6k', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-03 19:28:32', '2026-09-03 18:28:32', '2026-09-03 18:28:32'),
+(27, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg4NDY4OTUzLCJpYXQiOjE3ODg0NjUzNTMsImlzcyI6ImxvY2FsaG9zdCJ9.-jsxnXc_054xssuaX9D8Az9hi05c0vzo7bhqZK7fPu0', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-03 20:55:53', '2026-09-03 19:55:53', '2026-09-03 19:55:53'),
+(28, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg4NDcwNjk5LCJpYXQiOjE3ODg0NjcwOTksImlzcyI6ImxvY2FsaG9zdCJ9._WlORbCZtD4AIr1b9kOKjZPLF7yBGBXdS5UfR8jmJx8', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-03 21:24:59', '2026-09-03 20:24:59', '2026-09-03 20:24:59'),
+(29, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg4Nzk2NDU3LCJpYXQiOjE3ODg3OTI4NTcsImlzcyI6ImxvY2FsaG9zdCJ9.LnUis3u5QggonpQajjhHvexvLB9PQN0GHywQ4u_ViEw', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-07 15:54:17', '2026-09-07 14:54:17', '2026-09-07 14:54:17'),
+(30, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg4ODQ4OTQ0LCJpYXQiOjE3ODg4NDUzNDQsImlzcyI6ImxvY2FsaG9zdCJ9.3RV8tizAc-hJdnDN-2x4LOi1zKGCrUFLifyHTIZx1Cc', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-08 06:29:04', '2026-09-08 05:29:04', '2026-09-08 05:29:04'),
+(31, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg4ODU3Nzg3LCJpYXQiOjE3ODg4NTQxODcsImlzcyI6ImxvY2FsaG9zdCJ9.dc7oQl3rJVwHn3r34Zjjj16oZkatqm0D5zLZMRhYBIA', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-08 08:56:27', '2026-09-08 07:56:27', '2026-09-08 07:56:27'),
+(32, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg4OTQ3MTgzLCJpYXQiOjE3ODg5NDM1ODMsImlzcyI6ImxvY2FsaG9zdCJ9.812zSrZHjkAMXKEJQFUyTfkdGLlKuFM0WPD3gufOlz4', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-09 09:46:23', '2026-09-09 08:46:23', '2026-09-09 08:46:23'),
+(33, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg4OTQ5NTI2LCJpYXQiOjE3ODg5NDU5MjYsImlzcyI6ImxvY2FsaG9zdCJ9.fo4G4c0ivwftZKkTJsb6ei0B59ohikVFV0KoSIGdEfo', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-09 10:25:26', '2026-09-09 09:25:26', '2026-09-09 09:25:26'),
+(34, 6, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo2LCJ1c2VybmFtZSI6ImFuZ2UiLCJlbWFpbCI6ImFuZ2VAZ21haWwuY29tIiwiZXhwIjoxNzg4OTUwMDI4LCJpYXQiOjE3ODg5NDY0MjgsImlzcyI6ImxvY2FsaG9zdCJ9.w8INHsZB-nIBob4OvkbrutN_ybNgTLIK26Bf4GnxcYA', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-09 10:33:48', '2026-09-09 09:33:48', '2026-09-09 09:33:48'),
+(35, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg5MDQ4OTE4LCJpYXQiOjE3ODkwNDUzMTgsImlzcyI6ImxvY2FsaG9zdCJ9.w8hW9fUjLYPGIZfTMvOyo9uT4mzREF5wL5XLfL7Aw_8', '127.0.0.1', 'PostmanRuntime/7.49.1', '2026-09-10 14:01:58', '2026-09-10 13:01:58', '2026-09-10 13:01:58'),
+(36, 7, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo3LCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIzIiwiZW1haWwiOiJpcmFkdTJAa2FpbmFmcmVzaC5ydyIsImV4cCI6MTc4OTA0ODk3OCwiaWF0IjoxNzg5MDQ1Mzc4LCJpc3MiOiJsb2NhbGhvc3QifQ.uXBpZosIwgXHSt0up6KMWwvPAoWCDPk3zp5nchZUV1A', '127.0.0.1', 'PostmanRuntime/7.49.1', '2026-09-10 14:02:58', '2026-09-10 13:02:58', '2026-09-10 13:02:58'),
+(37, 2, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6IkZ1bGdlbmNlMDIxIiwiZW1haWwiOiJpcmFkdWt1bmRhMkBrYWluYWZyZXNoLnJ3IiwiZXhwIjoxNzg5MjAzNjUzLCJpYXQiOjE3ODkyMDAwNTMsImlzcyI6ImxvY2FsaG9zdCJ9.C0HJhrBfw5LFmSj-K1xDBsC8XBU0ZiPFeKnyuvUzvA8', '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-09-12 09:00:53', '2026-09-12 08:00:53', '2026-09-12 08:00:53');
 
 -- --------------------------------------------------------
 
@@ -108,6 +120,7 @@ CREATE TABLE `customers` (
   `phone` varchar(30) NOT NULL,
   `email` varchar(255) DEFAULT NULL,
   `address` text DEFAULT NULL,
+  `segment` varchar(255) NOT NULL DEFAULT 'Retailer',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -116,8 +129,16 @@ CREATE TABLE `customers` (
 -- Dumping data for table `customers`
 --
 
-INSERT INTO `customers` (`id`, `first_name`, `last_name`, `phone`, `email`, `address`, `created_at`, `updated_at`) VALUES
-(1, 'Jeanluc', 'Mugisha', '+250788123456', 'jean@example.com', 'Kigali, Rwanda', '2026-08-26 10:50:12', '2026-08-26 10:50:39');
+INSERT INTO `customers` (`id`, `first_name`, `last_name`, `phone`, `email`, `address`, `segment`, `created_at`, `updated_at`) VALUES
+(1, 'Jeanluc', 'Mugisha', '+250788123456', 'jean@example.com', 'Kigali, Rwanda', 'Retailer', '2026-08-26 10:50:12', '2026-08-26 10:50:39'),
+(2, 'Sauver', 'Pro', '0788899999', 'sauver@kainafresh.rw', ', Kigali - Gasabo', 'Retailer', '2026-09-03 17:29:24', '2026-09-03 17:29:24'),
+(3, 'Jean Paul', 'Habimana', '07888888', 'jeanpaul@kainafresh.rw', 'kg 12 st, Kigali - Gasabo', 'wholesale', '2026-09-03 19:53:42', '2026-09-03 19:53:42'),
+(4, 'Aimable', 'SHYAKA', '0798844551', 'iradukunda2@kainafresh.rw', ', Other District (Upcountry)', 'wholesaler', '2026-09-07 12:37:15', '2026-09-07 12:37:15'),
+(12, 'Jane', 'Doe', '799966777', 'jane@gmail.com', ', Bugesera / Outer Kigali', 'distributor', '2026-09-07 12:47:28', '2026-09-07 12:47:28'),
+(13, 'joe', 'do', '07899999', 'joedon@gmail.com', ', Kigali - Gasabo', 'individual', '2026-09-08 07:52:24', '2026-09-08 07:52:24'),
+(14, 'Uwimana', 'Fulgence', '250788860610', 'iradukundaflu2@gmail.com', 'Kigali - Gasabo', 'individual', '2026-09-09 13:40:50', '2026-09-12 08:26:01'),
+(15, 'Arsene MUSAFIRI', 'INGENZI', '+250788860612', 'arsenem@kainafresh.rw', ', Kigali - Gasabo', 'individual', '2026-09-12 08:23:34', '2026-09-12 08:23:34'),
+(16, 'Arsene MUSAFIRI', 'INGENZI', '+2507888606123', 'delphineuwera01@gmail.com', ', Kigali - Gasabo', 'wholesaler', '2026-09-12 09:39:56', '2026-09-12 09:39:56');
 
 -- --------------------------------------------------------
 
@@ -233,7 +254,14 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`id`, `user_id`, `customer_id`, `order_date`, `status`, `total`, `order_source`, `created_at`, `updated_at`) VALUES
-(1, 1, NULL, '2026-08-26 12:00:00', 'pending', 30000.00, 'ecommerce', '2026-08-26 11:17:25', '2026-08-26 11:17:25');
+(1, 1, NULL, '2026-08-26 12:00:00', 'pending', 30000.00, 'ecommerce', '2026-08-26 11:17:25', '2026-08-26 11:17:25'),
+(2, 1, 2, '2026-09-03 18:52:12', 'processing', 2500.00, 'ecommerce', '2026-09-03 17:29:24', '2026-09-03 18:52:12'),
+(3, 1, 4, '2026-09-07 17:37:15', 'pending', 30000.00, 'ecommerce', '2026-09-07 12:37:15', '2026-09-07 12:37:15'),
+(4, 1, 12, '2026-09-07 17:47:28', 'pending', 42500.00, 'ecommerce', '2026-09-07 12:47:28', '2026-09-07 12:47:28'),
+(5, 2, 13, '2026-09-08 12:52:24', 'pending', 225000.00, 'ecommerce', '2026-09-08 07:52:24', '2026-09-08 07:52:24'),
+(6, 6, 14, '2026-09-09 18:40:50', 'pending', 750000.00, 'ecommerce', '2026-09-09 13:40:50', '2026-09-09 13:40:50'),
+(7, 2, 15, '2026-09-12 13:23:34', 'pending', 2000000.00, 'ecommerce', '2026-09-12 08:23:34', '2026-09-12 08:23:34'),
+(8, 1, 16, '2026-09-12 14:39:56', 'pending', 680000.00, 'ecommerce', '2026-09-12 09:39:56', '2026-09-12 09:39:56');
 
 -- --------------------------------------------------------
 
@@ -257,7 +285,15 @@ CREATE TABLE `order_items` (
 --
 
 INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `unit_price`, `subtotal`, `created_at`, `updated_at`) VALUES
-(1, 1, 2, 10.000, 30000.00, 300000.00, '2026-08-26 11:35:07', '2026-08-26 11:35:07');
+(1, 1, 2, 10.000, 30000.00, 300000.00, '2026-08-26 11:35:07', '2026-08-26 11:35:07'),
+(2, 2, 1, 1.000, 2500.00, 2500.00, '2026-09-03 17:29:24', '2026-09-03 17:29:24'),
+(3, 3, 2, 1.000, 30000.00, 30000.00, '2026-09-07 12:37:15', '2026-09-07 12:37:15'),
+(4, 4, 2, 1.000, 30000.00, 30000.00, '2026-09-07 12:47:28', '2026-09-07 12:47:28'),
+(5, 4, 1, 5.000, 2500.00, 12500.00, '2026-09-07 12:47:28', '2026-09-07 12:47:28'),
+(6, 5, 3, 10.000, 25000.00, 250000.00, '2026-09-08 07:52:24', '2026-09-08 07:52:24'),
+(7, 6, 3, 30.000, 25000.00, 750000.00, '2026-09-09 13:40:50', '2026-09-09 13:40:50'),
+(8, 7, 3, 100.000, 25000.00, 2500000.00, '2026-09-12 08:23:34', '2026-09-12 08:23:34'),
+(9, 8, 3, 34.000, 25000.00, 850000.00, '2026-09-12 09:39:56', '2026-09-12 09:39:56');
 
 -- --------------------------------------------------------
 
@@ -285,7 +321,8 @@ INSERT INTO `pages` (`id`, `title`, `slug`, `status`, `seo_title`, `seo_descript
 (1, 'Home', 'home', 'published', 'Kaina Fresh - Home', 'Welcome to Kaina Fresh', NULL, '2026-08-16 17:19:08', '2026-08-16 17:19:08'),
 (2, 'About Us', 'about', 'published', 'About Kaina Fresh', 'Learn more about Kaina Fresh.', NULL, '2026-08-17 09:27:28', '2026-08-22 13:12:07'),
 (3, 'Wholesale', 'wholesale', 'published', NULL, NULL, NULL, '2026-08-23 14:58:53', '2026-08-23 14:58:53'),
-(4, 'Contact', 'contact', 'published', NULL, NULL, NULL, '2026-08-25 14:32:09', '2026-08-25 14:32:09');
+(4, 'Contact', 'contact', 'published', NULL, NULL, NULL, '2026-08-25 14:32:09', '2026-08-25 14:32:09'),
+(5, 'Test ', 'test', 'published', NULL, NULL, NULL, '2026-09-10 13:04:37', '2026-09-10 13:04:37');
 
 -- --------------------------------------------------------
 
@@ -311,7 +348,7 @@ CREATE TABLE `page_sections` (
 --
 
 INSERT INTO `page_sections` (`id`, `page_id`, `type`, `title`, `content`, `settings`, `position`, `status`, `created_at`, `updated_at`) VALUES
-(5, 1, 'hero', 'Hero', '{\"badge\":\"100% Organic \\u00b7 Farm to Table \",\"heading\":\"Elevate Your Health with Our Proven\",\"headingAccent\":\"Organic\",\"headingAccentSecondary\":\"Farming!\",\"subheading\":\"Our expert team crafts tailored strategies, executes effective farming, and drives sustainable growth for your family\'s nutrition.\",\"primaryCta\":{\"label\":\"Shop Now\",\"to\":\"\\/products\"},\"secondaryCta\":{\"label\":\"Wholesale & Exports\",\"to\":\"\\/wholesale\"}}', '[]', 0, 'active', '2026-08-20 12:12:16', '2026-08-20 13:12:36'),
+(5, 1, 'hero', 'Hero', '{\"badge\":\"90% Organic \\u00b7 Farm to Table \",\"heading\":\"Elevate Your Health with Our Proven\",\"headingAccent\":\"Organic\",\"headingAccentSecondary\":\"Farming!\",\"subheading\":\"Our expert team crafts tailored strategies, executes effective farming, and drives sustainable growth for your family\'s nutrition.\",\"primaryCta\":{\"label\":\"Shop Now\",\"to\":\"\\/products\"},\"secondaryCta\":{\"label\":\"Wholesale & Exports\",\"to\":\"\\/wholesale\"}}', '[]', 0, 'active', '2026-08-20 12:12:16', '2026-09-09 08:47:49'),
 (7, 1, 'value_props', 'Value Propositions', '{\"tag\":\"Why Kaina Fresh\",\"heading\":\"Fresh Food, Done Right\",\"items\":[{\"iconName\":\"Leaf\",\"title\":\"OrganicallyGrown\",\"description\":\"No synthetic chemicals. Every crop is grown using eco-friendly practices that are good for the soil and good for you.\"},{\"iconName\":\"truck\",\"title\":\"Fast Delivery\",\"description\":\"Order today, receive tomorrow. Our cold-chain logistics ensure your produce arrives as fresh as the day it was picked.\"},{\"iconName\":\"ShieldCheck\",\"title\":\"Quality Guaranteed\",\"description\":\"Every product is hand-inspected and graded before packing. If it\'s not perfect, it doesn\'t leave our farm.\"},{\"iconName\":\"Package\",\"title\":\"Bulk & Wholesale\",\"description\":\"Need large volumes? We supply restaurants, supermarkets, and exporters with consistent, certified bulk produce.\"}]}', '[]', 1, 'active', '2026-08-21 18:05:07', '2026-08-22 08:43:16'),
 (11, 1, 'faqs', 'FAQS', '{\"tag\":\"Got Questions?\",\"heading\":\"Frequently Asked Questions\",\"subheading\":\"Everything you need to know about our farming solutions and how we support agriculture\",\"items\":[{\"question\":\"Where is Kaina Fresh Farm located?\",\"answer\":\"Our primary 12-hectare farm is located in the Rwamagana district, Eastern province, Rwanda. This location provides the perfect climate and soil for our premium crops.\"},{\"question\":\"What specific varieties of avocados and pineapples do you grow?\",\"answer\":\"We specialize in Hass and Fuerte avocados, known for their creamy texture and long shelf life. Our pineapples are the local sweet variety (Inanasi), harvested at peak ripeness for maximum flavor.\"},{\"question\":\"Can I request a mix of different products in one order?\",\"answer\":\"Yes. We cater to bulk buyers and supermarkets who require a variety of fresh produce. Simply list your requirements in our inquiry form or contact our sales team.\"},{\"question\":\"How does the wholesale ordering process work?\",\"answer\":\"For local supermarkets and markets, we offer scheduled deliveries and bulk pricing. You can open a local account by emailing sales@kainafresh.rw to receive our weekly price list and availability.\"},{\"question\":\"Do you handle international export logistics?\",\"answer\":\"Kaina Fresh is export-ready. We manage professional packing, cold chain logistics, and all necessary documentation to ensure our produce meets international standards upon arrival.\"},{\"question\":\"What is the minimum order quantity (MOQ) for export?\",\"answer\":\"MOQs vary depending on the product and destination. Please contact exports@kainafresh.rw for a custom quote and to discuss global partnership opportunities.\"}]}', '[]', 3, 'active', '2026-08-22 11:16:58', '2026-08-22 11:16:58'),
 (12, 1, 'home-cta', 'Home CTA', '{\"heading\":\"Ready to taste farm-fresh produce?\",\"paragraph\":\"Join over 350 households and businesses already ordering from Kaina Fresh.\",\"primary_cta\":{\"to\":\"\\/product\",\"label\":\"Our Products\"},\"secondary_cta\":{\"to\":\"\\/wholesale\",\"label\":\"Wholesale & Exports\"}}', '[]', 4, 'active', '2026-08-22 11:54:38', '2026-08-22 11:54:38'),
@@ -325,7 +362,8 @@ INSERT INTO `page_sections` (`id`, `page_id`, `type`, `title`, `content`, `setti
 (20, 3, 'ws-process', 'How it works Section', '{\"tag\":\"The Process\",\"heading\":\"How It Works\",\"paragraphs\":\"From first inquiry to delivery a simple, transparent process\",\"items\":[{\"number\":\"01\",\"title\":\"Submit an Inquiry\",\"description\":\"Fill in the inquiry form below or email us directly. Tell us what you need, quantities, and your preferred delivery schedule.\"},{\"number\":\"02\",\"title\":\"Get a Custom Quote\",\"description\":\"Our team reviews your requirements and sends back a tailored pricing proposal within 24 hours.\"},{\"number\":\"03\",\"title\":\"Confirm & Sign\",\"description\":\"Review the quote, agree on terms, and sign a supply agreement. A deposit confirms your order slot.\"},{\"number\":\"04\",\"title\":\"Harvest, Pack & Deliver\",\"description\":\"We harvest to your schedule, pack under quality control, and dispatch with full tracking.\"}]}', '[]', 0, 'active', '2026-08-23 19:45:18', '2026-08-23 19:45:18'),
 (22, 4, 'contact-hero', 'Contact hero Section', '{\"tag\":\"Contact Kaina Fresh\",\"heading\":\"Get in\",\"headingAccesnt\":\" touch with us\",\"subheading\":\"We\'d love to hear from you. Reach out with questions, wholesale inquiries, or feedback.\",\"feedbackHeading\":\"Message Sent!\",\"feedbackMessage\":\"Thank you for reaching out. Our team will get back to you within 24 business hours.\",\"contactheading\":\"Send us a message\",\"contactformsub\":\"Fill in the form below and we\'ll get back to you.\"}', '[]', 0, 'active', '2026-08-27 11:58:04', '2026-08-28 11:47:00'),
 (23, 1, 'story-spotlight', 'Story Spotlight Section', '{\"tag\":\"Our Sustainable Farm\",\"heading\":\"Cultivating Organic Goodness Direct From Soil to Table\",\"paragraphs\":\"At KainaFresh, we believe high quality food starts with healthy soil and chemical-free agriculture.We work directly with certified organic farmers to deliver produce picked at peak ripeness.\",\"primaryCta\":{\"label\":\"Read our full story\",\"to\":\"\\/about\"},\"secondaryCta\":{\"label\":\"Learn about bulk supply\",\"to\":\"\\/wholesale\"},\"organic\":{\"label\":\"Organic certified\",\"number\":\"100%\"},\"working_hours\":{\"label\":\"Farm to door\",\"number\":\"24\\/7\"}}', '[]', 0, 'active', '2026-09-03 13:43:16', '2026-09-03 13:43:16'),
-(24, 1, 'product_catalog', 'Product Catalog Section', '{\"heading\":\"Looking for more varieties?\",\"paragraphs\":\"Explore our complete catalog of organic root crops, seasonal fruits, leafy greens, and farm produce.\",\"primaryCta\":{\"label\":\"View complete products catalog\",\"to\":\"\\/products\"}}', '[]', 0, 'active', '2026-09-03 14:18:50', '2026-09-03 14:18:50');
+(24, 1, 'product_catalog', 'Product Catalog Section', '{\"heading\":\"Looking for more varieties?\",\"paragraphs\":\"Explore our complete catalog of organic root crops, seasonal fruits, leafy greens, and farm produce.\",\"primaryCta\":{\"label\":\"View complete products catalog\",\"to\":\"\\/products\"}}', '[]', 0, 'active', '2026-09-03 14:18:50', '2026-09-03 14:18:50'),
+(25, 2, 'partners', 'Partners & Affiliates', '{\"tag\":\"Strategic Collaborations\",\"heading\":\"Our Trusted Partners & Cooperatives\",\"subheading\":\"Collaborating with certified farm cooperatives, exporters, and agricultural leaders across Rwanda.\",\"partners\":[{\"partner_name\":\"Rema\",\"partner_logo\":\"\",\"partner_link\":\"https:\\/\\/www.rema.gov.rw\\/home\"}]}', NULL, 7, 'active', '2026-09-03 20:34:19', '2026-09-03 20:34:19');
 
 -- --------------------------------------------------------
 
@@ -347,7 +385,9 @@ CREATE TABLE `partners` (
 --
 
 INSERT INTO `partners` (`id`, `partner_name`, `partner_logo`, `partner_link`, `created_at`, `updated_at`) VALUES
-(2, 'ICT CHamber', '/uploads/logos/6a95ec22dc6be.jpeg', 'ictchamber', '2026-08-31 21:03:30', '2026-08-31 21:03:30');
+(2, 'ICT CHamber', '/uploads/logos/6a95ec22dc6be.jpeg', 'ictchamber', '2026-08-31 21:03:30', '2026-08-31 21:03:30'),
+(3, 'NAEB', '/uploads/logos/6aa50726ef70d.png', 'https://www.naeb.gov.rw/', '2026-09-12 08:02:46', '2026-09-12 08:02:46'),
+(4, 'REMA', '/uploads/logos/6aa507a36be7c.png', 'https://www.rema.gov.rw/home', '2026-09-12 08:04:51', '2026-09-12 08:04:51');
 
 -- --------------------------------------------------------
 
@@ -364,6 +404,9 @@ CREATE TABLE `products` (
   `shelf_life` int(11) NOT NULL,
   `price` decimal(12,2) NOT NULL DEFAULT 0.00,
   `status` enum('active','inactive') DEFAULT 'active',
+  `wholesale_price` varchar(255) DEFAULT NULL,
+  `wholesale_min_qty` varchar(255) DEFAULT NULL,
+  `retail_min_qty` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -372,9 +415,10 @@ CREATE TABLE `products` (
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `name`, `description`, `product_image`, `unit_id`, `shelf_life`, `price`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Fresh Potatoes ', 'Farm fresh Potatoes', NULL, 1, 14, 2500.00, 'active', '2026-08-24 11:22:00', '2026-08-24 11:37:53'),
-(2, 'Avocado products', 'best avocado -african', '/uploads/products/6a8c2ae47bbfe.jpg', 1, 10, 30000.00, 'active', '2026-08-24 11:28:36', '2026-09-03 08:21:46');
+INSERT INTO `products` (`id`, `name`, `description`, `product_image`, `unit_id`, `shelf_life`, `price`, `status`, `wholesale_price`, `wholesale_min_qty`, `retail_min_qty`, `created_at`, `updated_at`) VALUES
+(1, 'Fresh Potatoes ', 'Farm fresh Potatoes', NULL, 1, 14, 2500.00, 'active', NULL, NULL, NULL, '2026-08-24 11:22:00', '2026-08-24 11:37:53'),
+(2, 'Avocado products', 'best avocado -african', '/uploads/products/6a8c2ae47bbfe.jpg', 1, 10, 30000.00, 'active', NULL, NULL, NULL, '2026-08-24 11:28:36', '2026-09-03 08:21:46'),
+(3, 'Test MOQ', 'test mqo', '/uploads/products/6a9fa229ad1df.jpeg', 1, 10, 25000.00, 'active', '20000', '26', '15', '2026-09-08 05:50:33', '2026-09-08 05:50:33');
 
 -- --------------------------------------------------------
 
@@ -459,7 +503,8 @@ CREATE TABLE `team` (
 
 INSERT INTO `team` (`id`, `name`, `role`, `initials`, `phone_number`, `email`, `status`, `created_at`, `updated_at`) VALUES
 (1, 'Esther Esther', 'Founder & Farm Director', 'EE', '078888888', 'esther@kainafresh.rw', 'active', '2026-08-22 19:05:46', '2026-08-22 19:05:46'),
-(2, 'IRADUKUNDA Fulgence', 'IT Support  Director', 'IF', '078888888', 'ira@kainafresh.rw', 'active', '2026-08-23 14:17:54', '2026-08-23 14:17:54');
+(2, 'IRADUKUNDA Fulgence', 'IT Support  Director', 'IF', '078888888', 'ira@kainafresh.rw', 'active', '2026-08-23 14:17:54', '2026-08-23 14:17:54'),
+(3, 'Arsene MUSAFIRI INGENZI', 'Marketing Officer', 'AMI', '+250788860611', 'arsenem@kainafresh.rw', 'active', '2026-09-12 08:07:03', '2026-09-12 08:07:03');
 
 -- --------------------------------------------------------
 
@@ -481,7 +526,8 @@ CREATE TABLE `units` (
 --
 
 INSERT INTO `units` (`id`, `code`, `name`, `symbol`, `created_at`, `updated_at`) VALUES
-(1, 'kg', 'Kilogram', 'kg', '2026-08-24 10:58:09', '2026-08-24 10:58:09');
+(1, 'kg', 'Kilogram', 'kg', '2026-08-24 10:58:09', '2026-08-24 10:58:09'),
+(2, 'LIT', 'Litle', 'L', '2026-09-07 14:54:59', '2026-09-07 14:54:59');
 
 -- --------------------------------------------------------
 
@@ -507,9 +553,12 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `full_name`, `role`, `status`, `phone_number`, `created_at`, `updated_at`) VALUES
-(1, 'shyaka', 'shyaka@gmail.com', '$2y$10$1dk7rN1GmrMDSw2SjzBOU.OMoEJVKKFJhKp/Jfk9cURdZXBX3bXnq', 'shyaka aimabke', 'sales_manager', 'active', '07888', '2026-08-16 15:59:52', '2026-08-16 15:59:52'),
+(1, 'shyaka', 'shyaka@gmail.com', '$2y$10$1dk7rN1GmrMDSw2SjzBOU.OMoEJVKKFJhKp/Jfk9cURdZXBX3bXnq', 'Shyaka Aimable', 'sales_manager', 'active', '07888', '2026-08-16 15:59:52', '2026-09-03 18:44:27'),
 (2, 'Fulgence021', 'iradukunda2@kainafresh.rw', '$2y$12$KlOyfF.1qJ6KvliphOy3UOfONL6L5BoLe7ni9Is2vaSzO7MSJpVUK', 'Fulgence IRADUKUNDA', 'admin', 'active', '078898888', '2026-08-20 13:34:12', '2026-09-02 10:24:54'),
-(3, 'Alice', 'alice@kainafresh.rw', '$2y$12$RXSbFX/M1XryXKWa4HWDYenWElG8B/K9nlljGvGluu0rAZrzKqP22', 'Alice MUTUYIMANA', 'sales_manager', 'active', '0788760610', '2026-08-31 21:57:45', '2026-08-31 21:57:45');
+(3, 'Alice', 'alice@kainafresh.rw', '$2y$12$RXSbFX/M1XryXKWa4HWDYenWElG8B/K9nlljGvGluu0rAZrzKqP22', 'Alice MUTUYIMANA', 'sales_manager', 'active', '0788760610', '2026-08-31 21:57:45', '2026-08-31 21:57:45'),
+(5, 'Sauveur', 'sauveur@kainafresh.rw', '$2y$12$x1AZbhhEXkhNv60tqD1/SeZSp/FlDaZvDRXIEw6rDwSMRdW4iK9Zq', 'Sauveur', 'admin', 'active', '078888888', '2026-09-03 18:43:49', '2026-09-03 18:43:49'),
+(6, 'ange', 'ange@gmail.com', '$2y$12$Vf4zpGZ6Lh9WSg03yXVHsOjDW3X/ULRw7nngSr34J5gs/DAiKUlha', 'uwera', 'customer', 'active', '078888888888', '2026-09-09 09:33:47', '2026-09-09 09:33:47'),
+(7, 'Fulgence023', 'iradu2@kainafresh.rw', '$2y$12$HDr8k1wAkl6wVFvAwPhDseINw5HFly99JLrauANReL.R8pvyrzUg6', 'Fulgence IRADUKUNDA', 'admin', 'active', '078898888', '2026-09-10 13:02:41', '2026-09-10 13:04:16');
 
 --
 -- Indexes for dumped tables
@@ -639,7 +688,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `auth_tokens`
 --
 ALTER TABLE `auth_tokens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `contacts`
@@ -651,7 +700,7 @@ ALTER TABLE `contacts`
 -- AUTO_INCREMENT for table `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `inquiry`
@@ -675,37 +724,37 @@ ALTER TABLE `navlinks`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `pages`
 --
 ALTER TABLE `pages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `page_sections`
 --
 ALTER TABLE `page_sections`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `partners`
 --
 ALTER TABLE `partners`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `settings`
@@ -723,19 +772,19 @@ ALTER TABLE `stocks`
 -- AUTO_INCREMENT for table `team`
 --
 ALTER TABLE `team`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `units`
 --
 ALTER TABLE `units`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- Constraints for dumped tables

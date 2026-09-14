@@ -1,0 +1,64 @@
+/**
+ * CartDrawer Mobile Bottom Sheet & Desktop Slide-Over Styling
+ */
+
+.cart-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  transition: opacity 0.3s ease;
+}
+
+/* Desktop: Right Slide-Over */
+@media (min-width: 768px) {
+  .cart-drawer-overlay {
+    justify-content: flex-end;
+    align-items: stretch;
+  }
+  .cart-drawer-panel {
+    width: 100%;
+    max-width: 440px;
+    height: 100%;
+    border-radius: 0;
+  }
+  .mobile-drag-handle {
+    display: none;
+  }
+}
+
+/* Mobile: App Bottom Sheet */
+@media (max-width: 767px) {
+  .cart-drawer-overlay {
+    justify-content: flex-end;
+    align-items: flex-end;
+  }
+  .cart-drawer-panel {
+    width: 100%;
+    max-height: 88vh;
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
+    animation: slideUpSheet 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .mobile-drag-handle {
+    display: block;
+    width: 42px;
+    height: 5px;
+    background: #E2E8F0;
+    border-radius: 999px;
+    margin: 8px auto 0 auto;
+  }
+}
+
+@keyframes slideUpSheet {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}

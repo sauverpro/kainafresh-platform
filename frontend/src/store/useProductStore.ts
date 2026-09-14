@@ -28,6 +28,9 @@ export interface Product {
   unit_symbol?: string;
   created_at?: string;
   updated_at?: string;
+  wholesale_price?: number;
+  wholesale_min_qty?: number;
+  retail_min_qty?: number;
 }
 
 export interface ProductInput {
@@ -37,6 +40,9 @@ export interface ProductInput {
   shelf_life: number;
   price: number;
   status: "active" | "inactive";
+  wholesale_price?: number;
+  wholesale_min_qty?: number;
+  retail_min_qty?: number;
 }
 
 interface ApiResponse<T = unknown> {
@@ -124,6 +130,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
         formData.append("unit_id", String(input.unit_id));
         formData.append("shelf_life", String(input.shelf_life));
         formData.append("price", String(input.price));
+          if (input.wholesale_price !== undefined) formData.append("wholesale_price", String(input.wholesale_price));
+          if (input.wholesale_min_qty !== undefined) formData.append("wholesale_min_qty", String(input.wholesale_min_qty));
+          if (input.retail_min_qty !== undefined) formData.append("retail_min_qty", String(input.retail_min_qty));
         formData.append("status", input.status);
         await apiPostFormData<ApiResponse<Product>>("/api/products", formData);
       } else {
@@ -153,6 +162,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
         if (input.unit_id) formData.append("unit_id", String(input.unit_id));
         if (input.shelf_life !== undefined) formData.append("shelf_life", String(input.shelf_life));
         if (input.price !== undefined) formData.append("price", String(input.price));
+        if (input.wholesale_price !== undefined) formData.append("wholesale_price", String((input as any).wholesale_price));
+        if (input.wholesale_min_qty !== undefined) formData.append("wholesale_min_qty", String((input as any).wholesale_min_qty));
+        if (input.retail_min_qty !== undefined) formData.append("retail_min_qty", String((input as any).retail_min_qty));
         if (input.status) formData.append("status", input.status);
         await apiPostFormData<ApiResponse<Product>>(`/api/products/${id}`, formData);
       } else {

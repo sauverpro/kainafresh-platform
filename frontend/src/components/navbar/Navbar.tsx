@@ -12,7 +12,7 @@
  */
 
 // Import React hooks for lifecycle management and state
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // Import React Router components for client-side navigation
 import { NavLink, useNavigate } from "react-router-dom";
@@ -29,6 +29,10 @@ import {
   UserPlus,
   ShoppingBag,
   Globe,
+  Truck,
+  LayoutGrid,
+  Settings,
+  ChevronDown,
 } from "lucide-react";
 
 // Import Navbar component styles
@@ -63,6 +67,7 @@ interface SiteSettings {
 // Import Cart context & CartDrawer component
 import { useCart } from "../../context/CartContext";
 import CartDrawer from "../cart/CartDrawer";
+import MobileBottomNav from "./MobileBottomNav";
 import { useAuth } from "../../auth/AuthContext";
 
 /**
@@ -92,6 +97,40 @@ function Navbar() {
   // Check if current user is logged in with active JWT token
   const loggedIn = isAuthenticated();
 
+  // User profile dropdown toggle state & ref for click-outside detection
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const getInitials = () => {
+    if (user?.full_name) {
+      const parts = user.full_name.trim().split(" ");
+      if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+    if (user?.username) {
+      return user.username.slice(0, 2).toUpperCase();
+    }
+    return "KF";
+  };
+
+  const getRoleLabel = () => {
+    if (user?.role === "admin") return "Administrator";
+    if (user?.role === "sales-manager") return "Sales Manager";
+    if (user?.role === "customer") return "Customer Account";
+    return user?.role || "Member";
+  };
+
   /**
    * Helper function to match dynamic DB links to appropriate Lucide UI icons.
    */
@@ -119,6 +158,8 @@ function Navbar() {
       return <Package size={16} />;
     if (name.includes("contact") || path.includes("contact"))
       return <Mail size={16} />;
+    if (name.includes("track") || path.includes("track"))
+      return <Truck size={16} />;
     if (name.includes("admin") || path.includes("admin"))
       return <Shield size={16} />;
     if (name.includes("home") || path === "/") return <Home size={16} />;
@@ -251,23 +292,13 @@ function Navbar() {
               </NavLink>
             ))}
 
-            {/* Dashboard Link for Authenticated Users */}
-            {loggedIn && user?.role === "admin" && (
+            {!navLinks.some((l) => l.link === "/track-order" || (l.link_name || "").toLowerCase().includes("track")) && (
               <NavLink
-                to="/dashboard"
+                to="/track-order"
                 onClick={closeMenu}
                 className="nav-icon-link"
               >
-                <Shield size={16} /> <span>Dashboard</span>
-              </NavLink>
-            )}
-            {loggedIn && user?.role === "sales-manager" && (
-              <NavLink
-                to="/sales"
-                onClick={closeMenu}
-                className="nav-icon-link"
-              >
-                <Shield size={16} /> <span>sales</span>
+                <Truck size={16} /> <span>Track Order</span>
               </NavLink>
             )}
           </div>
@@ -289,9 +320,88 @@ function Navbar() {
             </button>
 
             {loggedIn ? (
-              <button className="btn btn-logout" onClick={handleLogout}>
-                <LogOut size={16} /> <span>Logout</span>
-              </button>
+              <div className="profile-dropdown-container" ref={profileRef}>
+                <button
+                  className={`nav-profile-btn ${isProfileOpen ? "active" : ""}`}
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  aria-label="User Account Menu"
+                  title="User Account Menu"
+                >
+                  <span className="user-initials">{getInitials()}</span>
+                  <ChevronDown size={12} className={`chevron-icon ${isProfileOpen ? "open" : ""}`} />
+                </button>
+
+                {isProfileOpen && (
+                  <div className="profile-dropdown-menu animate-fade-in-up">
+                    <div className="profile-menu-header">
+                      <div className="profile-header-avatar">{getInitials()}</div>
+                      <div className="profile-header-info">
+                        <span className="profile-user-name">
+                          {user?.full_name || user?.username || "Account Holder"}
+                        </span>
+                        <span className="profile-user-role">{getRoleLabel()}</span>
+                      </div>
+                    </div>
+
+                    <div className="profile-menu-divider" />
+
+                    <div className="profile-menu-items">
+                      {(user?.role === "admin" || user?.role === "sales-manager") && (
+                        <NavLink
+                          to={user?.role === "sales-manager" ? "/sales" : "/dashboard"}
+                          className="profile-menu-item"
+                          onClick={() => {
+                            setIsProfileOpen(false);
+                            closeMenu();
+                          }}
+                        >
+                          <LayoutGrid size={16} />
+                          <span>Control Dashboard</span>
+                        </NavLink>
+                      )}
+
+                      <NavLink
+                        to="/track-order"
+                        className="profile-menu-item"
+                        onClick={() => {
+                          setIsProfileOpen(false);
+                          closeMenu();
+                        }}
+                      >
+                        <Truck size={16} />
+                        <span>Track Orders</span>
+                      </NavLink>
+
+                      {user?.role === "admin" && (
+                        <NavLink
+                          to="/settings"
+                          className="profile-menu-item"
+                          onClick={() => {
+                            setIsProfileOpen(false);
+                            closeMenu();
+                          }}
+                        >
+                          <Settings size={16} />
+                          <span>Account Settings</span>
+                        </NavLink>
+                      )}
+                    </div>
+
+                    <div className="profile-menu-divider" />
+
+                    <button
+                      className="profile-logout-btn"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        handleLogout();
+                      }}
+                    >
+                      <LogOut size={16} />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <>
                 <NavLink
@@ -316,6 +426,9 @@ function Navbar() {
 
       {/* Global Slide-Over Shopping Cart Drawer */}
       <CartDrawer />
+
+      {/* Mobile App Bottom Dock */}
+      <MobileBottomNav />
     </>
   );
 }

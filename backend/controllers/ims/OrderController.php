@@ -3,10 +3,11 @@
 class OrderController extends BaseController
 {
     private $orderModel;
-
+    private $userModel;
     public function __construct()
     {
         $this->orderModel = new Order();
+        $this->userModel = new User();
     }
 
     /**
@@ -14,6 +15,26 @@ class OrderController extends BaseController
      */
     public function index()
     {
+         // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+    //   check if user is admin or sales_manager
+      if ($user['role'] !== 'admin' && $user['role'] !== 'sales_manager') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unathorized access.'
+            ]);
+            return;
+      }
         $orders = $this->orderModel->allWithRelations();
 
         $this->jsonResponse([
@@ -27,6 +48,26 @@ class OrderController extends BaseController
      */
     public function show($id)
     {
+         // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+    //   check if user is admin or sales_manager
+      if ($user['role'] !== 'admin' && $user['role'] !== 'sales_manager') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unathorized access.'
+            ]);
+            return;
+      }
         $id = (int) $id;
 
         $order = $this->orderModel->findWithRelations($id);
@@ -51,6 +92,7 @@ class OrderController extends BaseController
      */
     public function store()
     {
+        
         $data = $this->getRequestData();
 
         /*
@@ -190,6 +232,26 @@ class OrderController extends BaseController
      */
     public function update($id)
     {
+         // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+    //   check if user is admin or sales_manager
+      if ($user['role'] !== 'admin' && $user['role'] !== 'sales_manager') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unathorized access.'
+            ]);
+            return;
+      }
         $id = (int) $id;
 
         $existingOrder = $this->orderModel->find($id);
@@ -328,6 +390,26 @@ class OrderController extends BaseController
      */
     public function destroy($id)
     {
+         // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+    //   check if user is admin or sales_manager
+      if ($user['role'] !== 'admin' && $user['role'] !== 'sales_manager') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unathorized access.'
+            ]);
+            return;
+      }
         $id = (int) $id;
 
         $existingOrder = $this->orderModel->find($id);

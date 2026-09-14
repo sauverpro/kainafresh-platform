@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { X, ShoppingBag, Plus, Minus, Trash2, ArrowRight } from 'lucide-react';
+import { X, ShoppingBag, Trash2, ArrowRight } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import QtyStepper from '../products/QtyStepper';
 import placeholderImg from '../../assets/images/placeholder.png';
+import './CartDrawer.css';
 
 export default function CartDrawer() {
   const {
@@ -34,15 +36,18 @@ export default function CartDrawer() {
 
   return (
     <div
-      className="fixed inset-0 bg-black/45 backdrop-blur-xs z-[1000] flex justify-end transition-opacity duration-300"
+      className="cart-drawer-overlay"
       onClick={closeCart}
     >
       <div
-        className="w-full max-w-[440px] h-full bg-[#FFFDF9] flex flex-col shadow-2xl font-sans transform transition-transform duration-300 ease-out"
+        className="cart-drawer-panel bg-[#FFFDF9] flex flex-col shadow-2xl font-sans"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-label="Shopping Basket"
       >
+        {/* Mobile Drag Handle Indicator */}
+        <div className="mobile-drag-handle" />
+
         {/* Header */}
         <div className="p-5 flex items-center justify-between border-b border-[#076935]/15 bg-white">
           <div className="flex items-center gap-3">
@@ -91,10 +96,16 @@ export default function CartDrawer() {
                 const itemImg = resolveImage(product.image || product.product_image);
                 const unitLabel = product.unit || product.unit_name || 'kg';
                 const itemPrice = Number(product.price) || 0;
+                const minQty =
+                  product.purchaseType === 'wholesale'
+                    ? (product.wholesale_min_qty ?? 1)
+                    : (product.retail_min_qty ?? 1);
+                const purchaseLabel =
+                  product.purchaseType === 'wholesale' ? 'Wholesale' : 'Retail';
 
                 return (
                   <div
-                    key={product.id}
+                    key={`${product.id}|${product.purchaseType ?? 'retail'}`}
                     className="flex items-center gap-4 p-3.5 bg-white rounded-2xl border border-[#076935]/10 shadow-xs hover:border-[#076935]/25 transition-all"
                   >
                     <img src={itemImg} alt={product.name} className="w-16 h-16 rounded-xl object-cover bg-[#f4faf7] shrink-0" />
@@ -109,28 +120,19 @@ export default function CartDrawer() {
                       <p className="text-xs text-gray-500 m-0">
                         <strong className="text-[#076935]">RWF {itemPrice.toLocaleString()}</strong> <span>/ {unitLabel}</span>
                       </p>
+                      <p className="text-[11px] text-gray-400 m-0 mt-0.5">
+                        {purchaseLabel} · Min {minQty} {unitLabel}
+                      </p>
                     </div>
 
                     <div className="flex flex-col items-end gap-2">
-                      <div className="flex items-center gap-1.5 bg-[#f4faf7] px-2 py-1 rounded-full border border-[#076935]/15">
-                        <button
-                          className="w-6 h-6 rounded-full border-0 bg-white text-[#076935] flex items-center justify-center hover:bg-[#076935] hover:text-white transition-colors cursor-pointer"
-                          onClick={() => updateQuantity(product.id, quantity - 1)}
-                          aria-label="Decrease quantity"
-                        >
-                          <Minus size={14} />
-                        </button>
-                        <span className="font-bold text-xs min-w-[18px] text-center text-gray-800" style={{ fontFamily: 'var(--font-heading)' }}>
-                          {quantity}
-                        </span>
-                        <button
-                          className="w-6 h-6 rounded-full border-0 bg-white text-[#076935] flex items-center justify-center hover:bg-[#076935] hover:text-white transition-colors cursor-pointer"
-                          onClick={() => updateQuantity(product.id, quantity + 1)}
-                          aria-label="Increase quantity"
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
+                      <QtyStepper
+                        value={quantity}
+                        onChange={(next) => updateQuantity(product, next)}
+                        min={minQty}
+                        unit={unitLabel}
+                        size="sm"
+                      />
 
                       <button
                         className="bg-transparent border-0 text-red-500 opacity-70 hover:opacity-100 transition-opacity p-1 cursor-pointer"

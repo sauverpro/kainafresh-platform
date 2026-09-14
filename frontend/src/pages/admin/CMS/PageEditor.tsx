@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiGet, apiPut, apiPost } from '../../../api/client';
-import Loader from '../../../components/Loader/Loader';
+import DashboardSkeleton from '../../../components/skeletons/DashboardSkeleton';
+import TeamManagement from '../Team/TeamManagement';
+import PartnerManagement from '../Partners/PartnerManagement';
 
 interface ApiResponse<T = unknown> {
   success?: boolean;
@@ -312,6 +314,26 @@ function ActiveWorkspace({ section, pageId, onSaveSuccess }: ActiveWorkspaceProp
     }
   };
 
+  // The team section workspace is powered by the dedicated team member manager
+  // (backs onto the /api/team table shown on the public About page).
+  if (section.type === 'team' || section.type === 'about-team') {
+    return (
+      <div className="cms-workspace-card">
+        <TeamManagement />
+      </div>
+    );
+  }
+
+  // The partners section workspace is powered by the dedicated partner manager
+  // (backs onto the /api/partners table shown on every partners section).
+  if (section.type === 'partners') {
+    return (
+      <div className="cms-workspace-card">
+        <PartnerManagement />
+      </div>
+    );
+  }
+
   return (
     <div className="cms-workspace-card">
       <div className="cms-workspace-header">
@@ -418,8 +440,9 @@ function PageEditor() {
         const res = await apiGet<ApiResponse<CmsPageData>>(`/api/pages/slug/${encodeURIComponent(slug ?? "")}`);
         if (res.success && res.data) {
           const sections = [...(res.data.sections || [])];
-          
-          // Guarantee 'team' section is available on 'about' page
+
+          // Guarantee 'team' section is available on 'about' page. Its workspace
+          // is powered by the dedicated team member manager (TeamManagement).
           if (slug === 'about' && !sections.some(s => s.type === 'team' || s.type === 'about-team')) {
             sections.push({
               id: -1,
@@ -478,8 +501,8 @@ function PageEditor() {
     fetchPageData();
   }, [slug]);
 
-  // Display the custom centered page loader while the schema is loading
-  if (loading) return <Loader text="Loading CMS page schema & sections from database..." />;
+  // Display the custom centered page skeleton while the schema is loading
+  if (loading) return <DashboardSkeleton />;
   if (error) return <div className="cms-error"><AlertCircle /> {error}</div>;
   if (!page) return <div className="cms-error">Page not found.</div>;
 

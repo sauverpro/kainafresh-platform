@@ -17,7 +17,7 @@ import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 
 // Import React Router components for navigation and links
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 // Import Lucide vector icons for UI form inputs and badges
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, Leaf, ShieldCheck, AlertCircle } from 'lucide-react';
@@ -68,6 +68,9 @@ function Login() {
   // Imperative router navigation instance
   const navigate = useNavigate();
 
+  // React Router location (used to detect auto-logout session expiry)
+  const location = useLocation();
+
   // Auth context for persisting the logged-in user profile
   const { setUser } = useAuth();
 
@@ -78,7 +81,12 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   // Form validation error message state
-  const [error, setError] = useState('');
+  const [error, setError] = useState(
+    () =>
+      (location.state as { sessionExpired?: boolean } | null)?.sessionExpired
+        ? 'Your session has expired. Please sign in again.'
+        : '',
+  );
 
   // Async API submission loading spinner state
   const [isLoading, setIsLoading] = useState(false);

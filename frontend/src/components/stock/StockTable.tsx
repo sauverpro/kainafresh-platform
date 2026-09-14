@@ -18,7 +18,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useStockStore, type Stock } from "../../store/useStockStore";
-import Loader from "../Loader/Loader";
+import TableSkeleton from "../ui/TableSkeleton";
 import ConfirmDeleteModal from "../ui/ConfirmDeleteModal";
 import StockAdjustModal from "./StockAdjustModal";
 import StockDrawer from "./StockDrawer";
@@ -296,11 +296,8 @@ export default function StockTable({ onAdd, onEdit }: StockTableProps) {
       </div>
 
       {/* 3. Stock Data Table */}
-      {loading ? (
-        <Loader text="Loading inventory records..." />
-      ) : (
-        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-gray-900">
-          <div className="overflow-x-auto">
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-gray-900">
+        <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase tracking-wider dark:bg-white/5 dark:border-white/10 dark:text-gray-400">
                 <tr>
@@ -315,7 +312,9 @@ export default function StockTable({ onAdd, onEdit }: StockTableProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                {filteredStocks.length === 0 ? (
+                {loading ? (
+                  <TableSkeleton columns={8} rows={5} />
+                ) : filteredStocks.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-12 text-center text-gray-500 dark:text-gray-400">
                       <div className="flex flex-col items-center justify-center gap-2">
@@ -494,7 +493,6 @@ export default function StockTable({ onAdd, onEdit }: StockTableProps) {
             </table>
           </div>
         </div>
-      )}
 
       {/* Delete Confirmation Modal */}
       <ConfirmDeleteModal

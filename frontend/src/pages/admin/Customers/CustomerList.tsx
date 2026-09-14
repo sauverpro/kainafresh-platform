@@ -26,6 +26,7 @@ import Modal from "../../../components/ui/Modal";
 import StatusDropdown, {
   type StatusOption,
 } from "../../../components/ui/StatusDropdown";
+import TableSkeleton from "../../../components/ui/TableSkeleton";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -577,20 +578,7 @@ export default function CustomerList() {
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
               {loading ? (
-                <tr>
-                  <td colSpan={7} className="py-16 text-center text-gray-500">
-                    <Loader2
-                      size={32}
-                      className="mx-auto mb-3 animate-spin text-[#076935]"
-                    />
-                    <p
-                      className="font-bold text-base text-gray-700"
-                      style={{ fontFamily: "var(--font-heading)" }}
-                    >
-                      Loading customers...
-                    </p>
-                  </td>
-                </tr>
+                <TableSkeleton columns={7} rows={5} />
               ) : filteredCustomers.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-16 text-center text-gray-500">

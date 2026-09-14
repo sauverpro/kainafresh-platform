@@ -5,14 +5,13 @@ import {
   Pencil,
   Trash2,
   ImageOff,
-  Tag,
   Calendar,
   Boxes,
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductStore } from "../../store/useProductStore";
-import Loader from "../Loader/Loader";
+import ProductDetailSkeleton from "../skeletons/ProductDetailSkeleton";
 import Modal from "../ui/Modal";
 import ConfirmDeleteModal from "../ui/ConfirmDeleteModal";
 import ProductForm from "./ProductForm";
@@ -64,7 +63,7 @@ export default function ProductDetail() {
   return (
     <>
       {loading ? (
-        <Loader text="Loading product..." />
+        <ProductDetailSkeleton />
       ) : error || !selected ? (
         <div className="products-dashboard">
           <div className="auth-error-banner">
@@ -100,7 +99,7 @@ export default function ProductDetail() {
                 <div className="detail-item">
                   <span className="detail-label">Price</span>
                   <span className="detail-value">
-                    ${Number(selected.price).toFixed(2)}
+                    Frw {Number(selected.price).toFixed(2)}
                   </span>
                 </div>
                 <div className="detail-item">
@@ -124,6 +123,23 @@ export default function ProductDetail() {
                     }`}
                   >
                     {selected.status}
+                  </span>
+                </div>
+                {/* MOQ */}
+                <div className="detail-item">
+                  <span className="detail-label">Wholesale Min Qty</span>
+                  <span
+                    className="detail-value"
+                  >
+                    {selected.wholesale_min_qty}
+                  </span>
+                </div>
+                 <div className="detail-item">
+                  <span className="detail-label">Retail Min Qty</span>
+                  <span
+                    className="detail-value"
+                  >
+                    {selected.retail_min_qty}
                   </span>
                 </div>
               </div>
@@ -158,7 +174,7 @@ export default function ProductDetail() {
             >
               <Calendar size={14} /> Added{" "}
               {new Date(selected.created_at).toLocaleDateString()}
-              <Tag size={14} style={{ marginLeft: 16 }} /> ID: {selected.id}
+              {/* <Tag size={14} style={{ marginLeft: 16 }} /> ID: {selected.id} */}
             </p>
           )}
         </div>

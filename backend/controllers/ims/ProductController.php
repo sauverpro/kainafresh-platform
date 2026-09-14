@@ -4,11 +4,13 @@ class ProductController extends BaseController
 {
     private $productModel;
     private $unitModel;
+    private $userModel;
 
     public function __construct()
     {
         $this->productModel = new Product();
         $this->unitModel = new Unit();
+        $this->userModel = new User();
     }
 
     /**
@@ -55,7 +57,28 @@ class ProductController extends BaseController
      */
     public function store()
     {
-       if (!empty($_POST)) {
+         // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+    //   check if user is admin or sales_manager
+      if ($user['role'] !== 'admin' && $user['role'] !== 'sales_manager') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unathorized access.'
+            ]);
+            return;
+      }
+
+    if (!empty($_POST)) {
     $data = $_POST;
 } else {
     $data = $this->getRequestData();
@@ -85,6 +108,7 @@ class ProductController extends BaseController
                 return;
             }
         }
+        error_log('Product store data: ' . print_r($data, true));
 
         /*
          * Validate required fields
@@ -95,7 +119,11 @@ class ProductController extends BaseController
                 'name',
                 'unit_id',
                 'shelf_life',
-                'price'
+                'price',
+                'wholesale_price',
+                'wholesale_min_qty',
+                'retail_min_qty'
+
             ]
         );
 
@@ -210,6 +238,15 @@ class ProductController extends BaseController
         $data['unit_id'] = $unitId;
         $data['shelf_life'] = (int) $data['shelf_life'];
         $data['price'] = (float) $data['price'];
+        $data['wholesale_price'] = isset($data['wholesale_price']) && $data['wholesale_price'] !== ''
+            ? (float) $data['wholesale_price']
+            : 0.00;
+        $data['wholesale_min_qty'] = isset($data['wholesale_min_qty']) && $data['wholesale_min_qty'] !== ''
+            ? max(1, (int) $data['wholesale_min_qty'])
+            : 1;
+        $data['retail_min_qty'] = isset($data['retail_min_qty']) && $data['retail_min_qty'] !== ''
+            ? max(1, (int) $data['retail_min_qty'])
+            : 1;
 
         /*
          * Create product
@@ -249,6 +286,26 @@ class ProductController extends BaseController
      */
     public function update($id)
     {
+         // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+    //   check if user is admin or sales_manager
+      if ($user['role'] !== 'admin' && $user['role'] !== 'sales_manager') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unathorized access.'
+            ]);
+            return;
+      }
         $id = (int) $id;
 
         $existingProduct = $this->productModel->find($id);
@@ -401,6 +458,27 @@ class ProductController extends BaseController
         }
 
         /*
+         * Normalize min/wholesale quantities if provided.
+         */
+        if (isset($data['wholesale_price'])) {
+            $data['wholesale_price'] = $data['wholesale_price'] !== ''
+                ? (float) $data['wholesale_price']
+                : 0.00;
+        }
+
+        if (isset($data['wholesale_min_qty'])) {
+            $data['wholesale_min_qty'] = $data['wholesale_min_qty'] !== ''
+                ? max(1, (int) $data['wholesale_min_qty'])
+                : 1;
+        }
+
+        if (isset($data['retail_min_qty'])) {
+            $data['retail_min_qty'] = $data['retail_min_qty'] !== ''
+                ? max(1, (int) $data['retail_min_qty'])
+                : 1;
+        }
+
+        /*
          * Prevent an empty update.
          */
         if (empty($data)) {
@@ -455,6 +533,26 @@ class ProductController extends BaseController
      */
     public function destroy($id)
     {
+         // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+    //   check if user is admin or sales_manager
+      if ($user['role'] !== 'admin' && $user['role'] !== 'sales_manager') {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unathorized access.'
+            ]);
+            return;
+      }
         $id = (int) $id;
 
         $existingProduct = $this->productModel->find($id);

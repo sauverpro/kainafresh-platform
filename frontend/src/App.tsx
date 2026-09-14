@@ -5,7 +5,8 @@ import { CartProvider } from "./context/CartContext";
 import { Toaster } from "sonner";
 import AppLayout from "./components/layout/AppLayout";
 import Placeholder from "./pages/Placeholder";
-import Loader from "./components/Loader/Loader";
+import PageShellSkeleton from "./components/skeletons/PageShellSkeleton";
+import ScrollToTop from "./components/common/ScrollToTop";
 import { isAuthenticated } from "./api/client";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import { canAccessPath, normalizeRole, DEFAULT_HOME } from "./auth/roleAccess";
@@ -16,12 +17,16 @@ import type { NavItem } from "./assets/data/sideNavData.types";
 // centered loader shown while each chunk loads during navigation.
 const Home = lazy(() => import("./pages/home/Home"));
 const OurProducts = lazy(() => import("./pages/products/OurProducts"));
+const ProductDetailPage = lazy(
+  () => import("./pages/products/ProductDetailPage"),
+);
 const Checkout = lazy(() => import("./pages/checkout/Checkout"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const Signup = lazy(() => import("./pages/auth/Signup"));
 const About = lazy(() => import("./pages/about/About"));
 const Contact = lazy(() => import("./pages/contact/Contact"));
 const Wholesale = lazy(() => import("./pages/wholesale/Wholesale"));
+const TrackOrder = lazy(() => import("./pages/orders/TrackOrder"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 const CmsPage = lazy(() => import("./pages/cms/CmsPage"));
 const ProductsList = lazy(() => import("./pages/admin/Products/ProductsList"));
@@ -38,6 +43,7 @@ const GlobalSettings = lazy(
   () => import("./pages/admin/Settings/GlobalSettings"),
 );
 const UserManagement = lazy(() => import("./pages/admin/Users/UserManagement"));
+const TeamManagement = lazy(() => import("./pages/admin/Team/TeamManagement"));
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -105,27 +111,24 @@ const routes = sideNavData
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Toaster position="top-right" richColors />
       <AuthProvider>
         <SidebarProvider>
           <CartProvider>
-          <Suspense
-            fallback={
-              <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-                <Loader text="Loading page..." />
-              </div>
-            }
-          >
+          <Suspense fallback={<PageShellSkeleton />}>
             <Routes>
               {/* Public E-Commerce & Info Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/products" element={<OurProducts />} />
+              <Route path="/product/:id" element={<ProductDetailPage />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/wholesale" element={<Wholesale />} />
+              <Route path="/track-order" element={<TrackOrder />} />
 
               {/* Authenticated Dashboard */}
               <Route
@@ -138,6 +141,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/settings" element={<GlobalSettings />} />
                 <Route path="/admin/users" element={<UserManagement />} />
+                <Route path="/admin/team" element={<TeamManagement />} />
                 <Route path="/cms/settings" element={<GlobalSettings />} />
                 <Route path="/cms/:slug" element={<CmsPage />} />
                 <Route path="/admin/products" element={<ProductsList />} />

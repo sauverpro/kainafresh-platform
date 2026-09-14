@@ -22,8 +22,7 @@ import {
 // Import HTTP API client utilities for CRUD calls
 import { apiGet, apiPost, apiPostFormData, apiDelete } from '../../../api/client';
 
-// Import custom centered page loading indicator
-import Loader from '../../../components/Loader/Loader';
+import DashboardSkeleton from '../../../components/skeletons/DashboardSkeleton';
 
 // Import Global Settings tab stylesheet
 import './GlobalSettings.css';
@@ -290,7 +289,7 @@ export default function GlobalSettings() {
   };
 
   if (loading) {
-    return <Loader text="Loading system settings..." />;
+    return <DashboardSkeleton />;
   }
 
   return (

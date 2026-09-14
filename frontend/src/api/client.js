@@ -45,6 +45,18 @@ export const getCurrentUser = () => {
 /** Remove the persisted user profile on logout. */
 export const removeCurrentUser = () => localStorage.removeItem(USER_KEY);
 
+/** Custom window event fired when the stored session is expired/invalid (401). */
+export const SESSION_EXPIRED_EVENT = 'kainafresh:session-expired';
+
+/** Clear stored auth data and notify the app that the session has expired. */
+export const clearExpiredSession = () => {
+  removeToken();
+  removeCurrentUser();
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
+  }
+};
+
 // ---------------------------------------------------------------------------
 // Internal fetch wrapper
 // ---------------------------------------------------------------------------
@@ -69,10 +81,20 @@ async function request(endpoint, options = {}) {
     headers,
   });
 
-  const data = await response.json();
+  let data = null;
+  try {
+    data = await response.json();
+  } catch {
+    data = {};
+  }
 
   // Bubble up HTTP-level errors so callers can catch them uniformly.
   if (!response.ok) {
+    // Auto-logout when the session token has expired/been revoked.
+    if (response.status === 401 && token) {
+      clearExpiredSession();
+    }
+
     const error = new Error(data.message || 'Something went wrong');
     error.status = response.status;
     error.data = data;
@@ -131,8 +153,18 @@ export const apiPostFormData = async (endpoint, formData) => {
     headers,
     body: formData,
   });
-  const data = await response.json();
+  let data = null;
+  try {
+    data = await response.json();
+  } catch {
+    data = {};
+  }
   if (!response.ok) {
+    // Auto-logout when the session token has expired/been revoked.
+    if (response.status === 401 && token) {
+      clearExpiredSession();
+    }
+
     const error = new Error(data.message || 'Upload failed');
     error.status = response.status;
     error.data = data;
