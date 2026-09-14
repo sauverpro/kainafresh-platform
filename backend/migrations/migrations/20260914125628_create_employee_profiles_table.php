@@ -1,15 +1,13 @@
 <?php
 
-// Migration: Create employeeprofile_table table
+// Migration: Create employee_profiles table
 // Created: 2026-09-14 12:56:28
 
-// class EmployeeprofileTable extends Migration
-class CreateEmployeeprofileTable extends Migration
-
+class CreateEmployeeProfilesTable extends Migration
 {
     public function up()
     {
-        $this->createTable('employeeprofile_table', [
+        $this->createTable('employee_profiles', [
 
             // =========================
             // Personal Information
@@ -18,11 +16,13 @@ class CreateEmployeeprofileTable extends Migration
                 'name' => 'fullname',
                 'type' => 'VARCHAR',
                 'length' => 255,
+                'nullable' => false,
             ],
             [
                 'name' => 'emp_number',
                 'type' => 'VARCHAR',
                 'length' => 50,
+                'nullable' => false,
                 'unique' => true,
             ],
             [
@@ -85,7 +85,6 @@ class CreateEmployeeprofileTable extends Migration
                 'type' => 'VARCHAR',
                 'length' => 50,
                 'nullable' => true,
-                
             ],
 
             // =========================
@@ -121,8 +120,8 @@ class CreateEmployeeprofileTable extends Migration
                 'name' => 'status',
                 'type' => 'VARCHAR',
                 'length' => 20,
+                'nullable' => false,
                 'default' => 'active',
-                
             ],
 
             // =========================
@@ -184,6 +183,6 @@ class CreateEmployeeprofileTable extends Migration
 
     public function down()
     {
-        $this->dropTable('employeeprofile_table');
+        $this->dropTable('employee_profiles');
     }
 }

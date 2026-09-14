@@ -18,6 +18,8 @@ A minimal, dependency-free PHP API: a small custom router, `mysqli` for the data
   - [Units](#units)
   - [Products](#products)
   - [Stocks](#stocks)
+  - [HR — Departments](#hr--departments)
+  - [HR — Employee Profiles](#hr--employee-profiles)
 - [Database Import Notes](#database-import-notes)
 - [Troubleshooting](#troubleshooting)
 
@@ -470,17 +472,6 @@ stocks
 
 > ⚠️ **Not yet implemented.** The `stocks` migration and the routes above exist, but there is no `StockController` or `Stock` model in `controllers/`/`models/` yet — calling these routes will currently fail. Follow the pattern in `ProductController`/`Product` (including the `productid` foreign-key existence check) when implementing.
 
-## Database Import Notes
-
-If the schema has changed upstream, drop all existing tables in your local database and import the current SQL dump from the `db/` folder rather than trying to reconcile migrations manually.
-
-## Troubleshooting
-
-- `migrations/migrations/` must be writable by the PHP process when generating new migrations.
-- The migration runner creates its own `migrations` tracking table in the configured database.
-- Changed DB credentials in `.env`? Restart the dev server — env vars are read at process start.
-- `.env` key names must match exactly what `config/database.php` reads (`DB_NAME`, `DB_USER`) — see [Configuration](#configuration).
-
 ## Customers Management
 
 The `customers` module manages customer information for the IMS.
@@ -835,3 +826,211 @@ The order total should be calculated from the order items:
 
 orders.total = SUM(order_items.subtotal)
 ```
+
+### HR — Departments
+
+Company departments that employees belong to.
+
+```
+departments
+├── id
+├── name        (required)
+├── created_at
+└── updated_at
+```
+
+| Method | Endpoint                   | Description         |
+| ------ | -------------------------- | ------------------- |
+| GET    | `/api/departments`         | List departments    |
+| GET    | `/api/departments/{id}` 🔒 | Get a department    |
+| POST   | `/api/departments`         | Create a department |
+| PUT    | `/api/departments/{id}` 🔒 | Update a department |
+| DELETE | `/api/departments/{id}` 🔒 | Delete a department |
+
+> `GET /api/departments` and `POST /api/departments` currently have `'auth'` removed in `routes/api.php`. Put it back on `POST` before going to production.
+
+Files: [controllers/HR/DepartmentController.php](controllers/HR/DepartmentController.php), [models/HR/Department.php](models/HR/Department.php), migration `*_create_departments_table.php`.
+
+#### Example: Create a department
+
+```
+POST /api/departments
+Content-Type: application/json
+
+{
+  "name": "IT Department"
+}
+```
+
+```json
+{
+  "success": true,
+  "message": "Department created successfully",
+  "data": {
+    "id": 1,
+    "name": "IT Department",
+    "created_at": "2026-09-14 13:53:22",
+    "updated_at": "2026-09-14 13:53:22"
+  }
+}
+```
+
+Accepts JSON or form-data. Responses: `201` created, `422` missing `name` or invalid ID, `404` department not found. Duplicate names are not blocked.
+
+### HR — Employee Profiles
+
+Employee records: personal details, employment, emergency contact, probation, contracts and termination.
+
+```
+employee_profiles
+├── id
+│   ── Personal ──
+├── fullname                 (required)
+├── emp_number               (required, unique)
+├── dob                      (nullable, date)
+├── gender                   (nullable)
+├── nid                      (nullable, unique — national ID)
+├── phone                    (nullable)
+├── email                    (nullable)
+├── address                  (nullable)
+│   ── Employment ──
+├── dept_id                  (nullable → departments.id)
+├── job_title                (nullable)
+├── date_hired               (nullable, date)
+├── employment_type          (nullable)
+├── supervisor               (nullable)
+├── status                   (default: 'active')
+│   ── Emergency contact ──
+├── emergency_person_name    (nullable)
+├── emergency_phone_number   (nullable)
+│   ── Probation ──
+├── probation_end_date       (nullable, date)
+├── probation_status         (nullable)
+├── probation_notes          (nullable)
+│   ── Documents / contracts ──
+├── appointment_letter_ref   (nullable)
+├── contract_ref             (nullable)
+├── contract_end_date        (nullable, date)
+│   ── Termination ──
+├── termination_date         (nullable, date)
+├── termination_reason       (nullable)
+├── created_at
+└── updated_at
+```
+
+`dept_id` has no database foreign key (the employee migration runs before the departments one); the controller checks the department exists instead.
+
+| Method | Endpoint                 | Description                             |
+| ------ | ------------------------ | --------------------------------------- |
+| GET    | `/api/employees` 🔒      | List employees (with `department_name`) |
+| GET    | `/api/employees/{id}` 🔒 | Get an employee                         |
+| POST   | `/api/employees` 🔒      | Create an employee                      |
+| PUT    | `/api/employees/{id}` 🔒 | Update an employee (partial)            |
+| DELETE | `/api/employees/{id}` 🔒 | Delete an employee                      |
+
+All routes require auth because the table holds personal data. There is no role check yet — any logged-in user has access.
+
+Files: [controllers/HR/EmployeeProfileController.php](controllers/HR/EmployeeProfileController.php), [models/HR/EmployeeProfile.php](models/HR/EmployeeProfile.php), migration `*_create_employee_profiles_table.php`.
+
+#### List filters
+
+`GET /api/employees` accepts optional query parameters, which can be combined:
+
+| Param             | Example                     | Matches                                    |
+| ----------------- | --------------------------- | ------------------------------------------ |
+| `status`          | `?status=active`            | Exact status                               |
+| `dept_id`         | `?dept_id=1`                | Department                                 |
+| `employment_type` | `?employment_type=contract` | Exact employment type                      |
+| `search`          | `?search=EMP-001`           | `fullname`, `emp_number`, `phone`, `email` |
+
+#### Allowed values
+
+Case-insensitive; stored in lowercase.
+
+| Field              | Values                                                       |
+| ------------------ | ------------------------------------------------------------ |
+| `gender`           | `male`, `female`, `other`                                    |
+| `employment_type`  | `full_time`, `part_time`, `contract`, `internship`, `casual` |
+| `status`           | `active`, `inactive`, `on_leave`, `suspended`, `terminated`  |
+| `probation_status` | `on_probation`, `confirmed`, `extended`, `failed`            |
+
+#### Example: Create an employee
+
+```
+POST /api/employees
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "fullname": "Jean Mugisha",
+  "emp_number": "EMP-001",
+  "nid": "1199080000000001",
+  "gender": "male",
+  "phone": "+250788123456",
+  "email": "jean@example.com",
+  "dept_id": 1,
+  "job_title": "Developer",
+  "date_hired": "2026-09-01",
+  "employment_type": "full_time",
+  "probation_status": "on_probation",
+  "probation_end_date": "2026-12-01"
+}
+```
+
+The response returns the full saved record, including `department_name`:
+
+```json
+{
+  "success": true,
+  "message": "Employee created successfully",
+  "data": {
+    "id": 1,
+    "fullname": "Jean Mugisha",
+    "emp_number": "EMP-001",
+    "dept_id": 1,
+    "status": "active",
+    "department_name": "IT Department"
+  }
+}
+```
+
+#### Example: Update an employee
+
+Only the fields sent are changed. Sending `""` clears a nullable field.
+
+```
+PUT /api/employees/1
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "status": "terminated",
+  "termination_date": "2026-09-14",
+  "termination_reason": "End of contract"
+}
+```
+
+> Send `PUT` bodies as JSON — PHP does not parse `multipart/form-data` on `PUT`. `POST` accepts JSON or form-data.
+
+#### Validation
+
+| Status | When                                                                                                                                                                |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `201`  | Employee created                                                                                                                                                    |
+| `401`  | Missing or invalid token                                                                                                                                            |
+| `404`  | Employee not found                                                                                                                                                  |
+| `409`  | `emp_number` or `nid` already used by another employee                                                                                                              |
+| `422`  | Missing `fullname`/`emp_number`, empty body on update, invalid email, date not `YYYY-MM-DD`, value not in the allowed list, or `dept_id` not an existing department |
+
+Validated date fields: `dob`, `date_hired`, `probation_end_date`, `contract_end_date`, `termination_date`.
+
+## Database Import Notes
+
+If the schema has changed upstream, drop all existing tables in your local database and import the current SQL dump from the `db/` folder rather than trying to reconcile migrations manually.
+
+## Troubleshooting
+
+- `migrations/migrations/` must be writable by the PHP process when generating new migrations.
+- The migration runner creates its own `migrations` tracking table in the configured database.
+- Changed DB credentials in `.env`? Restart the dev server — env vars are read at process start.
+- `.env` key names must match exactly what `config/database.php` reads (`DB_NAME`, `DB_USER`) — see [Configuration](#configuration).

@@ -374,3 +374,50 @@ $router->addRoute(
     'DepartmentController@delete',
     'auth'
 );
+
+
+/*
+|--------------------------------------------------------------------------
+| HR - Employee Profiles
+|--------------------------------------------------------------------------
+*/
+
+// Get all employees (filters: ?status=&dept_id=&employment_type=&search=)
+$router->addRoute(
+    'GET',
+    '/api/employees',
+    'EmployeeProfileController@index',
+    'auth'
+);
+
+// Get single employee
+$router->addRoute(
+    'GET',
+    '/api/employees/{id}',
+    'EmployeeProfileController@show',
+    'auth'
+);
+
+// Create employee
+$router->addRoute(
+    'POST',
+    '/api/employees',
+    'EmployeeProfileController@store',
+    'auth'
+);
+
+// Update employee
+$router->addRoute(
+    'PUT',
+    '/api/employees/{id}',
+    'EmployeeProfileController@update',
+    'auth'
+);
+
+// Delete employee
+$router->addRoute(
+    'DELETE',
+    '/api/employees/{id}',
+    'EmployeeProfileController@delete',
+    'auth'
+);
