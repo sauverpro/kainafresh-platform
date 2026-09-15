@@ -422,6 +422,9 @@ $router->addRoute(
     'auth'
 );
 // leave management routes
-$router->addRoute('POST','/api/leaves/create','LeaveManagementController@createLeaveRequest');
+$router->addRoute('POST','/api/leaves/create','LeaveManagementController@createLeaveRequest','auth');
 $router->addRoute('POST','/api/leaves/accept/{id}','LeaveManagementController@acceptLeaveRequest','auth');
 $router->addRoute('POST','/api/leaves/reject/{id}','LeaveManagementController@rejectLeaveRequest','auth');
+$router->addRoute('DELETE','/api/leaves/delete/{id}','LeaveManagementController@deleteLeaveRequest','auth');
+// get all leave requests
+$router->addRoute('GET','/api/leaves','LeaveManagementController@index','auth');

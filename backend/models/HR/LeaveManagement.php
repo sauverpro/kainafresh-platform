@@ -17,14 +17,14 @@ class LeaveManagement extends Model
     // accept leave request
     public function acceptLeaveRequest($id)
     {
-        $data = ['status' => 'approved'];
+        $data = ['status' => 'approved', 'reject_reason' => null];
         return $this->update($id, $data);
     }
 
     // reject leave request
-    public function rejectLeaveRequest($id, $data)
+    public function rejectLeaveRequest($id, $rejectReason)
     {
-        $data = ['status' => 'rejected'];
+        $data = ['status' => 'rejected', 'reject_reason' => $rejectReason];
         return $this->update($id, $data);
     }
     // update leave request
@@ -45,5 +45,13 @@ class LeaveManagement extends Model
         $stmt->bind_param("i", $id);
         $stmt->execute();
         return $stmt->get_result()->fetch_assoc();
-        }
+    }
+    // select all leave requests
+    public function findAll()
+    {
+        $sql = "SELECT * FROM `{$this->table}`";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
 }

@@ -489,6 +489,294 @@ DELETE /api/stocks/1
 
 One small terminology recommendation: I'd use **`stock` / `stocks`** consistently throughout the project rather than **`stack`**, since this module represents inventory stock.
 
+---
+
+# Leave Management
+
+The leave management module handles employee leave requests, review decisions, and basic listing of pending/approved/rejected requests.
+
+## Module overview
+
+The leave requests are stored in the `leave_managements` table and are managed by the `LeaveManagementController` and `LeaveManagement` model.
+
+### Leave request fields
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `employee_id` | integer | Yes | Employee who is requesting leave |
+| `leave_type` | string | Yes | Leave category such as annual, sick, maternity, or other custom value |
+| `start_date` | date | Yes | Leave start date |
+| `end_date` | date | Yes | Leave end date |
+| `leave_reason` | text | Yes | Reason for the request |
+| `leave_duration` | integer | Yes | Number of leave days requested |
+| `status` | string | No | Request status; default is `pending` |
+| `reject_reason` | text | No | Rejection reason when the request is rejected |
+| `created_at` | datetime | Auto | Record creation timestamp |
+| `updated_at` | datetime | Auto | Last update timestamp |
+
+### Supported status values
+
+- `pending`
+- `approved`
+- `rejected`
+
+---
+
+## API routes
+
+All endpoints require authentication via the `auth` middleware unless otherwise noted.
+
+| Method | Endpoint | Description | Access |
+| --- | --- | --- | --- |
+| `GET` | `/api/leaves` | List all leave requests | Authenticated users |
+| `POST` | `/api/leaves/create` | Create a leave request | Authenticated users |
+| `POST` | `/api/leaves/accept/{id}` | Approve a leave request | `admin`, `sales_manager`, `hr_manager` |
+| `POST` | `/api/leaves/reject/{id}` | Reject a leave request | `admin`, `sales_manager`, `hr_manager` |
+| `DELETE` | `/api/leaves/delete/{id}` | Delete a leave request | `admin`, `sales_manager`, `hr_manager` |
+
+> The controller also contains an `updateLeaveRequest` method, but it is not registered in the current router file, so the active public API exposes the routes above.
+
+---
+
+## Create leave request
+
+### Endpoint
+
+`POST /api/leaves/create`
+
+### Request body
+
+```json
+{
+  "employee_id": 12,
+  "leave_type": "annual",
+  "start_date": "2026-09-20",
+  "end_date": "2026-09-25",
+  "leave_reason": "Family visit and rest",
+  "leave_duration": 6
+}
+```
+
+### Validation
+
+The controller checks that the following fields are present:
+
+- `employee_id`
+- `leave_type`
+- `start_date`
+- `end_date`
+- `leave_reason`
+- `leave_duration`
+
+It also verifies that the employee exists before creating the request.
+
+### Success response
+
+```json
+{
+  "message": "Leave request created successfully",
+  "data": {
+    "id": 1,
+    "employee_id": 12,
+    "leave_type": "annual",
+    "start_date": "2026-09-20",
+    "end_date": "2026-09-25",
+    "leave_reason": "Family visit and rest",
+    "leave_duration": 6,
+    "status": "pending",
+    "reject_reason": null,
+    "created_at": "2026-09-15 08:00:00",
+    "updated_at": "2026-09-15 08:00:00"
+  }
+}
+```
+
+### Error responses
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+```json
+{
+  "error": "Employee not found"
+}
+```
+
+---
+
+## List leave requests
+
+### Endpoint
+
+`GET /api/leaves`
+
+### Success response
+
+```json
+{
+  "message": "Leave requests retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "employee_id": 12,
+      "leave_type": "annual",
+      "start_date": "2026-09-20",
+      "end_date": "2026-09-25",
+      "leave_reason": "Family visit and rest",
+      "leave_duration": 6,
+      "status": "pending",
+      "reject_reason": null,
+      "created_at": "2026-09-15 08:00:00",
+      "updated_at": "2026-09-15 08:00:00"
+    }
+  ]
+}
+```
+
+---
+
+## Approve leave request
+
+### Endpoint
+
+`POST /api/leaves/accept/{id}`
+
+### Authorization
+
+Only these roles can approve leave requests:
+
+- `admin`
+- `sales_manager`
+- `hr_manager`
+
+### Success response
+
+```json
+{
+  "message": "Leave request accepted successfully",
+  "data": {
+    "id": 1,
+    "employee_id": 12,
+    "leave_type": "annual",
+    "start_date": "2026-09-20",
+    "end_date": "2026-09-25",
+    "status": "approved",
+    "reject_reason": null
+  }
+}
+```
+
+### Error responses
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+```json
+{
+  "error": "Leave request not found"
+}
+```
+
+---
+
+## Reject leave request
+
+### Endpoint
+
+`POST /api/leaves/reject/{id}`
+
+### Request body
+
+```json
+{
+  "reject_reason": "Requested dates overlap with team coverage limits"
+}
+```
+
+### Authorization
+
+Only these roles can reject leave requests:
+
+- `admin`
+- `sales_manager`
+- `hr_manager`
+
+### Success response
+
+```json
+{
+  "message": "Leave request rejected successfully",
+  "data": {
+    "id": 1,
+    "employee_id": 12,
+    "leave_type": "annual",
+    "start_date": "2026-09-20",
+    "end_date": "2026-09-25",
+    "status": "rejected",
+    "reject_reason": "Requested dates overlap with team coverage limits"
+  }
+}
+```
+
+---
+
+## Delete leave request
+
+### Endpoint
+
+`DELETE /api/leaves/delete/{id}`
+
+### Authorization
+
+Only these roles can delete leave requests:
+
+- `admin`
+- `sales_manager`
+- `hr_manager`
+
+### Success response
+
+```json
+{
+  "message": "Leave request deleted successfully",
+  "data": true
+}
+```
+
+### Error responses
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+```json
+{
+  "error": "Leave request not found"
+}
+```
+
+---
+
+## Example leave workflow
+
+```text
+1. Employee submits leave request via POST /api/leaves/create
+2. Manager or HR reviews the request in GET /api/leaves
+3. Approver calls POST /api/leaves/accept/{id} or POST /api/leaves/reject/{id}
+4. Final status is stored as pending, approved, or rejected
+```
+
+This module is designed for basic internal leave approval and does not currently include a dedicated leave-balance calculation or employee-specific leave history endpoint.
+
+---
 
 
 ```
