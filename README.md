@@ -778,5 +778,274 @@ This module is designed for basic internal leave approval and does not currently
 
 ---
 
+# Payroll Management
+
+The payroll module stores employee payroll records, calculates net pay from salary and deduction values, and supports creating, updating, listing, and deleting payroll entries.
+
+## Module overview
+
+Payroll records are stored in the `payrolls` table and are handled by the `PayrollController` and `Payroll` model.
+
+### Payroll fields
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `employee_id` | integer | Yes | Employee associated with the payroll record |
+| `base_salary` | decimal | Yes | Base monthly or period salary |
+| `allowances` | decimal | Yes | Additional allowances |
+| `overtime` | decimal | Yes | Overtime payment |
+| `bonus` | decimal | Yes | Bonus amount |
+| `tax_deductions` | decimal | Yes | Tax deductions |
+| `pension_deductions` | decimal | Yes | Pension deductions |
+| `other_deductions` | decimal | Yes | Any other deductions |
+| `net_pay` | decimal | Auto-calculated | Final pay after deductions |
+| `pay_date` | date | Yes | Payroll issue date |
+| `payment_status` | enum/string | No | Payment status; defaults to `unpaid` in the migration |
+| `payment_start_date` | date | Yes in validation | Payroll period start date |
+| `bank_account_number` | string | Yes | Account number for transfer |
+| `bank_name` | string | Yes | Bank name |
+| `payment_ref` | string | Yes | Payment reference code |
+| `note` | text | No | Optional notes |
+| `created_at` | datetime | Auto | Record creation time |
+| `updated_at` | datetime | Auto | Last update time |
+
+---
+
+## API routes
+
+All payroll endpoints require authentication and only allow `admin`, `sales_manager`, and `hr_manager` roles.
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `GET` | `/api/payroll` | List all payroll records |
+| `POST` | `/api/payroll/create` | Create a payroll record |
+| `PUT` | `/api/payroll/update/{id}` | Update a payroll record |
+| `DELETE` | `/api/payroll/delete/{id}` | Delete a payroll record |
+
+---
+
+## Create payroll record
+
+### Endpoint
+
+`POST /api/payroll/create`
+
+### Request body
+
+```json
+{
+  "employee_id": 12,
+  "base_salary": 2500.00,
+  "allowances": 250.00,
+  "overtime": 120.00,
+  "bonus": 150.00,
+  "tax_deductions": 180.00,
+  "pension_deductions": 90.00,
+  "other_deductions": 30.00,
+  "pay_date": "2026-09-15",
+  "payment_start_date": "2026-08-01",
+  "bank_account_number": "1234567890",
+  "bank_name": "KCB Bank",
+  "payment_ref": "PAY-2026-09-15-001",
+  "note": "September payroll"
+}
+```
+
+### Validation
+
+The controller checks for these required fields before creating a record:
+
+- `employee_id`
+- `base_salary`
+- `pay_date`
+- `payment_start_date`
+- `bank_account_number`
+- `bank_name`
+- `payment_ref`
+- `allowances`
+- `overtime`
+- `bonus`
+- `tax_deductions`
+- `pension_deductions`
+
+It also verifies that the employee exists before storing the payroll record.
+
+### Net pay calculation
+
+The controller calculates net pay as:
+
+```text
+net_pay = base_salary + allowances + overtime + bonus - tax_deductions - pension_deductions - other_deductions
+```
+
+### Success response
+
+```json
+{
+  "message": "Payroll record created successfully",
+  "data": {
+    "id": 1,
+    "employee_id": 12,
+    "base_salary": "2500.00",
+    "allowances": "250.00",
+    "overtime": "120.00",
+    "bonus": "150.00",
+    "tax_deductions": "180.00",
+    "pension_deductions": "90.00",
+    "other_deductions": "30.00",
+    "net_pay": "2720.00",
+    "pay_date": "2026-09-15",
+    "payment_status": "unpaid",
+    "payment_start_date": "2026-08-01",
+    "bank_account_number": "1234567890",
+    "bank_name": "KCB Bank",
+    "payment_ref": "PAY-2026-09-15-001",
+    "note": "September payroll"
+  }
+}
+```
+
+### Error responses
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+```json
+{
+  "error": "Employee not found"
+}
+```
+
+---
+
+## List payroll records
+
+### Endpoint
+
+`GET /api/payroll`
+
+### Success response
+
+```json
+{
+  "message": "Payroll records retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "employee_id": 12,
+      "base_salary": "2500.00",
+      "allowances": "250.00",
+      "overtime": "120.00",
+      "bonus": "150.00",
+      "tax_deductions": "180.00",
+      "pension_deductions": "90.00",
+      "other_deductions": "30.00",
+      "net_pay": "2720.00",
+      "pay_date": "2026-09-15",
+      "payment_status": "unpaid",
+      "payment_start_date": "2026-08-01",
+      "bank_account_number": "1234567890",
+      "bank_name": "KCB Bank",
+      "payment_ref": "PAY-2026-09-15-001",
+      "note": "September payroll"
+    }
+  ]
+}
+```
+
+---
+
+## Update payroll record
+
+### Endpoint
+
+`PUT /api/payroll/update/{id}`
+
+### Request body
+
+```json
+{
+  "base_salary": 2600.00,
+  "allowances": 300.00,
+  "overtime": 150.00,
+  "bonus": 100.00,
+  "tax_deductions": 200.00,
+  "pension_deductions": 95.00,
+  "other_deductions": 35.00,
+  "payment_status": "paid",
+  "note": "Updated payroll after review"
+}
+```
+
+### Success response
+
+```json
+{
+  "status": true,
+  "message": "Updated",
+  "data": {
+    "id": 1,
+    "employee_id": 12,
+    "base_salary": "2600.00",
+    "allowances": "300.00",
+    "overtime": "150.00",
+    "bonus": "100.00",
+    "tax_deductions": "200.00",
+    "pension_deductions": "95.00",
+    "other_deductions": "35.00",
+    "payment_status": "paid"
+  }
+}
+```
+
+---
+
+## Delete payroll record
+
+### Endpoint
+
+`DELETE /api/payroll/delete/{id}`
+
+### Success response
+
+```json
+{
+  "message": "Deleted successfully",
+  "data": true
+}
+```
+
+### Error responses
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+```json
+{
+  "error": "Payroll not found"
+}
+```
+
+---
+
+## Example payroll workflow
+
+```text
+1. HR creates a payroll record with POST /api/payroll/create
+2. Admin or HR reviews the payroll list via GET /api/payroll
+3. Payroll data is updated with PUT /api/payroll/update/{id}
+4. Payroll records can be removed with DELETE /api/payroll/delete/{id}
+```
+
+This payroll module currently supports the core payroll entry flow, but it does not yet include a dedicated payroll summary report or employee-specific payroll history endpoint.
+
+---
+
 
 ```

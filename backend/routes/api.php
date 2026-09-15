@@ -426,5 +426,13 @@ $router->addRoute('POST','/api/leaves/create','LeaveManagementController@createL
 $router->addRoute('POST','/api/leaves/accept/{id}','LeaveManagementController@acceptLeaveRequest','auth');
 $router->addRoute('POST','/api/leaves/reject/{id}','LeaveManagementController@rejectLeaveRequest','auth');
 $router->addRoute('DELETE','/api/leaves/delete/{id}','LeaveManagementController@deleteLeaveRequest','auth');
+$router->addRoute('PUT','/api/leaves/update/{id}','LeaveManagementController@updateLeaveRequest','auth');
 // get all leave requests
 $router->addRoute('GET','/api/leaves','LeaveManagementController@index','auth');
+
+// payroll management routes
+$router->addRoute('POST','/api/payroll/create','PayrollController@createPayroll','auth');
+$router->addRoute('DELETE','/api/payroll/delete/{id}','PayrollController@deletePayroll','auth');
+// get all leave requests
+$router->addRoute('GET','/api/payroll','PayrollController@index','auth');
+$router->addRoute('PUT','/api/payroll/update/{id}','PayrollController@updatePayroll','auth');
