@@ -423,3 +423,5 @@ $router->addRoute(
 );
 // leave management routes
 $router->addRoute('POST','/api/leaves/create','LeaveManagementController@createLeaveRequest');
+$router->addRoute('POST','/api/leaves/accept/{id}','LeaveManagementController@acceptLeaveRequest','auth');
+$router->addRoute('POST','/api/leaves/reject/{id}','LeaveManagementController@rejectLeaveRequest','auth');

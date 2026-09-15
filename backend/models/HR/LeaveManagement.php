@@ -3,7 +3,7 @@ class LeaveManagement extends Model
 {
     protected $table = 'leave_managements';
     protected $primaryKey = 'id';
-    protected $fillable = ['employee_id', 'leave_type', 'start_date', 'end_date', 'leave_reason', 'leave_duration', 'status'];
+    protected $fillable = ['employee_id', 'leave_type', 'start_date', 'end_date', 'leave_reason','reject_reason', 'leave_duration', 'status'];
     protected $timestamps = true;
 
     // create leave request
@@ -22,7 +22,7 @@ class LeaveManagement extends Model
     }
 
     // reject leave request
-    public function rejectLeaveRequest($id)
+    public function rejectLeaveRequest($id, $data)
     {
         $data = ['status' => 'rejected'];
         return $this->update($id, $data);
@@ -37,4 +37,13 @@ class LeaveManagement extends Model
     {
         return $this->delete($id);
     }
+    // select leave request by id
+    public function findById($id)
+    {
+        $sql = "SELECT * FROM `{$this->table}` WHERE id = ? LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc();
+        }
 }
