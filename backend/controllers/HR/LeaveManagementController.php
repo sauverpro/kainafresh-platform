@@ -13,7 +13,7 @@ class LeaveManagementController extends BaseController
     }
 
     // create leave request
-    public function createLeaveRequest($data)
+    public function createLeaveRequest()
     {
         // validate the data before creating the leave request
         $data = $this->getRequestData();

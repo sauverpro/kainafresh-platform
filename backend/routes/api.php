@@ -421,3 +421,5 @@ $router->addRoute(
     'EmployeeProfileController@delete',
     'auth'
 );
+// leave management routes
+$router->addRoute('POST','/api/leaves/create','LeaveManagementController@createLeaveRequest');
