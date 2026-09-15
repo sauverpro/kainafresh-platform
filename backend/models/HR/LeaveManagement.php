@@ -1,0 +1,40 @@
+<?php 
+class LeaveManagement extends Model
+{
+    protected $table = 'leave_managements';
+    protected $primaryKey = 'id';
+    protected $fillable = ['employee_id', 'leave_type', 'start_date', 'end_date', 'leave_reason', 'leave_duration', 'status'];
+    protected $timestamps = true;
+
+    // create leave request
+    public function createLeaveRequest($data)
+    {
+        
+    return  $this->create($data);
+        
+    }
+
+    // accept leave request
+    public function acceptLeaveRequest($id)
+    {
+        $data = ['status' => 'approved'];
+        return $this->update($id, $data);
+    }
+
+    // reject leave request
+    public function rejectLeaveRequest($id)
+    {
+        $data = ['status' => 'rejected'];
+        return $this->update($id, $data);
+    }
+    // update leave request
+    public function updateLeaveRequest($id, $data)
+    {
+        return $this->update($id, $data);
+    }
+    // delete leave request
+    public function deleteLeaveRequest($id)
+    {
+        return $this->delete($id);
+    }
+}

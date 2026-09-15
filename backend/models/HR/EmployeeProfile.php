@@ -221,4 +221,14 @@ class EmployeeProfile extends Model
 
         return $stmt->execute();
     }
+
+    // find employee by id
+    public function findById($id)
+    {
+        $sql = "SELECT * FROM `{$this->table}` WHERE id = ? LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc();
+    }
 }
