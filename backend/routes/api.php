@@ -436,3 +436,19 @@ $router->addRoute('DELETE','/api/payroll/delete/{id}','PayrollController@deleteP
 // get all leave requests
 $router->addRoute('GET','/api/payroll','PayrollController@index','auth');
 $router->addRoute('PUT','/api/payroll/update/{id}','PayrollController@updatePayroll','auth');
+// performance routes
+$router->addRoute('POST','/api/performance/create','PerformanceController@store','auth');
+$router->addRoute('DELETE','/api/performance/delete/{id}','PerformanceController@deletePerformance','auth');
+$router->addRoute('GET','/api/performance','PerformanceController@index','auth');
+$router->addRoute('PUT','/api/performance/update/{id}','PerformanceController@updatePerformance','auth');
+
+// disciplinary action routes
+$router->addRoute('POST','/api/disciplinary/create','DisciplinaryController@store','auth');
+$router->addRoute('DELETE','/api/disciplinary/delete/{id}','DisciplinaryController@deleteDisciplinary','auth');
+$router->addRoute('GET','/api/disciplinary','DisciplinaryController@index','auth');
+$router->addRoute('PUT','/api/disciplinary/update/{id}','DisciplinaryController@updateDisciplinary','auth');
+// insurance
+$router->addRoute('POST','/api/insurance/create','InsuranceController@store','auth');
+$router->addRoute('DELETE','/api/insurance/delete/{id}','InsuranceController@deleteInsurance','auth');
+$router->addRoute('GET','/api/insurance','InsuranceController@index','auth');
+$router->addRoute('PUT','/api/insurance/update/{id}','InsuranceController@updateInsurance','auth');

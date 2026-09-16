@@ -20,5 +20,10 @@
     "type": "shell",
     "command": "npm run lint",
     "runOn": "folderOpen"
-  }
+  },
+  "workbench.colorTheme": "Default High Contrast",
+  "workbench.iconTheme": "vscode-modern-icons",
+  "workbench.preferredDarkColorTheme": "Default High Contrast",
+  "workbench.preferredHighContrastColorTheme": "Visual Studio Dark",
+  "workbench.preferredHighContrastLightColorTheme": "Monokai Dimmed"
 }
