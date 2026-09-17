@@ -831,12 +831,16 @@ orders.total = SUM(order_items.subtotal)
 
 ### HR — Departments
 
-Company departments that employees belong to.
+Company departments that employees belong to, along with their head-of-department contact info.
 
 ```
 departments
 ├── id
-├── name        (required)
+├── name               (required)
+├── dept_code          (auto-generated, unique, immutable — see below)
+├── HOD_name            (nullable)
+├── HOD_email           (nullable, validated)
+├── Dep_description     (nullable)
 ├── created_at
 └── updated_at
 ```
@@ -851,7 +855,19 @@ departments
 
 > `GET /api/departments` and `POST /api/departments` currently have `'auth'` removed in `routes/api.php`. Put it back on `POST` before going to production.
 
-Files: [controllers/HR/DepartmentController.php](controllers/HR/DepartmentController.php), [models/HR/Department.php](models/HR/Department.php), migration `*_create_departments_table.php`.
+Files: [controllers/HR/DepartmentController.php](controllers/HR/DepartmentController.php), [models/HR/Department.php](models/HR/Department.php), migrations `*_create_departments_table.php` and `*_add_details_to_departments_table.php`.
+
+#### `dept_code` generation
+
+The client never sets `dept_code` — it's generated server-side on create and can't be changed afterwards (a `PUT` silently drops `dept_code` if sent). Format: `KF-D` + the uppercase initial of each word in `name` + a random zero-padded 3-digit number, retried until unique:
+
+```
+"IT Department"      → KF-DID-482
+"Human Resources"     → KF-DHR-832
+"Finance"              → KF-DF-291
+```
+
+> The `dept_code`/`HOD_name`/`HOD_email`/`Dep_description` columns were added in a later migration (`*_add_details_to_departments_table.php`) as nullable, so departments created before it exist with `dept_code: null`. Only rows created after the migration get an auto-generated code.
 
 #### Example: Create a department
 
@@ -860,7 +876,10 @@ POST /api/departments
 Content-Type: application/json
 
 {
-  "name": "IT Department"
+  "name": "Human Resources",
+  "HOD_name": "Grace Uwase",
+  "HOD_email": "grace@kainafresh.com",
+  "Dep_description": "Handles hiring, payroll, and employee welfare"
 }
 ```
 
@@ -869,15 +888,21 @@ Content-Type: application/json
   "success": true,
   "message": "Department created successfully",
   "data": {
-    "id": 1,
-    "name": "IT Department",
-    "created_at": "2026-09-14 13:53:22",
-    "updated_at": "2026-09-14 13:53:22"
+    "id": 4,
+    "name": "Human Resources",
+    "created_at": "2026-09-17 16:51:50",
+    "updated_at": "2026-09-17 16:51:50",
+    "dept_code": "KF-DHR-832",
+    "HOD_name": "Grace Uwase",
+    "HOD_email": "grace@kainafresh.com",
+    "Dep_description": "Handles hiring, payroll, and employee welfare"
   }
 }
 ```
 
-Accepts JSON or form-data. Responses: `201` created, `422` missing `name` or invalid ID, `404` department not found. Duplicate names are not blocked.
+`HOD_name`, `HOD_email`, and `Dep_description` are all optional on create. `PUT` accepts a partial body — only the fields sent are changed, `dept_code` is always ignored.
+
+Accepts JSON or form-data. Responses: `201` created, `422` missing `name`, invalid ID, invalid `HOD_email`, or an empty update body; `404` department not found. Duplicate names are not blocked; `dept_code` is enforced unique at the database level.
 
 ### HR — Employee Profiles
 
