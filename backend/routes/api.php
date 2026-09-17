@@ -267,6 +267,12 @@ $router->addRoute(
     '/api/orders/{id}',
     'OrderController@show','auth'
 );
+$router->addRoute(
+    'GET',
+    '/api/orders/track/{id}',
+    'OrderController@showorder'
+);
+
 
 $router->addRoute(
     'POST',
