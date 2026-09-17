@@ -22,44 +22,7 @@ export interface LeaveRequest {
   applied_on: string;
 }
 
-const INITIAL_LEAVES: LeaveRequest[] = [
-  {
-    id: "LV-2026-101",
-    employee_name: "Emmanuel Habimana",
-    department: "Logistics & Fleet",
-    leave_type: "Annual Leave",
-    start_date: "2026-09-20",
-    end_date: "2026-09-27",
-    total_days: 7,
-    reason: "Family travel and rest after harvest cycle",
-    status: "Pending",
-    applied_on: "2026-09-14",
-  },
-  {
-    id: "LV-2026-102",
-    employee_name: "Alice Uwimana",
-    department: "Post-Harvest & Packaging",
-    leave_type: "Sick Leave",
-    start_date: "2026-09-15",
-    end_date: "2026-09-17",
-    total_days: 2,
-    reason: "Medical checkup and recovery",
-    status: "Pending",
-    applied_on: "2026-09-15",
-  },
-  {
-    id: "LV-2026-103",
-    employee_name: "Solange Murekatete",
-    department: "Sales & B2B",
-    leave_type: "Annual Leave",
-    start_date: "2026-08-01",
-    end_date: "2026-08-10",
-    total_days: 9,
-    reason: "Annual vacation",
-    status: "Approved",
-    applied_on: "2026-07-25",
-  },
-];
+const INITIAL_LEAVES: LeaveRequest[] = [];
 
 export default function LeaveManagement() {
   usePageTitle("leave-management", "Leave Management");
@@ -133,7 +96,7 @@ export default function LeaveManagement() {
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-blue-900">Staff Currently On Leave</p>
-              <p className="text-2xl font-extrabold text-blue-900">3</p>
+              <p className="text-2xl font-extrabold text-blue-900">0</p>
             </div>
           </div>
         </div>
@@ -154,62 +117,75 @@ export default function LeaveManagement() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {leaves.map((req) => (
-              <tr key={req.id} className="hover:bg-[#F4FAF7]/50 transition">
-                <td className="px-4 py-3 font-bold font-mono text-gray-900">{req.id}</td>
-                <td className="px-4 py-3">
-                  <p className="font-semibold text-gray-900">{req.employee_name}</p>
-                  <p className="text-[11px] text-gray-400">{req.department}</p>
-                </td>
-                <td className="px-4 py-3 font-semibold text-[#076935]">{req.leave_type}</td>
-                <td className="px-4 py-3 text-gray-600">
-                  <p>{req.start_date} to {req.end_date}</p>
-                  <p className="text-[11px] font-bold text-gray-500">{req.total_days} Working Days</p>
-                </td>
-                <td className="px-4 py-3 text-gray-600 max-w-[200px] truncate">{req.reason}</td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                      req.status === "Approved"
-                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                        : req.status === "Pending"
-                        ? "bg-amber-50 text-amber-700 border border-amber-200"
-                        : "bg-rose-50 text-rose-700 border border-rose-200"
-                    }`}
-                  >
-                    {req.status}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right space-x-1">
-                  <button
-                    onClick={() => setSelectedLeave(req)}
-                    className="p-1 text-[#076935] hover:bg-[#076935]/10 rounded-lg inline-flex items-center"
-                    title="View Request Details"
-                  >
-                    <Eye size={15} />
-                  </button>
-                  {req.status === "Pending" && (
-                    <>
-                      <button
-                        onClick={() => handleApprove(req.id)}
-                        className="rounded-lg bg-[#076935] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-[#055028]"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleReject(req.id)}
-                        className="rounded-lg bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 text-[11px] font-bold hover:bg-rose-100"
-                      >
-                        Reject
-                      </button>
-                    </>
-                  )}
+            {leaves.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
+                  <div className="flex flex-col items-center justify-center space-y-2">
+                    <CalendarCheck size={28} className="text-gray-300" />
+                    <p className="text-sm font-semibold text-gray-700">No current leave requests</p>
+                    <p className="text-xs text-gray-400">Employee leave applications will appear here when submitted.</p>
+                  </div>
                 </td>
               </tr>
-            ))}
+            ) : (
+              leaves.map((req) => (
+                <tr key={req.id} className="hover:bg-[#F4FAF7]/50 transition">
+                  <td className="px-4 py-3 font-bold font-mono text-gray-900">{req.id}</td>
+                  <td className="px-4 py-3">
+                    <p className="font-semibold text-gray-900">{req.employee_name}</p>
+                    <p className="text-[11px] text-gray-400">{req.department}</p>
+                  </td>
+                  <td className="px-4 py-3 font-semibold text-[#076935]">{req.leave_type}</td>
+                  <td className="px-4 py-3 text-gray-600">
+                    <p>{req.start_date} to {req.end_date}</p>
+                    <p className="text-[11px] font-bold text-gray-500">{req.total_days} Working Days</p>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 max-w-[200px] truncate">{req.reason}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                        req.status === "Approved"
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : req.status === "Pending"
+                          ? "bg-amber-50 text-amber-700 border border-amber-200"
+                          : "bg-rose-50 text-rose-700 border border-rose-200"
+                      }`}
+                    >
+                      {req.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right space-x-1">
+                    <button
+                      onClick={() => setSelectedLeave(req)}
+                      className="p-1 text-[#076935] hover:bg-[#076935]/10 rounded-lg inline-flex items-center"
+                      title="View Request Details"
+                    >
+                      <Eye size={15} />
+                    </button>
+                    {req.status === "Pending" && (
+                      <>
+                        <button
+                          onClick={() => handleApprove(req.id)}
+                          className="rounded-lg bg-[#076935] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-[#055028]"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleReject(req.id)}
+                          className="rounded-lg bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 text-[11px] font-bold hover:bg-rose-100"
+                        >
+                          Reject
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
+
 
       {/* Leave Detail Modal */}
       <Modal open={Boolean(selectedLeave)} onClose={() => setSelectedLeave(null)} size="md" title="Leave Application Details">

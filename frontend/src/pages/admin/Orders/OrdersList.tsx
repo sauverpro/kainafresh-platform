@@ -17,7 +17,6 @@ import {
   Phone,
   Mail,
   AlertCircle,
-  ArrowUp,
   Loader2,
   Boxes
 } from 'lucide-react';
@@ -26,6 +25,7 @@ import { apiGet, apiPut } from '../../../api/client';
 import { toast } from "sonner";
 import StatusDropdown, { type StatusOption } from '../../../components/ui/StatusDropdown';
 import TableSkeleton from '../../../components/ui/TableSkeleton';
+import MetricCard from '../../../components/ui/MetricCard';
 
 // Backend order item shape: GET /api/orders/{orderId}/items
 interface BackendOrderItem {
@@ -422,79 +422,46 @@ export default function OrdersList() {
 
       {/* ── Bento Stats Cards Row ── */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Card 1: Total Revenue */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-100 dark:bg-white/5">
-            <ShoppingBag className="h-5.5 w-5.5 text-gray-700 dark:text-gray-300" />
-          </div>
-          <div className="mt-5 flex items-end justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Total Revenue</p>
-              <p className="mt-1.5 text-2xl font-semibold text-gray-800 dark:text-white">
-                RWF {stats.totalVolumeRwf.toLocaleString()}
-              </p>
-            </div>
-            <span className="flex items-center gap-0.5 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
-              <ArrowUp className="h-3.5 w-3.5" />
-              14.0%
-            </span>
-          </div>
-        </div>
-
-        {/* Card 2: Pending Orders */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-100 dark:bg-white/5">
-            <Clock className="h-5.5 w-5.5 text-gray-700 dark:text-gray-300" />
-          </div>
-          <div className="mt-5 flex items-end justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Pending Orders</p>
-              <p className="mt-1.5 text-2xl font-semibold text-gray-800 dark:text-white">
-                {stats.pending}
-              </p>
-            </div>
-            <span className="flex items-center gap-0.5 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-600 dark:bg-amber-500/15 dark:text-amber-300">
-              Awaiting
-            </span>
-          </div>
-        </div>
-
-        {/* Card 3: In Processing / Transit */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-100 dark:bg-white/5">
-            <Truck className="h-5.5 w-5.5 text-gray-700 dark:text-gray-300" />
-          </div>
-          <div className="mt-5 flex items-end justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Dispatch & Transit</p>
-              <p className="mt-1.5 text-2xl font-semibold text-gray-800 dark:text-white">
-                {stats.processing + stats.shipped}
-              </p>
-            </div>
-            <span className="flex items-center gap-0.5 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
-              In Transit
-            </span>
-          </div>
-        </div>
-
-        {/* Card 4: Delivered */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-100 dark:bg-white/5">
-            <CheckCircle className="h-5.5 w-5.5 text-gray-700 dark:text-gray-300" />
-          </div>
-          <div className="mt-5 flex items-end justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Fulfilled Orders</p>
-              <p className="mt-1.5 text-2xl font-semibold text-gray-800 dark:text-white">
-                {stats.shipped}
-              </p>
-            </div>
-            <span className="flex items-center gap-0.5 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
-              <ArrowUp className="h-3.5 w-3.5" />
-              95%
-            </span>
-          </div>
-        </div>
+        <MetricCard
+          label="TOTAL REVENUE"
+          value={stats.totalVolumeRwf > 0 ? (stats.totalVolumeRwf / 1000000).toFixed(2) + "M" : "0"}
+          unit="RWF"
+          subtext={stats.totalVolumeRwf > 0 ? "Total sales revenue" : "No orders recorded"}
+          icon={<ShoppingBag className="h-5 w-5" />}
+          iconBg="bg-emerald-50 text-emerald-600"
+          badgeText="+14.0%"
+          badgeColor="bg-emerald-50 text-emerald-600 border-emerald-200"
+        />
+        <MetricCard
+          label="PENDING ORDERS"
+          value={stats.pending}
+          unit="orders"
+          subtext={stats.pending > 0 ? "Awaiting fulfillment" : "No pending orders"}
+          icon={<Clock className="h-5 w-5" />}
+          iconBg="bg-amber-50 text-amber-600"
+          badgeText="Awaiting"
+          badgeColor="bg-amber-50 text-amber-600 border-amber-200"
+        />
+        <MetricCard
+          label="DISPATCH & TRANSIT"
+          value={stats.processing + stats.shipped}
+          unit="orders"
+          subtext={(stats.processing + stats.shipped) > 0 ? "Active in transit" : "No active dispatches"}
+          icon={<Truck className="h-5 w-5" />}
+          iconBg="bg-blue-50 text-blue-600"
+          badgeText="In Transit"
+          badgeColor="bg-blue-50 text-blue-600 border-blue-200"
+        />
+        <MetricCard
+          label="FULFILLED ORDERS"
+          value={stats.shipped}
+          unit="orders"
+          subtext={stats.shipped > 0 ? "Successfully delivered" : "No fulfilled orders"}
+          icon={<CheckCircle className="h-5 w-5" />}
+          iconBg="bg-emerald-50 text-emerald-600"
+          badgeText="95% Rate"
+          badgeColor="bg-emerald-50 text-emerald-600 border-emerald-200"
+        />
       </div>
 
       {/* ── Search & Filter Controls ── */}

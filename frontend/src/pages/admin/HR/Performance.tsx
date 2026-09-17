@@ -20,38 +20,7 @@ export interface PerformanceReview {
   status: "Completed" | "Pending Review";
 }
 
-const INITIAL_REVIEWS: PerformanceReview[] = [
-  {
-    id: "REV-2026-01",
-    employee_name: "Jean-Claude Mugisha",
-    department: "Farm Operations",
-    review_period: "Q2 2026",
-    evaluator: "Farm Director",
-    rating_score: 4.8,
-    key_kpi: "Achieved 98% Organic Yield Target for Plot A Hass Avocados",
-    status: "Completed",
-  },
-  {
-    id: "REV-2026-02",
-    employee_name: "Alice Uwimana",
-    department: "Post-Harvest & Packaging",
-    review_period: "Q2 2026",
-    evaluator: "Operations Lead",
-    rating_score: 4.6,
-    key_kpi: "Maintained <0.5% spoilage rate in Kigali Packhouse",
-    status: "Completed",
-  },
-  {
-    id: "REV-2026-03",
-    employee_name: "Solange Murekatete",
-    department: "Sales & B2B",
-    review_period: "Q2 2026",
-    evaluator: "General Manager",
-    rating_score: 4.9,
-    key_kpi: "Exceeded B2B Export Sales Target by 22%",
-    status: "Completed",
-  },
-];
+const INITIAL_REVIEWS: PerformanceReview[] = [];
 
 export default function Performance() {
   usePageTitle("performance-management", "Performance & Evaluations");
@@ -67,9 +36,9 @@ export default function Performance() {
     key_kpi: "",
   });
 
-  const avgRating = (
-    reviews.reduce((sum, r) => sum + r.rating_score, 0) / (reviews.length || 1)
-  ).toFixed(1);
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating_score, 0) / reviews.length).toFixed(1)
+    : "0.0";
 
   const handleAddReview = (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,7 +104,9 @@ export default function Performance() {
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-blue-900">High Performers</p>
-              <p className="text-2xl font-extrabold text-blue-900">92% of Staff</p>
+              <p className="text-2xl font-extrabold text-blue-900">
+                {reviews.length > 0 ? "92% of Staff" : "0% of Staff"}
+              </p>
             </div>
           </div>
         </div>
@@ -169,27 +140,40 @@ export default function Performance() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {reviews.map((rev) => (
-              <tr key={rev.id} className="hover:bg-[#F4FAF7]/50 transition">
-                <td className="px-4 py-3 font-bold font-mono text-gray-900">{rev.id}</td>
-                <td className="px-4 py-3 font-semibold text-gray-900">{rev.employee_name}</td>
-                <td className="px-4 py-3 text-gray-600">{rev.department}</td>
-                <td className="px-4 py-3 font-medium text-[#076935]">{rev.review_period}</td>
-                <td className="px-4 py-3 font-bold text-amber-600 flex items-center gap-1">
-                  <Star size={14} className="fill-amber-400 text-amber-500" /> {rev.rating_score}
-                </td>
-                <td className="px-4 py-3 text-gray-600 max-w-[240px] truncate">{rev.key_kpi}</td>
-                <td className="px-4 py-3 text-gray-500">{rev.evaluator}</td>
-                <td className="px-4 py-3">
-                  <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
-                    {rev.status}
-                  </span>
+            {reviews.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="px-4 py-12 text-center text-gray-500">
+                  <div className="flex flex-col items-center justify-center space-y-2">
+                    <Star size={28} className="text-gray-300" />
+                    <p className="text-sm font-semibold text-gray-700">No current performance reviews</p>
+                    <p className="text-xs text-gray-400 font-normal">Logged performance evaluations and KPI scorecards will appear here.</p>
+                  </div>
                 </td>
               </tr>
-            ))}
+            ) : (
+              reviews.map((rev) => (
+                <tr key={rev.id} className="hover:bg-[#F4FAF7]/50 transition">
+                  <td className="px-4 py-3 font-bold font-mono text-gray-900">{rev.id}</td>
+                  <td className="px-4 py-3 font-semibold text-gray-900">{rev.employee_name}</td>
+                  <td className="px-4 py-3 text-gray-600">{rev.department}</td>
+                  <td className="px-4 py-3 font-medium text-[#076935]">{rev.review_period}</td>
+                  <td className="px-4 py-3 font-bold text-amber-600 flex items-center gap-1">
+                    <Star size={14} className="fill-amber-400 text-amber-500" /> {rev.rating_score}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 max-w-[240px] truncate">{rev.key_kpi}</td>
+                  <td className="px-4 py-3 text-gray-500">{rev.evaluator}</td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                      {rev.status}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
+
 
       {/* Add Review Modal */}
       <Modal open={isAddOpen} onClose={() => setIsAddOpen(false)} size="md" title="Log Performance Evaluation">

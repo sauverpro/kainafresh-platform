@@ -18,6 +18,7 @@ import { apiGet, apiPostFormData, apiDelete } from "../../../api/client";
 import { toast } from "sonner";
 import Modal from "../../../components/ui/Modal";
 import TableSkeleton from "../../../components/ui/TableSkeleton";
+import MetricCard from "../../../components/ui/MetricCard";
 import type { PartnerItem } from "../../../components/partners/PartnersSection";
 
 interface PartnerForm {
@@ -234,27 +235,16 @@ export default function PartnerManagement() {
       {/* Stats cards */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {statsCards.map((card) => (
-          <div
+          <MetricCard
             key={card.label}
-            className="flex items-center gap-4 rounded-2xl border border-[#076935]/10 bg-white p-4 transition hover:shadow-md"
-          >
-            <div
-              className={`flex h-12 w-12 items-center justify-center rounded-xl ${card.accent}`}
-            >
-              {card.icon}
-            </div>
-            <div>
-              <p
-                className="text-2xl font-bold leading-tight text-gray-900"
-                style={{ fontFamily: "var(--font-heading)" }}
-              >
-                {card.value}
-              </p>
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-                {card.label}
-              </p>
-            </div>
-          </div>
+            label={card.label.toUpperCase()}
+            value={card.value}
+            subtext={card.value > 0 ? `Registered ${card.label.toLowerCase()}` : `No ${card.label.toLowerCase()} recorded`}
+            icon={card.icon}
+            iconBg={card.accent}
+            badgeText="Verified Partner"
+            badgeColor="bg-[#076935]/10 text-[#076935] border-[#076935]/20"
+          />
         ))}
       </div>
 

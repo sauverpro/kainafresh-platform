@@ -12,6 +12,7 @@ import {
 import { usePageTitle } from "../../../hooks/usePageTitle";
 import Modal from "../../../components/ui/Modal";
 import { toast } from "sonner";
+import MetricCard from "../../../components/ui/MetricCard";
 import { useDepartmentStore, type Department } from "../../../store/useDepartmentStore";
 
 export default function DepartmentManagement() {
@@ -133,44 +134,36 @@ export default function DepartmentManagement() {
 
       {/* KPI Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-[#076935]/15 bg-white p-5 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Total Departments</p>
-            <p className="mt-1 text-2xl font-extrabold text-gray-900" style={{ fontFamily: "var(--font-heading)" }}>
-              {stats.totalDepts} Operational Units
-            </p>
-            <p className="text-xs text-gray-400 mt-0.5">100% Active Operational Status</p>
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#076935]/10 text-[#076935]">
-            <Building2 size={24} />
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-[#076935]/15 bg-white p-5 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Assigned Headcount</p>
-            <p className="mt-1 text-2xl font-extrabold text-gray-900" style={{ fontFamily: "var(--font-heading)" }}>
-              {stats.totalStaff} Personnel
-            </p>
-            <p className="text-xs text-emerald-700 font-semibold mt-0.5">Distributed across 5 divisions</p>
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-            <Users size={24} />
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-[#076935]/15 bg-white p-5 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Monthly Combined Budget</p>
-            <p className="mt-1 text-2xl font-extrabold text-[#076935]" style={{ fontFamily: "var(--font-heading)" }}>
-              {(stats.totalBudget / 1000000).toFixed(1)}M RWF
-            </p>
-            <p className="text-xs text-gray-400 mt-0.5">Operational & payroll allocation</p>
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F39927]/10 text-[#F39927]">
-            <Banknote size={24} />
-          </div>
-        </div>
+        <MetricCard
+          label="TOTAL DEPARTMENTS"
+          value={stats.totalDepts}
+          unit="units"
+          subtext={stats.totalDepts > 0 ? "Active operational divisions" : "No departments recorded"}
+          icon={<Building2 className="h-5 w-5" />}
+          iconBg="bg-emerald-50 text-emerald-600"
+          badgeText="Operational"
+          badgeColor="bg-emerald-50 text-emerald-600 border-emerald-200"
+        />
+        <MetricCard
+          label="ASSIGNED HEADCOUNT"
+          value={stats.totalStaff}
+          unit="staff"
+          subtext={stats.totalStaff > 0 ? `Personnel across ${stats.totalDepts} divisions` : "No staff assigned"}
+          icon={<Users className="h-5 w-5" />}
+          iconBg="bg-blue-50 text-blue-600"
+          badgeText="Active Workforce"
+          badgeColor="bg-blue-50 text-blue-600 border-blue-200"
+        />
+        <MetricCard
+          label="MONTHLY COMBINED BUDGET"
+          value={stats.totalBudget > 0 ? (stats.totalBudget / 1000000).toFixed(1) + "M" : "0"}
+          unit="RWF"
+          subtext={stats.totalBudget > 0 ? "Operational & payroll allocation" : "No budget allocated"}
+          icon={<Banknote className="h-5 w-5" />}
+          iconBg="bg-amber-50 text-amber-600"
+          badgeText="Approved"
+          badgeColor="bg-amber-50 text-amber-600 border-amber-200"
+        />
       </div>
 
       {/* Filter Toolbar */}

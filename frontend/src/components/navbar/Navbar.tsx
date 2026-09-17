@@ -19,16 +19,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 
 // Import Lucide vector icons for navigation items
 import {
-  Home,
-  Sprout,
-  Package,
-  Mail,
-  Shield,
   LogOut,
-  LogIn,
-  UserPlus,
   ShoppingBag,
-  Globe,
   Truck,
   LayoutGrid,
   Settings,
@@ -129,42 +121,6 @@ function Navbar() {
     if (user?.role === "sales-manager") return "Sales Manager";
     if (user?.role === "customer") return "Customer Account";
     return user?.role || "Member";
-  };
-
-  /**
-   * Helper function to match dynamic DB links to appropriate Lucide UI icons.
-   */
-  const getNavIcon = (item: NavLinkItem) => {
-    const name = (item.link_name || "").toLowerCase();
-    const path = (item.link || "").toLowerCase();
-
-    if (
-      name.includes("product") ||
-      name.includes("shop") ||
-      path.includes("product")
-    )
-      return <ShoppingBag size={16} />;
-    if (
-      name.includes("farm") ||
-      name.includes("about") ||
-      path.includes("about")
-    )
-      return <Sprout size={16} />;
-    if (
-      name.includes("wholesale") ||
-      name.includes("bulk") ||
-      path.includes("wholesale")
-    )
-      return <Package size={16} />;
-    if (name.includes("contact") || path.includes("contact"))
-      return <Mail size={16} />;
-    if (name.includes("track") || path.includes("track"))
-      return <Truck size={16} />;
-    if (name.includes("admin") || path.includes("admin"))
-      return <Shield size={16} />;
-    if (name.includes("home") || path === "/") return <Home size={16} />;
-
-    return <Globe size={16} />;
   };
 
   // Scroll event listener for transparent-to-solid glassmorphic backdrop transition
