@@ -470,7 +470,7 @@ $router->addRoute(
 // Update training
 $router->addRoute(
     'PUT',
-    '/api/trainings/update/{id}',
+    '/api/trainings/{id}',
     'TrainingController@updateTraining',
     'auth'
 );
@@ -478,7 +478,7 @@ $router->addRoute(
 // Delete training
 $router->addRoute(
     'DELETE',
-    '/api/trainings/delete/{id}',
+    '/api/trainings/{id}',
     'TrainingController@deleteTraining',
     'auth'
 );

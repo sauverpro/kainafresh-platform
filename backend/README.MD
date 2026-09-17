@@ -20,6 +20,7 @@ A minimal, dependency-free PHP API: a small custom router, `mysqli` for the data
   - [Stocks](#stocks)
   - [HR — Departments](#hr--departments)
   - [HR — Employee Profiles](#hr--employee-profiles)
+  - [HR — Trainings](#hr--trainings)
 - [Database Import Notes](#database-import-notes)
 - [Troubleshooting](#troubleshooting)
 
@@ -1023,6 +1024,86 @@ Content-Type: application/json
 | `422`  | Missing `fullname`/`emp_number`, empty body on update, invalid email, date not `YYYY-MM-DD`, value not in the allowed list, or `dept_id` not an existing department |
 
 Validated date fields: `dob`, `date_hired`, `probation_end_date`, `contract_end_date`, `termination_date`.
+
+### HR — Trainings
+
+Employee training records: course details, dates, cost, certification, and skills gained.
+
+```
+trainings
+├── id
+├── emp_id             (required → employee_profiles.id, no DB-level FK)
+├── training_name      (required)
+├── training_type      (required)
+├── start_date         (required, date)
+├── end_date           (required, date)
+├── duration_days      (required)
+├── cost                (required, decimal 10,2)
+├── certification_ref    (nullable)
+├── skills_gained         (nullable)
+├── status                (default: 'active')
+├── notes                 (nullable)
+├── created_at
+└── updated_at
+```
+
+| Method | Endpoint                        | Description                                        |
+| ------ | -------------------------------- | --------------------------------------------------- |
+| POST   | `/api/trainings` 🔒               | Create a training record                             |
+| GET    | `/api/trainings` 🔒               | List trainings (joined with employee `fullname`)     |
+| GET    | `/api/trainings/{id}` 🔒          | Get a training (joined with employee `fullname`)     |
+| PUT    | `/api/trainings/update/{id}` 🔒   | Update a training record                             |
+| DELETE | `/api/trainings/delete/{id}` 🔒   | Delete a training record — admin/sales_manager/hr_manager only |
+
+All routes require auth. `emp_id` must reference an existing employee (checked against `EmployeeProfile::findById()`, not a database foreign key).
+
+Files: [controllers/HR/TrainingController.php](controllers/HR/TrainingController.php), [models/HR/Training.php](models/HR/Training.php), migration `*_create_trainings_table.php`.
+
+> Despite the feature being called "Trainings", the controller class is `TrainingController` and the model class is `Training` (singular, no "s"). This backend's autoloader resolves classes by filename, so the files must be named `TrainingController.php` and `Training.php` exactly — an earlier `TrainingsController.php` / `Trainings.php` naming mismatch broke every endpoint on this resource until it was renamed.
+
+#### Example: Create a training record
+
+```
+POST /api/trainings
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "emp_id": 2,
+  "training_name": "Food Safety 101",
+  "training_type": "compliance",
+  "start_date": "2026-10-01",
+  "end_date": "2026-10-03",
+  "duration_days": 3,
+  "cost": 50000,
+  "certification_ref": "CERT-001",
+  "skills_gained": "HACCP basics",
+  "status": "scheduled",
+  "notes": "first cohort"
+}
+```
+
+```json
+{
+  "message": "Training created successfully",
+  "data": 1
+}
+```
+
+> Unlike most other modules, this controller's responses don't use a `success` boolean, and create returns only the new insert ID in `data` (not the saved record) — errors use an `error` key instead of `message`. `GET` list/show responses do return the full row, including the joined `fullname`.
+
+#### Validation
+
+| Status | When                                                                                  |
+| ------ | -------------------------------------------------------------------------------------- |
+| `201`  | Training created                                                                        |
+| `400`  | Missing/empty required field on create or update                                        |
+| `401`  | Missing or invalid auth token                                                            |
+| `403`  | Delete attempted by a role other than `admin`, `sales_manager`, or `hr_manager`          |
+| `404`  | Training not found, or `emp_id` does not match an existing employee                      |
+| `500`  | Database insert/update/delete failed                                                     |
+
+Required on create/update: `emp_id`, `training_name`, `training_type`, `start_date`, `end_date`, `duration_days`, `cost`, `status`.
 
 ## Database Import Notes
 
