@@ -452,3 +452,47 @@ $router->addRoute('POST','/api/insurance/create','InsuranceController@store','au
 $router->addRoute('DELETE','/api/insurance/delete/{id}','InsuranceController@deleteInsurance','auth');
 $router->addRoute('GET','/api/insurance','InsuranceController@index','auth');
 $router->addRoute('PUT','/api/insurance/update/{id}','InsuranceController@updateInsurance','auth');
+
+/*"   ,  HR - Training Management
+|--------------------------------------------------------------------------
+*/
+
+// Create training
+$router->addRoute(
+    'POST',
+    '/api/trainings',
+    'TrainingController@createTraining',
+    'auth'
+);
+
+// Get all trainings
+$router->addRoute(
+    'GET',
+    '/api/trainings',
+    'TrainingController@index',
+    'auth'
+);
+
+// Get single training
+$router->addRoute(
+    'GET',
+    '/api/trainings/{id}',
+    'TrainingController@show',
+    'auth'
+);
+
+// Update training
+$router->addRoute(
+    'PUT',
+    '/api/trainings/{id}',
+    'TrainingController@updateTraining',
+    'auth'
+);
+
+// Delete training
+$router->addRoute(
+    'DELETE',
+    '/api/trainings/{id}',
+    'TrainingController@deleteTraining',
+    'auth'
+);
