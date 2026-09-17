@@ -287,7 +287,6 @@ function Navbar() {
                 onClick={closeMenu}
                 className="nav-icon-link"
               >
-                {getNavIcon(link)}
                 <span>{link.link_name}</span>
               </NavLink>
             ))}
@@ -298,7 +297,7 @@ function Navbar() {
                 onClick={closeMenu}
                 className="nav-icon-link"
               >
-                <Truck size={16} /> <span>Track Order</span>
+                <span>Track Order</span>
               </NavLink>
             )}
           </div>
@@ -409,14 +408,14 @@ function Navbar() {
                   className="btn btn-outline"
                   onClick={closeMenu}
                 >
-                  <LogIn size={16} /> <span>Login</span>
+                  <span>Login</span>
                 </NavLink>
                 <NavLink
                   to="/signup"
                   className="btn btn-primary"
                   onClick={closeMenu}
                 >
-                  <UserPlus size={16} /> <span>Sign Up</span>
+                  <span>Sign Up</span>
                 </NavLink>
               </>
             )}
