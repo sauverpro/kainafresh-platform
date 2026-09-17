@@ -1047,5 +1047,447 @@ This payroll module currently supports the core payroll entry flow, but it does 
 
 ---
 
+# Performance Management
+
+The performance module stores employee review records, productivity targets, strengths, improvement areas, and manager recommendations.
+
+## Module overview
+
+Performance records are stored in the `performance_reviews` table and are handled by the `PerformanceController` and `PerformanceReview` model.
+
+### Performance review fields
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `employee_id` | integer | Yes | Employee being evaluated |
+| `reviewer_id` | integer | Yes | Manager or reviewer who completed the assessment |
+| `target_set` | text | Yes | Target goals assigned for the review period |
+| `target_achieved` | text | Yes | Actual progress or achievements against the target |
+| `strengths` | text | Yes | Strong areas noted in the review |
+| `improvement_area` | text | Yes | Areas needing improvement |
+| `overall_rating` | string | Yes | Overall performance rating |
+| `recommendation` | text | Yes | Recommendation for the employee |
+| `overtime` | decimal | Yes | Overtime contribution or requirement |
+| `review_date` | date | Yes | Date of the review |
+| `review_period` | string | Yes | Review timeframe, such as monthly or quarterly |
+| `created_at` | datetime | Auto | Record creation time |
+| `updated_at` | datetime | Auto | Last update time |
+
+---
+
+## API routes
+
+All performance endpoints require authentication and only allow `admin`, `sales_manager`, and `hr_manager` roles.
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `GET` | `/api/performance` | List all performance records |
+| `POST` | `/api/performance/create` | Create a performance review |
+| `PUT` | `/api/performance/update/{id}` | Update a performance review |
+| `DELETE` | `/api/performance/delete/{id}` | Delete a performance review |
+
+---
+
+## Create performance review
+
+### Endpoint
+
+`POST /api/performance/create`
+
+### Request body
+
+```json
+{
+  "employee_id": 12,
+  "reviewer_id": 9,
+  "target_set": "Increase sales conversion by 15%",
+  "target_achieved": "Reached 12% conversion improvement",
+  "strengths": "Strong customer engagement and follow-up",
+  "improvement_area": "Pipeline forecasting accuracy",
+  "overall_rating": "Good",
+  "recommendation": "Continue coaching on sales forecasting",
+  "overtime": 5.5,
+  "review_date": "2026-09-15",
+  "review_period": "Q3 2026"
+}
+```
+
+### Success response
+
+```json
+{
+  "message": "Performance record created successfully",
+  "data": {
+    "id": 1,
+    "employee_id": 12,
+    "reviewer_id": 9,
+    "target_set": "Increase sales conversion by 15%",
+    "target_achieved": "Reached 12% conversion improvement",
+    "strengths": "Strong customer engagement and follow-up",
+    "improvement_area": "Pipeline forecasting accuracy",
+    "overall_rating": "Good",
+    "recommendation": "Continue coaching on sales forecasting",
+    "overtime": "5.50",
+    "review_date": "2026-09-15",
+    "review_period": "Q3 2026"
+  }
+}
+```
+
+---
+
+## List performance reviews
+
+### Endpoint
+
+`GET /api/performance`
+
+### Success response
+
+```json
+{
+  "message": "Perfomance records retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "employee_id": 12,
+      "employee_name": "John Doe",
+      "reviewer_id": 9,
+      "overall_rating": "Good"
+    }
+  ]
+}
+```
+
+---
+
+## Update performance review
+
+### Endpoint
+
+`PUT /api/performance/update/{id}`
+
+### Success response
+
+```json
+{
+  "status": true,
+  "message": "Updated",
+  "data": {
+    "id": 1,
+    "overall_rating": "Excellent"
+  }
+}
+```
+
+---
+
+## Delete performance review
+
+### Endpoint
+
+`DELETE /api/performance/delete/{id}`
+
+### Success response
+
+```json
+{
+  "message": "Deleted successfully",
+  "data": true
+}
+```
+
+---
+
+# Disciplinary Actions
+
+The disciplinary module records employee warnings, misconduct cases, and formal corrective actions.
+
+## Module overview
+
+Disciplinary records are stored in the `disciplinary_actions` table and are managed by the `DisciplinaryController` and `DisciplinaryAction` model.
+
+### Disciplinary fields
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `employee_id` | integer | Yes | Employee involved in the case |
+| `action_date` | date | Yes | Date the action was taken |
+| `action_type` | string | Yes | Type of action such as warning or suspension |
+| `reason` | text | Yes | Reason for the disciplinary action |
+| `description` | text | Yes | Additional details about the action |
+| `issued_by` | integer | Yes | Staff member or manager issuing the action |
+| `status` | string | Yes | Status such as pending, active, or resolved |
+| `created_at` | datetime | Auto | Record creation time |
+| `updated_at` | datetime | Auto | Last update time |
+
+---
+
+## API routes
+
+All disciplinary endpoints require authentication and only allow `admin`, `sales_manager`, and `hr_manager` roles.
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `GET` | `/api/disciplinary` | List all disciplinary actions |
+| `POST` | `/api/disciplinary/create` | Create a disciplinary record |
+| `PUT` | `/api/disciplinary/update/{id}` | Update a disciplinary record |
+| `DELETE` | `/api/disciplinary/delete/{id}` | Delete a disciplinary record |
+
+---
+
+## Create disciplinary action
+
+### Endpoint
+
+`POST /api/disciplinary/create`
+
+### Request body
+
+```json
+{
+  "employee_id": 12,
+  "action_date": "2026-09-10",
+  "action_type": "Warning",
+  "reason": "Repeated late attendance",
+  "description": "Employee reported late on three consecutive workdays.",
+  "issued_by": 9,
+  "status": "active"
+}
+```
+
+### Success response
+
+```json
+{
+  "message": "Disciplinary  created successfully",
+  "data": {
+    "id": 1,
+    "employee_id": 12,
+    "action_date": "2026-09-10",
+    "action_type": "Warning",
+    "reason": "Repeated late attendance",
+    "description": "Employee reported late on three consecutive workdays.",
+    "issued_by": 9,
+    "status": "active"
+  }
+}
+```
+
+---
+
+## List disciplinary actions
+
+### Endpoint
+
+`GET /api/disciplinary`
+
+### Success response
+
+```json
+{
+  "message": "Discplinary action records retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "employee_id": 12,
+      "employee_name": "John Doe",
+      "action_type": "Warning",
+      "status": "active"
+    }
+  ]
+}
+```
+
+---
+
+## Update disciplinary action
+
+### Endpoint
+
+`PUT /api/disciplinary/update/{id}`
+
+### Success response
+
+```json
+{
+  "status": true,
+  "message": "Updated",
+  "data": {
+    "id": 1,
+    "status": "resolved"
+  }
+}
+```
+
+---
+
+## Delete disciplinary action
+
+### Endpoint
+
+`DELETE /api/disciplinary/delete/{id}`
+
+### Success response
+
+```json
+{
+  "message": "Deleted successfully",
+  "data": true
+}
+```
+
+---
+
+# Insurance Management
+
+The insurance module stores employee insurance coverage records, policy details, premium information, and renewal dates.
+
+## Module overview
+
+Insurance records are stored in the `insurances` table and are handled by the `InsuranceController` and `Insurance` model.
+
+### Insurance fields
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `employee_id` | integer | Yes | Employee covered by the policy |
+| `insurance_type` | string | Yes | Type of insurance, such as health or life |
+| `insurance_provider` | string | Yes | Insurer or provider name |
+| `policy_number` | string | Yes | Policy identifier |
+| `start_date` | date | Yes | Policy start date |
+| `expiration_date` | date | Yes | Policy expiry date |
+| `status` | string | Yes | Current policy state |
+| `premium_amount` | decimal | Yes | Premium amount paid |
+| `coverage_details` | text | Yes | Coverage summary |
+| `notify_days` | integer | Yes | Number of days before expiry to trigger alert |
+| `created_at` | datetime | Auto | Record creation time |
+| `updated_at` | datetime | Auto | Last update time |
+
+---
+
+## API routes
+
+All insurance endpoints require authentication and only allow `admin`, `sales_manager`, and `hr_manager` roles.
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `GET` | `/api/insurance` | List all insurance records |
+| `POST` | `/api/insurance/create` | Create an insurance record |
+| `PUT` | `/api/insurance/update/{id}` | Update an insurance record |
+| `DELETE` | `/api/insurance/delete/{id}` | Delete an insurance record |
+
+---
+
+## Create insurance record
+
+### Endpoint
+
+`POST /api/insurance/create`
+
+### Request body
+
+```json
+{
+  "employee_id": 12,
+  "insurance_type": "Health",
+  "insurance_provider": "AAR Insurance",
+  "policy_number": "POL-2026-1001",
+  "start_date": "2026-01-01",
+  "expiration_date": "2026-12-31",
+  "status": "active",
+  "premium_amount": 2400.00,
+  "coverage_details": "Includes outpatient and in-patient care",
+  "notify_days": 30
+}
+```
+
+### Success response
+
+```json
+{
+  "message": "Insurance  created successfully",
+  "data": {
+    "id": 1,
+    "employee_id": 12,
+    "insurance_type": "Health",
+    "insurance_provider": "AAR Insurance",
+    "policy_number": "POL-2026-1001",
+    "start_date": "2026-01-01",
+    "expiration_date": "2026-12-31",
+    "status": "active",
+    "premium_amount": "2400.00",
+    "coverage_details": "Includes outpatient and in-patient care",
+    "notify_days": 30
+  }
+}
+```
+
+---
+
+## List insurance records
+
+### Endpoint
+
+`GET /api/insurance`
+
+### Success response
+
+```json
+{
+  "message": "insurance records retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "employee_id": 12,
+      "employee_name": "John Doe",
+      "insurance_type": "Health",
+      "insurance_provider": "AAR Insurance",
+      "status": "active"
+    }
+  ]
+}
+```
+
+---
+
+## Update insurance record
+
+### Endpoint
+
+`PUT /api/insurance/update/{id}`
+
+### Success response
+
+```json
+{
+  "status": true,
+  "message": "Updated",
+  "data": {
+    "id": 1,
+    "status": "expired"
+  }
+}
+```
+
+---
+
+## Delete insurance record
+
+### Endpoint
+
+`DELETE /api/insurance/delete/{id}`
+
+### Success response
+
+```json
+{
+  "message": "Deleted successfully",
+  "data": true
+}
+```
+
+---
+
 
 ```

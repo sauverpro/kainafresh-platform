@@ -136,6 +136,13 @@ class LeaveManagementController extends BaseController
             $this->jsonResponse(['error' => 'Unauthorized'], 401);
         }
         $leaveRequests = $this->leaveManagementModel->findAll();
+        foreach ($leaveRequests as &$leave) {
+        $employee = $this->employeeModel->findById($leave['employee_id']);
+
+        $leave['employee_name'] = $employee['fullname'] ?? 'Unknown Employee';
+       
+    }
+    unset($leave); 
         $this->jsonResponse(['message' => 'Leave requests retrieved successfully', 'data' => $leaveRequests], 200);
     } 
 }
