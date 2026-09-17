@@ -436,3 +436,49 @@ $router->addRoute('DELETE','/api/payroll/delete/{id}','PayrollController@deleteP
 // get all leave requests
 $router->addRoute('GET','/api/payroll','PayrollController@index','auth');
 $router->addRoute('PUT','/api/payroll/update/{id}','PayrollController@updatePayroll','auth');
+
+/*
+|--------------------------------------------------------------------------
+| HR - Training Management
+|--------------------------------------------------------------------------
+*/
+
+// Create training
+$router->addRoute(
+    'POST',
+    '/api/trainings',
+    'TrainingController@createTraining',
+    'auth'
+);
+
+// Get all trainings
+$router->addRoute(
+    'GET',
+    '/api/trainings',
+    'TrainingController@index',
+    'auth'
+);
+
+// Get single training
+$router->addRoute(
+    'GET',
+    '/api/trainings/{id}',
+    'TrainingController@show',
+    'auth'
+);
+
+// Update training
+$router->addRoute(
+    'PUT',
+    '/api/trainings/update/{id}',
+    'TrainingController@updateTraining',
+    'auth'
+);
+
+// Delete training
+$router->addRoute(
+    'DELETE',
+    '/api/trainings/delete/{id}',
+    'TrainingController@deleteTraining',
+    'auth'
+);
