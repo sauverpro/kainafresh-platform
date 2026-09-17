@@ -20,38 +20,7 @@ export interface InsurancePolicy {
   status: "Active" | "Pending Renewal";
 }
 
-const INITIAL_POLICIES: InsurancePolicy[] = [
-  {
-    id: "INS-2026-01",
-    employee_name: "Jean-Claude Mugisha",
-    provider: "RSSB RAMA",
-    policy_number: "RAMA-884-102",
-    coverage_tier: "Family Medical",
-    dependents_count: 3,
-    monthly_premium_rwf: 45000,
-    status: "Active",
-  },
-  {
-    id: "INS-2026-02",
-    employee_name: "Alice Uwimana",
-    provider: "SANLAM Medical",
-    policy_number: "SAN-992-441",
-    coverage_tier: "Comprehensive Medical",
-    dependents_count: 1,
-    monthly_premium_rwf: 32000,
-    status: "Active",
-  },
-  {
-    id: "INS-2026-03",
-    employee_name: "Patrick Nshimiyimana",
-    provider: "MUA Insurance Workers Comp",
-    policy_number: "MUA-WC-331",
-    coverage_tier: "Workers Compensation",
-    dependents_count: 0,
-    monthly_premium_rwf: 15000,
-    status: "Active",
-  },
-];
+const INITIAL_POLICIES: InsurancePolicy[] = [];
 
 export default function Insurance() {
   usePageTitle("insurance-management", "Insurance & Benefits");
@@ -168,25 +137,38 @@ export default function Insurance() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {policies.map((pol) => (
-              <tr key={pol.id} className="hover:bg-[#F4FAF7]/50 transition">
-                <td className="px-4 py-3 font-bold font-mono text-gray-900">{pol.id}</td>
-                <td className="px-4 py-3 font-semibold text-gray-900">{pol.employee_name}</td>
-                <td className="px-4 py-3 font-semibold text-[#076935]">{pol.provider}</td>
-                <td className="px-4 py-3 font-mono text-gray-600">{pol.policy_number}</td>
-                <td className="px-4 py-3 text-gray-600">{pol.coverage_tier}</td>
-                <td className="px-4 py-3 font-medium text-gray-800">{pol.dependents_count} Dependents</td>
-                <td className="px-4 py-3 font-bold text-gray-900">{pol.monthly_premium_rwf.toLocaleString()} RWF</td>
-                <td className="px-4 py-3">
-                  <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
-                    {pol.status}
-                  </span>
+            {policies.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="px-4 py-12 text-center text-gray-500">
+                  <div className="flex flex-col items-center justify-center space-y-2">
+                    <ShieldCheck size={28} className="text-gray-300" />
+                    <p className="text-sm font-semibold text-gray-700">No current insurance policies recorded</p>
+                    <p className="text-xs text-gray-400 font-normal">Active insurance enrollments will appear here once added.</p>
+                  </div>
                 </td>
               </tr>
-            ))}
+            ) : (
+              policies.map((pol) => (
+                <tr key={pol.id} className="hover:bg-[#F4FAF7]/50 transition">
+                  <td className="px-4 py-3 font-bold font-mono text-gray-900">{pol.id}</td>
+                  <td className="px-4 py-3 font-semibold text-gray-900">{pol.employee_name}</td>
+                  <td className="px-4 py-3 font-semibold text-[#076935]">{pol.provider}</td>
+                  <td className="px-4 py-3 font-mono text-gray-600">{pol.policy_number}</td>
+                  <td className="px-4 py-3 text-gray-600">{pol.coverage_tier}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800">{pol.dependents_count} Dependents</td>
+                  <td className="px-4 py-3 font-bold text-gray-900">{pol.monthly_premium_rwf.toLocaleString()} RWF</td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                      {pol.status}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
+
 
       {/* Add Policy Modal */}
       <Modal open={isAddOpen} onClose={() => setIsAddOpen(false)} size="md" title="Enroll Employee Insurance Policy">

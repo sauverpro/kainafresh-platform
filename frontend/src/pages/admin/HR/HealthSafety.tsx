@@ -20,28 +20,7 @@ export interface IncidentRecord {
   status: "Resolved" | "Under Investigation" | "Open";
 }
 
-const INITIAL_INCIDENTS: IncidentRecord[] = [
-  {
-    id: "INC-2026-05",
-    date: "2026-08-28",
-    location: "Kigali Packhouse (Loading Bay)",
-    severity: "Minor",
-    description: "Minor hand abrasion while operating box sealing machine",
-    staff_involved: "Pascal Ndayishimiye",
-    action_taken: "First aid applied on site; safety gloves replaced",
-    status: "Resolved",
-  },
-  {
-    id: "INC-2026-04",
-    date: "2026-07-14",
-    location: "Musanze Farm Plot B",
-    severity: "Minor",
-    description: "Slip on wet irrigation furrow during morning harvest",
-    staff_involved: "Claudine Uwera",
-    action_taken: "First aid administered; non-slip farm boots issued",
-    status: "Resolved",
-  },
-];
+const INITIAL_INCIDENTS: IncidentRecord[] = [];
 
 export default function HealthSafety() {
   usePageTitle("health-safety", "Health & Workplace Safety");
@@ -107,8 +86,8 @@ export default function HealthSafety() {
               <ShieldAlert size={20} />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-emerald-900">Days Incident-Free</p>
-              <p className="text-2xl font-extrabold text-[#076935]">18 working days</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald-900">Safety Compliance</p>
+              <p className="text-2xl font-extrabold text-[#076935]">100% Active</p>
             </div>
           </div>
         </div>
@@ -156,31 +135,44 @@ export default function HealthSafety() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {incidents.map((inc) => (
-              <tr key={inc.id} className="hover:bg-[#F4FAF7]/50 transition">
-                <td className="px-4 py-3 font-bold font-mono text-gray-900">{inc.id}</td>
-                <td className="px-4 py-3">
-                  <p className="font-semibold text-gray-900">{inc.location}</p>
-                  <p className="text-[11px] text-gray-400">{inc.date}</p>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200">
-                    {inc.severity}
-                  </span>
-                </td>
-                <td className="px-4 py-3 font-medium text-gray-800">{inc.staff_involved}</td>
-                <td className="px-4 py-3 text-gray-600 max-w-[200px] truncate">{inc.description}</td>
-                <td className="px-4 py-3 text-gray-600 max-w-[200px] truncate">{inc.action_taken}</td>
-                <td className="px-4 py-3">
-                  <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
-                    {inc.status}
-                  </span>
+            {incidents.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
+                  <div className="flex flex-col items-center justify-center space-y-2">
+                    <CheckCircle size={28} className="text-[#076935]/40" />
+                    <p className="text-sm font-semibold text-gray-700">No safety incidents recorded</p>
+                    <p className="text-xs text-gray-400 font-normal">Workplace safety conditions and PPE audits are operating optimal.</p>
+                  </div>
                 </td>
               </tr>
-            ))}
+            ) : (
+              incidents.map((inc) => (
+                <tr key={inc.id} className="hover:bg-[#F4FAF7]/50 transition">
+                  <td className="px-4 py-3 font-bold font-mono text-gray-900">{inc.id}</td>
+                  <td className="px-4 py-3">
+                    <p className="font-semibold text-gray-900">{inc.location}</p>
+                    <p className="text-[11px] text-gray-400">{inc.date}</p>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200">
+                      {inc.severity}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 font-medium text-gray-800">{inc.staff_involved}</td>
+                  <td className="px-4 py-3 text-gray-600 max-w-[200px] truncate">{inc.description}</td>
+                  <td className="px-4 py-3 text-gray-600 max-w-[200px] truncate">{inc.action_taken}</td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                      {inc.status}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
+
 
       {/* Report Incident Modal */}
       <Modal open={isAddOpen} onClose={() => setIsAddOpen(false)} size="md" title="Report Workplace Incident">

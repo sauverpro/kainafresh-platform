@@ -11,50 +11,58 @@
  * 5. Sage Green Action CTA Card: Inventory restock reminder.
  */
 
-// Import React library and state hooks
-// Import React state hooks
-import { useState } from 'react';
-
-// Import Lucide vector icons for dashboard composition
+import { useState, useEffect } from 'react';
 import { 
   Search, ChevronDown, CheckCircle, Clock, ArrowRight, Shield, 
-  Package, ShoppingBag, Users, DollarSign, Eye,
+  ShoppingBag, Users, DollarSign, Eye,
   ChevronLeft, ChevronRight, Leaf, Truck
 } from 'lucide-react';
 
-// Import Bento grid dashboard stylesheet
 import './DashboardOverview.css';
 import DashboardSkeleton from '../../../components/skeletons/DashboardSkeleton';
+import { apiGet } from '../../../api/client';
 
-/**
- * Mock Recent Orders Dataset representing order transactions.
- */
-const RECENT_ORDERS = [
-  { id: 'ORD-8439', customer: 'Kris Payer', date: '26.08.2026', total: 130.50, status: 'delivered' },
-  { id: 'ORD-8440', customer: 'Alice Smith', date: '26.08.2026', total: 45.00, status: 'processing' },
-  { id: 'ORD-8441', customer: 'John Doe', date: '25.08.2026', total: 89.99, status: 'shipped' },
-  { id: 'ORD-8442', customer: 'Emma Watson', date: '25.08.2026', total: 210.00, status: 'delivered' },
-  { id: 'ORD-8443', customer: 'Michael Brown', date: '24.08.2026', total: 35.50, status: 'delivered' },
-];
+export interface RecentOrder {
+  id: string;
+  customer: string;
+  date: string;
+  total: number;
+  status: string;
+}
 
 interface DashboardOverviewProps {
   isLoading?: boolean;
 }
 
-/**
- * DashboardOverview Functional Component.
- */
 function DashboardOverview({ isLoading = false }: DashboardOverviewProps) {
-  // Calendar day selector active index state
   const [activeDay, setActiveDay] = useState(19);
+  const [orders, setOrders] = useState<RecentOrder[]>([]);
+  const [totalRevenue, setTotalRevenue] = useState<number>(0);
+
+  useEffect(() => {
+    apiGet<{ success: boolean; data: any[] }>('/api/orders')
+      .then((res) => {
+        if (res?.data && Array.isArray(res.data)) {
+          const mapped: RecentOrder[] = res.data.map((o: any) => ({
+            id: `ORD-${o.id}`,
+            customer: o.customer_name || o.email || 'Customer',
+            date: o.created_at ? new Date(o.created_at).toLocaleDateString() : 'Today',
+            total: Number(o.total_amount) || 0,
+            status: o.status || 'pending',
+          }));
+          setOrders(mapped);
+          setTotalRevenue(mapped.reduce((sum, item) => sum + item.total, 0));
+        }
+      })
+      .catch(() => {
+        // Fallback to empty state
+      });
+  }, []);
 
   if (isLoading) {
     return <DashboardSkeleton />;
   }
 
-  /**
-   * Helper function to render styled status badge pills with Lucide icons.
-   */
   const renderStatus = (status: string) => {
     switch (status) {
       case 'delivered':
@@ -117,10 +125,10 @@ function DashboardOverview({ isLoading = false }: DashboardOverviewProps) {
                     </span>
                     <div className="flex items-baseline justify-between gap-2">
                       <h4 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
-                        RWF 840k
+                        {totalRevenue > 0 ? `RWF ${(totalRevenue / 1000).toFixed(0)}k` : '0 RWF'}
                       </h4>
-                      <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 shrink-0">
-                        ↑ 15%
+                      <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 shrink-0">
+                        {totalRevenue > 0 ? '↑ Active' : '0%'}
                       </span>
                     </div>
                   </div>
@@ -137,9 +145,9 @@ function DashboardOverview({ isLoading = false }: DashboardOverviewProps) {
                     </span>
                     <div className="flex items-baseline justify-between gap-2">
                       <h4 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
-                        24 Items
+                        0 Items
                       </h4>
-                      <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 shrink-0">
+                      <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 shrink-0">
                         Stocked
                       </span>
                     </div>
@@ -157,10 +165,10 @@ function DashboardOverview({ isLoading = false }: DashboardOverviewProps) {
                     </span>
                     <div className="flex items-baseline justify-between gap-2">
                       <h4 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
-                        156
+                        {orders.length}
                       </h4>
-                      <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 shrink-0">
-                        ↑ 8.0%
+                      <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 shrink-0">
+                        0%
                       </span>
                     </div>
                   </div>
@@ -177,10 +185,10 @@ function DashboardOverview({ isLoading = false }: DashboardOverviewProps) {
                     </span>
                     <div className="flex items-baseline justify-between gap-2">
                       <h4 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
-                        3,782
+                        0
                       </h4>
-                      <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 shrink-0">
-                        ↑ 11.01%
+                      <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 shrink-0">
+                        0%
                       </span>
                     </div>
                   </div>
@@ -206,7 +214,7 @@ function DashboardOverview({ isLoading = false }: DashboardOverviewProps) {
                     stroke="url(#ringGradient)"
                     strokeWidth="10"
                     strokeDasharray="251.2"
-                    strokeDashoffset="40"
+                    strokeDashoffset={orders.length > 0 ? "80" : "251.2"}
                     strokeLinecap="round"
                   />
                   <defs>
@@ -218,7 +226,7 @@ function DashboardOverview({ isLoading = false }: DashboardOverviewProps) {
                 </svg>
 
                 <div className="ring-chart-center">
-                  <div className="ring-chart-number text-[#F39927]">84%</div>
+                  <div className="ring-chart-number text-[#F39927]">{orders.length > 0 ? '75%' : '0%'}</div>
                   <div className="ring-chart-label">Goal Achieved</div>
                 </div>
               </div>
@@ -235,14 +243,8 @@ function DashboardOverview({ isLoading = false }: DashboardOverviewProps) {
             </div>
 
             <div className="timeline-pills-row">
-              <div className="timeline-pill chip-green">
-                <Leaf size={14} /> Organic Avocados (120kg)
-              </div>
-              <div className="timeline-pill chip-amber">
-                <Package size={14} /> Raw Honey Jars (45 Units)
-              </div>
-              <div className="timeline-pill chip-purple">
-                <Truck size={14} /> Wholesale Bulk Shipment
+              <div className="p-4 text-center border border-dashed border-gray-200 rounded-xl bg-gray-50/50 w-full">
+                <p className="text-xs font-semibold text-gray-500">No current harvest dispatch items scheduled for this week</p>
               </div>
             </div>
           </div>
@@ -254,33 +256,41 @@ function DashboardOverview({ isLoading = false }: DashboardOverviewProps) {
               <button className="btn-view-all">View All →</button>
             </div>
 
-            <table className="dash-table">
-              <thead>
-                <tr>
-                  <th>ORDER ID</th>
-                  <th>CUSTOMER</th>
-                  <th>DATE</th>
-                  <th>TOTAL</th>
-                  <th>STATUS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {RECENT_ORDERS.map(order => (
-                  <tr key={order.id}>
-                    <td style={{ fontWeight: 700 }}>{order.id}</td>
-                    <td>
-                      <div className="customer-cell">
-                        <div className="customer-avatar">{order.customer.charAt(0)}</div>
-                        <span style={{ fontWeight: 600 }}>{order.customer}</span>
-                      </div>
-                    </td>
-                    <td style={{ color: '#6B7280' }}>{order.date}</td>
-                    <td style={{ fontWeight: 700 }}>${order.total.toFixed(2)}</td>
-                    <td>{renderStatus(order.status)}</td>
+            {orders.length === 0 ? (
+              <div className="p-8 text-center border border-dashed border-gray-200 rounded-xl bg-gray-50/50 my-2">
+                <ShoppingBag size={24} className="mx-auto text-gray-300 mb-2" />
+                <p className="text-xs font-bold text-gray-600">No current orders recorded</p>
+                <p className="text-[11px] text-gray-400 mt-1">Orders placed by customers will automatically list here.</p>
+              </div>
+            ) : (
+              <table className="dash-table">
+                <thead>
+                  <tr>
+                    <th>ORDER ID</th>
+                    <th>CUSTOMER</th>
+                    <th>DATE</th>
+                    <th>TOTAL</th>
+                    <th>STATUS</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {orders.map(order => (
+                    <tr key={order.id}>
+                      <td style={{ fontWeight: 700 }}>{order.id}</td>
+                      <td>
+                        <div className="customer-cell">
+                          <div className="customer-avatar">{order.customer.charAt(0)}</div>
+                          <span style={{ fontWeight: 600 }}>{order.customer}</span>
+                        </div>
+                      </td>
+                      <td style={{ color: '#6B7280' }}>{order.date}</td>
+                      <td style={{ fontWeight: 700 }}>${order.total.toFixed(2)}</td>
+                      <td>{renderStatus(order.status)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
 
@@ -295,11 +305,11 @@ function DashboardOverview({ isLoading = false }: DashboardOverviewProps) {
             </div>
             <div className="program-card-title">Wholesale & Export</div>
             <div className="program-progress-bar">
-              <div className="program-progress-fill" style={{ width: '75%', background: '#0284C7' }}></div>
+              <div className="program-progress-fill" style={{ width: '0%', background: '#0284C7' }}></div>
             </div>
             <div className="program-card-footer">
               <span>Fulfillment Cycle</span>
-              <span>3/4 Batches</span>
+              <span>0 Batches</span>
             </div>
           </div>
 
@@ -311,11 +321,11 @@ function DashboardOverview({ isLoading = false }: DashboardOverviewProps) {
             </div>
             <div className="program-card-title">Organic Quality Check</div>
             <div className="program-progress-bar">
-              <div className="program-progress-fill" style={{ width: '90%', background: '#7C3AED' }}></div>
+              <div className="program-progress-fill" style={{ width: '0%', background: '#7C3AED' }}></div>
             </div>
             <div className="program-card-footer">
               <span>Inspection Passed</span>
-              <span>100% Certified</span>
+              <span>0% Certified</span>
             </div>
           </div>
 
@@ -346,20 +356,8 @@ function DashboardOverview({ isLoading = false }: DashboardOverviewProps) {
 
             {/* Schedule List */}
             <div className="calendar-schedule-list">
-              <div className="schedule-item">
-                <div className="schedule-item-info">
-                  <div className="customer-avatar" style={{ width: 24, height: 24, fontSize: '0.7rem' }}>H</div>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Harvest Dispatch</span>
-                </div>
-                <span className="schedule-time">11:30 AM</span>
-              </div>
-
-              <div className="schedule-item">
-                <div className="schedule-item-info">
-                  <div className="customer-avatar" style={{ width: 24, height: 24, fontSize: '0.7rem', background: 'var(--brand-amber-bg)', color: 'var(--brand-amber-text)' }}>E</div>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Express Delivery</span>
-                </div>
-                <span className="schedule-time">4:00 PM</span>
+              <div className="p-4 text-center border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                <p className="text-[11px] font-semibold text-gray-500">No scheduled dispatches for selected date</p>
               </div>
             </div>
           </div>
@@ -382,3 +380,4 @@ function DashboardOverview({ isLoading = false }: DashboardOverviewProps) {
 }
 
 export default DashboardOverview;
+

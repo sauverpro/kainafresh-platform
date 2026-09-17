@@ -27,6 +27,7 @@ import StatusDropdown, {
   type StatusOption,
 } from "../../../components/ui/StatusDropdown";
 import TableSkeleton from "../../../components/ui/TableSkeleton";
+import MetricCard from "../../../components/ui/MetricCard";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -178,22 +179,15 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon, accent }: StatCardProps) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-[#076935]/10 bg-white p-4 transition hover:shadow-md">
-      <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${accent}`}>
-        {icon}
-      </div>
-      <div>
-        <p
-          className="text-2xl font-bold leading-tight text-gray-900"
-          style={{ fontFamily: "var(--font-heading)" }}
-        >
-          {value}
-        </p>
-        <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-          {label}
-        </p>
-      </div>
-    </div>
+    <MetricCard
+      label={label.toUpperCase()}
+      value={value}
+      subtext={value > 0 ? `Active ${label.toLowerCase()}` : `No ${label.toLowerCase()} recorded`}
+      icon={icon}
+      iconBg={accent}
+      badgeText="Verified"
+      badgeColor="bg-blue-50 text-blue-600 border-blue-200"
+    />
   );
 }
 

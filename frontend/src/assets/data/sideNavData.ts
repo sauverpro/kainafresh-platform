@@ -28,7 +28,6 @@ export const sideNavData: NavSection[] = [
           { label: "HR Dashboard", path: "/admin/hr/dashboard" },
           { label: "Departments", path: "/admin/hr/departments" },
           { label: "Employee Profiles", path: "/admin/hr/employees" },
-          { label: "Employment Records", path: "/admin/hr/employment-records" },
           { label: "Leave Management", path: "/admin/hr/leave" },
           { label: "Payroll", path: "/admin/hr/payroll" },
           { label: "Performance", path: "/admin/hr/performance" },

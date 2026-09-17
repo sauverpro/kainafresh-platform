@@ -49,7 +49,6 @@ const TeamManagement = lazy(() => import("./pages/admin/Team/TeamManagement"));
 const HRDashboard = lazy(() => import("./pages/admin/HR/HRDashboard"));
 const DepartmentManagement = lazy(() => import("./pages/admin/HR/DepartmentManagement"));
 const EmployeeProfiles = lazy(() => import("./pages/admin/HR/EmployeeProfiles"));
-const EmploymentRecords = lazy(() => import("./pages/admin/HR/EmploymentRecords"));
 const LeaveManagement = lazy(() => import("./pages/admin/HR/LeaveManagement"));
 const Payroll = lazy(() => import("./pages/admin/HR/Payroll"));
 const Performance = lazy(() => import("./pages/admin/HR/Performance"));
@@ -173,7 +172,7 @@ function App() {
                 <Route path="/admin/hr/dashboard" element={<HRDashboard />} />
                 <Route path="/admin/hr/departments" element={<DepartmentManagement />} />
                 <Route path="/admin/hr/employees" element={<EmployeeProfiles />} />
-                <Route path="/admin/hr/employment-records" element={<EmploymentRecords />} />
+                <Route path="/admin/hr/employment-records" element={<Navigate to="/admin/hr/employees" replace />} />
                 <Route path="/admin/hr/leave" element={<LeaveManagement />} />
                 <Route path="/admin/hr/payroll" element={<Payroll />} />
                 <Route path="/admin/hr/performance" element={<Performance />} />

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar } from "lucide-react";
+import { Calendar, BarChart2 } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -53,61 +53,72 @@ export default function StatisticsChart() {
             className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/5"
           >
             <Calendar className="h-4 w-4" />
-            Aug 11 to Aug 17
+            Current Period
           </button>
         </div>
       </div>
 
-      <div className="mt-6 h-[300px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={weeklyStatistics}>
-            <defs>
-              <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#1d7255" stopOpacity={0.35} />
-                <stop offset="100%" stopColor="#1d7255" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="salesFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#6bbd98" stopOpacity={0.35} />
-                <stop offset="100%" stopColor="#6bbd98" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid vertical={false} stroke="#f1f3f2" />
-            <XAxis
-              dataKey="label"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#98a2b3", fontSize: 12 }}
-              dy={8}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#98a2b3", fontSize: 12 }}
-            />
-            <Tooltip
-              contentStyle={{
-                borderRadius: 8,
-                border: "1px solid #e5e7eb",
-                fontSize: 12,
-              }}
-            />
-            <Area
-              type="monotone"
-              dataKey="revenue"
-              stroke="#1d7255"
-              strokeWidth={2}
-              fill="url(#revenueFill)"
-            />
-            <Area
-              type="monotone"
-              dataKey="sales"
-              stroke="#9ed4ba"
-              strokeWidth={2}
-              fill="url(#salesFill)"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+      <div className="mt-6 h-[300px] w-full relative">
+        {weeklyStatistics.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center py-10 px-4 border border-dashed border-gray-200 dark:border-white/10 rounded-xl bg-gray-50/50 dark:bg-white/5">
+            <BarChart2 className="h-8 w-8 text-gray-300 dark:text-gray-600 mb-2" />
+            <p className="text-xs font-bold text-gray-600 dark:text-gray-300">No statistics chart data recorded yet</p>
+            <p className="text-[11px] text-gray-400 mt-1 max-w-sm">
+              Weekly revenue and sales statistics will automatically render here as activities are recorded.
+            </p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={weeklyStatistics}>
+              <defs>
+                <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#1d7255" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#1d7255" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="salesFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#6bbd98" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#6bbd98" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid vertical={false} stroke="#f1f3f2" />
+              <XAxis
+                dataKey="label"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#98a2b3", fontSize: 12 }}
+                dy={8}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#98a2b3", fontSize: 12 }}
+              />
+              <Tooltip
+                contentStyle={{
+                  borderRadius: 8,
+                  border: "1px solid #e5e7eb",
+                  fontSize: 12,
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="revenue"
+                stroke="#1d7255"
+                strokeWidth={2}
+                fill="url(#revenueFill)"
+              />
+              <Area
+                type="monotone"
+                dataKey="sales"
+                stroke="#9ed4ba"
+                strokeWidth={2}
+                fill="url(#salesFill)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );
 }
+
