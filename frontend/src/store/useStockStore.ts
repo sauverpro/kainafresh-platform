@@ -74,7 +74,14 @@ export const useStockStore = create<StockState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const res = await apiGet<ApiResponse<Stock[]>>("/api/stocks");
-      set({ stocks: (res.data ?? []).map(mapStock), loading: false });
+      const mapped = (res.data ?? []).map(mapStock);
+      const uniqueMap = new Map<string | number, Stock>();
+      mapped.forEach(item => {
+        if (!uniqueMap.has(item.id)) {
+          uniqueMap.set(item.id, item);
+        }
+      });
+      set({ stocks: Array.from(uniqueMap.values()), loading: false });
     } catch (err: unknown) {
       set({
         error: err instanceof Error ? err.message : "Failed to fetch stocks",

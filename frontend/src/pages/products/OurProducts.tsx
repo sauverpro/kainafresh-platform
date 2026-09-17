@@ -241,9 +241,18 @@ export default function OurProducts() {
                     : undefined,
               };
             });
-            setProducts(mapped);
+            const uniqueMapped = mapped.filter(
+              (p, idx, self) =>
+                idx ===
+                self.findIndex(
+                  (t) =>
+                    String(t.id) === String(p.id) ||
+                    (t.name && p.name && t.name.trim().toLowerCase() === p.name.trim().toLowerCase()),
+                ),
+            );
+            setProducts(uniqueMapped);
           } else {
-            setProducts(FALLBACK_PRODUCTS);
+            setProducts([]);
           }
         }
       } catch (err) {

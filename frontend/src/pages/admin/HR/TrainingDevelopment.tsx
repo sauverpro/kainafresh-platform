@@ -4,10 +4,12 @@ import {
   Plus,
   Users,
   Calendar,
+  CheckCircle,
 } from "lucide-react";
 import { usePageTitle } from "../../../hooks/usePageTitle";
 import Modal from "../../../components/ui/Modal";
 import { toast } from "sonner";
+import MetricCard from "../../../components/ui/MetricCard";
 
 export interface TrainingProgram {
   id: string;
@@ -79,6 +81,49 @@ export default function TrainingDevelopment() {
         >
           <Plus size={16} /> Schedule Training Session
         </button>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          label="Active Sessions"
+          value={`${programs.filter((p) => p.status === "Active Session").length}`}
+          subtext={programs.length > 0 ? "Enrolled skill workshops" : "No active sessions"}
+          icon={<Award size={22} className="text-[#076935]" />}
+          iconBg="bg-[#076935]/10"
+          badgeText="Active Training"
+          badgeColor="bg-emerald-50 text-emerald-700 border-emerald-200"
+        />
+
+        <MetricCard
+          label="Total Enrolled Trainees"
+          value={`${programs.reduce((s, p) => s + p.enrolled_count, 0)}`}
+          subtext="Participating staff members"
+          icon={<Users size={22} className="text-blue-600" />}
+          iconBg="bg-blue-50"
+          badgeText="Trainees"
+          badgeColor="bg-blue-50 text-blue-700 border-blue-200"
+        />
+
+        <MetricCard
+          label="Certifications Issued"
+          value={`${programs.filter((p) => p.cert_issued).length}`}
+          subtext="Food safety & organic compliance"
+          icon={<CheckCircle size={22} className="text-amber-600" />}
+          iconBg="bg-amber-50"
+          badgeText="Certified"
+          badgeColor="bg-amber-50 text-amber-700 border-amber-200"
+        />
+
+        <MetricCard
+          label="Scheduled Workshops"
+          value={`${programs.length}`}
+          subtext={programs.length > 0 ? "Total training modules" : "No programs scheduled"}
+          icon={<Calendar size={22} className="text-purple-600" />}
+          iconBg="bg-purple-50"
+          badgeText="Workshops"
+          badgeColor="bg-purple-50 text-purple-700 border-purple-200"
+        />
       </div>
 
       {/* Program Cards Grid */}

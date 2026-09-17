@@ -50,8 +50,15 @@ function DashboardOverview({ isLoading = false }: DashboardOverviewProps) {
             total: Number(o.total_amount) || 0,
             status: o.status || 'pending',
           }));
-          setOrders(mapped);
-          setTotalRevenue(mapped.reduce((sum, item) => sum + item.total, 0));
+          const uniqueMap = new Map<string, RecentOrder>();
+          mapped.forEach(item => {
+            if (!uniqueMap.has(item.id)) {
+              uniqueMap.set(item.id, item);
+            }
+          });
+          const uniqueOrders = Array.from(uniqueMap.values());
+          setOrders(uniqueOrders);
+          setTotalRevenue(uniqueOrders.reduce((sum, item) => sum + item.total, 0));
         }
       })
       .catch(() => {

@@ -4,10 +4,12 @@ import {
   Award,
   Star,
   Plus,
+  CheckCircle,
 } from "lucide-react";
 import { usePageTitle } from "../../../hooks/usePageTitle";
 import Modal from "../../../components/ui/Modal";
 import { toast } from "sonner";
+import MetricCard from "../../../components/ui/MetricCard";
 
 export interface PerformanceReview {
   id: string;
@@ -36,9 +38,10 @@ export default function Performance() {
     key_kpi: "",
   });
 
-  const avgRating = reviews.length > 0
-    ? (reviews.reduce((sum, r) => sum + r.rating_score, 0) / reviews.length).toFixed(1)
-    : "0.0";
+  const rawAvgRating = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating_score, 0) / reviews.length)
+    : 0;
+  const avgRating = rawAvgRating > 0 ? rawAvgRating.toFixed(1) : "0.0";
 
   const handleAddReview = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,44 +87,47 @@ export default function Performance() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#076935] text-white font-bold">
-              <Star size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-emerald-900">Workforce Average Score</p>
-              <p className="text-2xl font-extrabold text-[#076935]">{avgRating} / 5.0</p>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          label="Workforce Average Score"
+          value={avgRating}
+          unit="/ 5.0"
+          subtext="Quarterly Scorecard Target"
+          icon={<Star size={22} className="text-[#076935]" />}
+          iconBg="bg-[#076935]/10"
+          badgeText="Performance"
+          badgeColor="bg-emerald-50 text-emerald-700 border-emerald-200"
+        />
 
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-bold">
-              <Award size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-blue-900">High Performers</p>
-              <p className="text-2xl font-extrabold text-blue-900">
-                {reviews.length > 0 ? "92% of Staff" : "0% of Staff"}
-              </p>
-            </div>
-          </div>
-        </div>
+        <MetricCard
+          label="High Performers"
+          value={reviews.length > 0 ? "92%" : "0%"}
+          subtext={reviews.length > 0 ? "Meeting or exceeding SLAs" : "No evaluations recorded"}
+          icon={<Award size={22} className="text-blue-600" />}
+          iconBg="bg-blue-50"
+          badgeText="Staff Quality"
+          badgeColor="bg-blue-50 text-blue-700 border-blue-200"
+        />
 
-        <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500 text-white font-bold">
-              <TrendingUp size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-amber-900">Reviews Completed</p>
-              <p className="text-2xl font-extrabold text-amber-900">{reviews.length} Evaluated</p>
-            </div>
-          </div>
-        </div>
+        <MetricCard
+          label="Reviews Completed"
+          value={`${reviews.length}`}
+          subtext={reviews.length > 0 ? "Evaluated employee scorecards" : "No evaluations recorded"}
+          icon={<TrendingUp size={22} className="text-amber-600" />}
+          iconBg="bg-amber-50"
+          badgeText="Evaluations"
+          badgeColor="bg-amber-50 text-amber-700 border-amber-200"
+        />
+
+        <MetricCard
+          label="Quality SLA Compliance"
+          value={reviews.length > 0 ? "98.5%" : "0%"}
+          subtext="Packhouse & harvest standards"
+          icon={<CheckCircle size={22} className="text-purple-600" />}
+          iconBg="bg-purple-50"
+          badgeText="SLA Rating"
+          badgeColor="bg-purple-50 text-purple-700 border-purple-200"
+        />
       </div>
 
       {/* Table */}

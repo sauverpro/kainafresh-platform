@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -15,11 +15,13 @@ import {
   FileText,
   FileSpreadsheet,
   Download,
+  UserX,
 } from "lucide-react";
 import { usePageTitle } from "../../../hooks/usePageTitle";
 import Modal from "../../../components/ui/Modal";
 import { toast } from "sonner";
 import { useDepartmentStore } from "../../../store/useDepartmentStore";
+import { apiGet } from "../../../api/client";
 
 export interface Employee {
   id: string;
@@ -48,144 +50,60 @@ export interface Employee {
   };
 }
 
-const INITIAL_EMPLOYEES: Employee[] = [
-  {
-    id: "EMP-001",
-    code: "KF-EMP-101",
-    first_name: "Jean-Claude",
-    last_name: "Mugisha",
-    email: "jc.mugisha@kainafresh.rw",
-    phone: "+250 788 112 233",
-    department: "Farm Operations",
-    job_title: "Senior Agronomist & Plot Lead",
-    employment_type: "Full-Time Permanent",
-    status: "Active",
-    location: "Musanze Plot A",
-    hire_date: "2024-03-15",
-    salary_rwf: 650000,
-    avatar_url:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
-    contract_id: "CTR-2024-001",
-    contract_start_date: "2024-03-15",
-    contract_end_date: null,
-    contract_status: "Active",
-    emergency_contact: {
-      name: "Marie Mugisha",
-      relationship: "Spouse",
-      phone: "+250 788 998 877",
-    },
-  },
-  {
-    id: "EMP-002",
-    code: "KF-EMP-102",
-    first_name: "Alice",
-    last_name: "Uwimana",
-    email: "alice.uwimana@kainafresh.rw",
-    phone: "+250 788 445 566",
-    department: "Post-Harvest & Packaging",
-    job_title: "Quality Control Supervisor",
-    employment_type: "Full-Time Permanent",
-    status: "Active",
-    location: "Kigali Packhouse",
-    hire_date: "2024-06-01",
-    salary_rwf: 520000,
-    avatar_url:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200",
-    contract_id: "CTR-2024-002",
-    contract_start_date: "2024-06-01",
-    contract_end_date: null,
-    contract_status: "Active",
-    emergency_contact: {
-      name: "Pascal Uwimana",
-      relationship: "Brother",
-      phone: "+250 788 332 211",
-    },
-  },
-  {
-    id: "EMP-003",
-    code: "KF-EMP-103",
-    first_name: "Emmanuel",
-    last_name: "Habimana",
-    email: "e.habimana@kainafresh.rw",
-    phone: "+250 788 778 899",
-    department: "Logistics & Fleet",
-    job_title: "Cold-Chain Fleet Driver",
-    employment_type: "Fixed-Term Contract",
-    status: "On Leave",
-    location: "Kigali Logistics Hub",
-    hire_date: "2024-08-10",
-    salary_rwf: 380000,
-    avatar_url:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200",
-    contract_id: "CTR-2024-003",
-    contract_start_date: "2024-08-10",
-    contract_end_date: "2025-08-10",
-    contract_status: "Active",
-    emergency_contact: {
-      name: "Grace Habimana",
-      relationship: "Sister",
-      phone: "+250 788 665 544",
-    },
-  },
-  {
-    id: "EMP-004",
-    code: "KF-EMP-104",
-    first_name: "Solange",
-    last_name: "Murekatete",
-    email: "s.murekatete@kainafresh.rw",
-    phone: "+250 788 223 344",
-    department: "Sales & B2B",
-    job_title: "B2B Account Manager",
-    employment_type: "Full-Time Permanent",
-    status: "Active",
-    location: "Kigali HQ",
-    hire_date: "2025-01-15",
-    salary_rwf: 700000,
-    avatar_url:
-      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200",
-    contract_id: "CTR-2025-004",
-    contract_start_date: "2025-01-15",
-    contract_end_date: null,
-    contract_status: "Active",
-    emergency_contact: {
-      name: "Jean Murekatete",
-      relationship: "Father",
-      phone: "+250 788 110 099",
-    },
-  },
-  {
-    id: "EMP-005",
-    code: "KF-EMP-105",
-    first_name: "Patrick",
-    last_name: "Nshimiyimana",
-    email: "p.nshimiyimana@kainafresh.rw",
-    phone: "+250 788 667 788",
-    department: "Farm Operations",
-    job_title: "Harvest Supervisor (Plot B)",
-    employment_type: "Seasonal Farm Worker",
-    status: "Active",
-    location: "Musanze Plot B",
-    hire_date: "2025-05-01",
-    salary_rwf: 250000,
-    avatar_url:
-      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200",
-    contract_id: "CTR-2025-005",
-    contract_start_date: "2025-05-01",
-    contract_end_date: "2026-10-15",
-    contract_status: "Expiring Soon",
-    emergency_contact: {
-      name: "Claudine Nshimiyimana",
-      relationship: "Spouse",
-      phone: "+250 788 889 900",
-    },
-  },
-];
+const INITIAL_EMPLOYEES: Employee[] = [];
 
 export default function EmployeeProfiles() {
   usePageTitle("employee-profiles", "Employee Profiles & Records");
 
   const { departments } = useDepartmentStore();
   const [employees, setEmployees] = useState<Employee[]>(INITIAL_EMPLOYEES);
+
+  useEffect(() => {
+    apiGet<{ success: boolean; data: any[] }>("/api/employees")
+      .then((res) => {
+        if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
+          const mapped: Employee[] = res.data.map((item: any) => ({
+            id: `EMP-${item.id}`,
+            code: item.emp_number || `KF-EMP-${item.id}`,
+            first_name: item.fullname ? item.fullname.split(" ")[0] : "Staff",
+            last_name: item.fullname ? item.fullname.split(" ").slice(1).join(" ") : "",
+            email: item.email || "",
+            phone: item.phone || "",
+            department: item.department_name || "General",
+            job_title: item.job_title || "Staff Member",
+            employment_type: item.employment_type === "contract" ? "Fixed-Term Contract" : "Full-Time Permanent",
+            status: item.status === "active" ? "Active" : item.status === "on_leave" ? "On Leave" : "Inactive" as any,
+            location: item.address || "Kigali HQ",
+            hire_date: item.date_hired || new Date().toISOString().split("T")[0],
+            salary_rwf: Number(item.salary_rwf) || 0,
+            contract_id: item.contract_ref || undefined,
+            contract_end_date: item.contract_end_date || null,
+            contract_status: item.contract_end_date ? "Expiring Soon" : "Active",
+            emergency_contact: {
+              name: item.emergency_person_name || "",
+              relationship: "Family",
+              phone: item.emergency_phone_number || "",
+            },
+          }));
+          const uniqueEmployees = mapped.filter(
+            (emp, idx, self) =>
+              idx ===
+              self.findIndex(
+                (t) =>
+                  String(t.id) === String(emp.id) ||
+                  (t.code && emp.code && t.code === emp.code) ||
+                  (t.email && emp.email && t.email.trim().toLowerCase() === emp.email.trim().toLowerCase()),
+              ),
+          );
+          setEmployees(uniqueEmployees);
+        } else {
+          setEmployees([]);
+        }
+      })
+      .catch(() => {
+        setEmployees([]);
+      });
+  }, []);
   const [viewMode, setViewMode] = useState<"table" | "grid">("grid");
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("all");
@@ -323,15 +241,37 @@ export default function EmployeeProfiles() {
       location: form.location,
       hire_date: new Date().toISOString().split("T")[0],
       salary_rwf: Number(form.salary_rwf),
+      contract_id: form.contract_id.trim() || undefined,
+      contract_start_date: form.contract_start_date || new Date().toISOString().split("T")[0],
+      contract_end_date: form.contract_end_date || null,
+      contract_status: form.contract_status,
       emergency_contact: {
-        name: form.emergency_name || "Family Contact",
+        name: form.emergency_name.trim(),
         relationship: form.emergency_relationship,
-        phone: form.emergency_phone || form.phone,
+        phone: form.emergency_phone.trim(),
       },
     };
 
     setEmployees([newEmp, ...employees]);
     setIsAddOpen(false);
+    setForm({
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone: "",
+      department: "Farm Operations",
+      job_title: "",
+      employment_type: "Full-Time Permanent",
+      location: "Musanze Plot A",
+      salary_rwf: 350000,
+      contract_id: "",
+      contract_start_date: new Date().toISOString().split("T")[0],
+      contract_end_date: "",
+      contract_status: "Active",
+      emergency_name: "",
+      emergency_relationship: "Spouse",
+      emergency_phone: "",
+    });
     toast.success(
       `Employee ${newEmp.first_name} ${newEmp.last_name} registered successfully!`,
     );
@@ -424,9 +364,9 @@ export default function EmployeeProfiles() {
         hire_date: new Date().toISOString().split("T")[0],
         salary_rwf: 450000,
         emergency_contact: {
-          name: "Family Contact",
-          relationship: "Parent",
-          phone: "+250 788 000 000",
+          name: "",
+          relationship: "",
+          phone: "",
         },
       }),
     );
@@ -723,112 +663,135 @@ export default function EmployeeProfiles() {
       ) : (
         /* Brand Aligned Reference Grid View */
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredEmployees.map((emp) => (
-            <div
-              key={emp.id}
-              className="group rounded-2xl border border-[#076935]/15 bg-white p-5 shadow-xs transition hover:shadow-md flex flex-col justify-between"
-            >
-              <div>
-                {/* Top Header: Code & Status Badge */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-[#076935]"></span>
-                    <span className="text-[10px] font-mono font-bold text-gray-400">
-                      {emp.code}
-                    </span>
-                  </div>
-
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider ${
-                      emp.status === "Active"
-                        ? "bg-emerald-100/80 text-emerald-800 border border-emerald-200"
-                        : emp.status === "On Leave"
-                          ? "bg-amber-100/80 text-amber-800 border border-amber-200"
-                          : emp.status === "Suspended"
-                            ? "bg-rose-100/80 text-rose-800 border border-rose-200"
-                            : "bg-gray-100 text-gray-700 border border-gray-200"
-                    }`}
-                  >
-                    {emp.status}
-                  </span>
-                </div>
-
-                {/* Profile Header: Avatar Photo / Initials + Name + Title */}
-                <div className="mt-4 flex items-center gap-3.5">
-                  {emp.avatar_url ? (
-                    <img
-                      src={emp.avatar_url}
-                      alt={`${emp.first_name} ${emp.last_name}`}
-                      className="h-12 w-12 rounded-full object-cover border-2 border-[#076935]/20 shadow-xs shrink-0"
-                    />
-                  ) : (
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#076935]/10 text-[#076935] font-extrabold text-sm border-2 border-[#076935]/20">
-                      {emp.first_name[0]}
-                      {emp.last_name[0]}
-                    </div>
-                  )}
-                  <div className="min-w-0">
-                    <h3 className="font-bold text-gray-900 text-base leading-snug truncate group-hover:text-[#076935] transition">
-                      {emp.first_name} {emp.last_name}
-                    </h3>
-                    <p className="text-xs text-gray-500 font-medium truncate">
-                      {emp.job_title}
-                    </p>
-                  </div>
-                </div>
-
-                {/* 2-Column Metadata: Department & Hire Date */}
-                <div className="mt-4 grid grid-cols-2 gap-2 border-t border-gray-100 pt-3 text-xs">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                      Department
-                    </p>
-                    <p className="font-semibold text-gray-800 truncate mt-0.5">
-                      {emp.department}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                      Date of Joining
-                    </p>
-                    <p className="font-semibold text-gray-800 truncate mt-0.5">
-                      {emp.hire_date}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Containerized Contact Box */}
-                <div className="mt-3 rounded-xl bg-gray-50/90 p-3 space-y-1.5 border border-gray-100 text-xs">
-                  <div className="flex items-center gap-2 text-gray-600 font-medium min-w-0">
-                    <Mail size={13} className="text-gray-400 shrink-0" />
-                    <span className="truncate">{emp.email}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-600 font-medium">
-                    <Phone size={13} className="text-gray-400 shrink-0" />
-                    <span>{emp.phone}</span>
-                  </div>
-                </div>
+          {filteredEmployees.length === 0 ? (
+            <div className="col-span-full rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center shadow-xs">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-[#076935] mb-3">
+                <UserX size={28} />
               </div>
-
-              {/* Dual Action Buttons */}
-              <div className="mt-4 flex items-center gap-2 pt-2 border-t border-gray-100">
+              <h3 className="text-base font-bold text-gray-900">
+                No Employee Profiles Recorded
+              </h3>
+              <p className="mt-1 text-xs text-gray-500 max-w-md mx-auto">
+                There are currently no employee profiles in the database. Click "Add New Employee" or "Import (CSV / Excel)" to register staff.
+              </p>
+              <div className="mt-5 flex items-center justify-center gap-3">
                 <button
                   type="button"
-                  onClick={() => handleStartEdit(emp)}
-                  className="flex-1 rounded-xl bg-emerald-50/80 hover:bg-[#F39927] hover:text-white border border-emerald-200/50 py-2 text-xs font-bold text-[#076935] transition flex items-center justify-center gap-1.5"
+                  onClick={() => setIsAddOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#076935] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#055028] transition"
                 >
-                  <Pencil size={13} /> Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedEmp(emp)}
-                  className="flex-1 rounded-xl bg-[#076935] hover:bg-[#055028] py-2 text-xs font-bold text-white shadow-xs transition flex items-center justify-center gap-1.5"
-                >
-                  <Eye size={13} /> View
+                  <Plus size={15} /> Add New Employee
                 </button>
               </div>
             </div>
-          ))}
+          ) : (
+            filteredEmployees.map((emp) => (
+              <div
+                key={emp.id}
+                className="group rounded-2xl border border-[#076935]/15 bg-white p-5 shadow-xs transition hover:shadow-md flex flex-col justify-between"
+              >
+                <div>
+                  {/* Top Header: Code & Status Badge */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-[#076935]"></span>
+                      <span className="text-[10px] font-mono font-bold text-gray-400">
+                        {emp.code}
+                      </span>
+                    </div>
+
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider ${
+                        emp.status === "Active"
+                          ? "bg-emerald-100/80 text-emerald-800 border border-emerald-200"
+                          : emp.status === "On Leave"
+                            ? "bg-amber-100/80 text-amber-800 border border-amber-200"
+                            : emp.status === "Suspended"
+                              ? "bg-rose-100/80 text-rose-800 border border-rose-200"
+                              : "bg-gray-100 text-gray-700 border border-gray-200"
+                      }`}
+                    >
+                      {emp.status}
+                    </span>
+                  </div>
+
+                  {/* Profile Header: Avatar Photo / Initials + Name + Title */}
+                  <div className="mt-4 flex items-center gap-3.5">
+                    {emp.avatar_url ? (
+                      <img
+                        src={emp.avatar_url}
+                        alt={`${emp.first_name} ${emp.last_name}`}
+                        className="h-12 w-12 rounded-full object-cover border-2 border-[#076935]/20 shadow-xs shrink-0"
+                      />
+                    ) : (
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#076935]/10 text-[#076935] font-extrabold text-sm border-2 border-[#076935]/20">
+                        {emp.first_name[0]}
+                        {emp.last_name[0]}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-gray-900 text-base leading-snug truncate group-hover:text-[#076935] transition">
+                        {emp.first_name} {emp.last_name}
+                      </h3>
+                      <p className="text-xs text-gray-500 font-medium truncate">
+                        {emp.job_title}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 2-Column Metadata: Department & Hire Date */}
+                  <div className="mt-4 grid grid-cols-2 gap-2 border-t border-gray-100 pt-3 text-xs">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                        Department
+                      </p>
+                      <p className="font-semibold text-gray-800 truncate mt-0.5">
+                        {emp.department}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                        Date of Joining
+                      </p>
+                      <p className="font-semibold text-gray-800 truncate mt-0.5">
+                        {emp.hire_date}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Containerized Contact Box */}
+                  <div className="mt-3 rounded-xl bg-gray-50/90 p-3 space-y-1.5 border border-gray-100 text-xs">
+                    <div className="flex items-center gap-2 text-gray-600 font-medium min-w-0">
+                      <Mail size={13} className="text-gray-400 shrink-0" />
+                      <span className="truncate">{emp.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600 font-medium">
+                      <Phone size={13} className="text-gray-400 shrink-0" />
+                      <span>{emp.phone}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dual Action Buttons */}
+                <div className="mt-4 flex items-center gap-2 pt-2 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => handleStartEdit(emp)}
+                    className="flex-1 rounded-xl bg-emerald-50/80 hover:bg-[#F39927] hover:text-white border border-emerald-200/50 py-2 text-xs font-bold text-[#076935] transition flex items-center justify-center gap-1.5"
+                  >
+                    <Pencil size={13} /> Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedEmp(emp)}
+                    className="flex-1 rounded-xl bg-[#076935] hover:bg-[#055028] py-2 text-xs font-bold text-white shadow-xs transition flex items-center justify-center gap-1.5"
+                  >
+                    <Eye size={13} /> View
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
 
@@ -1067,7 +1030,7 @@ export default function EmployeeProfiles() {
                   onChange={(e) =>
                     setForm({ ...form, contract_id: e.target.value })
                   }
-                  placeholder="e.g. CTR-2026-106 (Auto-generated if empty)"
+                  placeholder="e.g. CTR-2026-106 (Optional)"
                   className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2.5 outline-none focus:border-[#076935]"
                 />
               </div>
@@ -1142,6 +1105,58 @@ export default function EmployeeProfiles() {
                   onChange={(e) =>
                     setForm({ ...form, salary_rwf: Number(e.target.value) })
                   }
+                  className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2.5 outline-none focus:border-[#076935]"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Emergency Contact Information Section */}
+          <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3 space-y-3">
+            <p className="font-bold text-gray-800 uppercase tracking-wide flex items-center gap-1.5">
+              <Phone size={14} className="text-[#076935]" /> Emergency Contact Information (Optional)
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="font-semibold text-gray-700">Contact Full Name</label>
+                <input
+                  type="text"
+                  value={form.emergency_name}
+                  onChange={(e) =>
+                    setForm({ ...form, emergency_name: e.target.value })
+                  }
+                  placeholder="e.g. Marie Mugisha"
+                  className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2.5 outline-none focus:border-[#076935]"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-gray-700">Relationship</label>
+                <select
+                  value={form.emergency_relationship}
+                  onChange={(e) =>
+                    setForm({ ...form, emergency_relationship: e.target.value })
+                  }
+                  className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2.5 outline-none focus:border-[#076935]"
+                >
+                  <option value="Spouse">Spouse</option>
+                  <option value="Parent">Parent</option>
+                  <option value="Sibling">Sibling</option>
+                  <option value="Child">Child</option>
+                  <option value="Next of Kin">Next of Kin</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-semibold text-gray-700">Emergency Phone Number</label>
+                <input
+                  type="text"
+                  value={form.emergency_phone}
+                  onChange={(e) =>
+                    setForm({ ...form, emergency_phone: e.target.value })
+                  }
+                  placeholder="+250 788 000 000"
                   className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2.5 outline-none focus:border-[#076935]"
                 />
               </div>

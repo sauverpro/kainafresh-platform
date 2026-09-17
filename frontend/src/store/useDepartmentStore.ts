@@ -14,76 +14,11 @@ export interface Department {
   description: string;
 }
 
-const INITIAL_DEPARTMENTS: Department[] = [
-  {
-    id: "DEP-001",
-    code: "KF-DEP-FARM",
-    name: "Farm Operations & Cultivation",
-    lead_name: "Jean-Claude Mugisha",
-    lead_email: "jc.mugisha@kainafresh.rw",
-    staff_count: 2,
-    capacity: 15,
-    monthly_budget_rwf: 14500000,
-    location: "Musanze Plots A & B",
-    status: "Active",
-    description: "Soil management, organic crop planting, irrigation, pest control, and plot yield optimization.",
-  },
-  {
-    id: "DEP-002",
-    code: "KF-DEP-POST",
-    name: "Post-Harvest & Packaging",
-    lead_name: "Alice Uwimana",
-    lead_email: "alice.uwimana@kainafresh.rw",
-    staff_count: 1,
-    capacity: 10,
-    monthly_budget_rwf: 6800000,
-    location: "Kigali Packhouse Hub",
-    status: "Active",
-    description: "Quality control sorting, washing, cold storage preservation, eco-packaging, and EU compliance.",
-  },
-  {
-    id: "DEP-003",
-    code: "KF-DEP-LOG",
-    name: "Logistics & Fleet Delivery",
-    lead_name: "Emmanuel Habimana",
-    lead_email: "e.habimana@kainafresh.rw",
-    staff_count: 1,
-    capacity: 10,
-    monthly_budget_rwf: 4200000,
-    location: "Kigali Logistics Hub",
-    status: "Active",
-    description: "Refrigerated transport fleet, route planning, B2B wholesale dispatch, and home delivery.",
-  },
-  {
-    id: "DEP-004",
-    code: "KF-DEP-SLS",
-    name: "Sales & B2B Accounts",
-    lead_name: "Solange Murekatete",
-    lead_email: "s.murekatete@kainafresh.rw",
-    staff_count: 1,
-    capacity: 10,
-    monthly_budget_rwf: 2100000,
-    location: "Kigali Commercial Office",
-    status: "Active",
-    description: "Hotel & supermarket bulk supply contracts, export client relations, and digital marketplace management.",
-  },
-  {
-    id: "DEP-005",
-    code: "KF-DEP-ADM",
-    name: "Admin, HR & Finance",
-    lead_name: "Paul Ntaganda",
-    lead_email: "paul.ntaganda@kainafresh.rw",
-    staff_count: 0,
-    capacity: 5,
-    monthly_budget_rwf: 1800000,
-    location: "Kigali HQ",
-    status: "Active",
-    description: "Human capital management, payroll processing, statutory compliance, audit, and legal affairs.",
-  },
-];
+const INITIAL_DEPARTMENTS: Department[] = [];
 
 interface DepartmentState {
   departments: Department[];
+  setDepartments: (depts: Department[]) => void;
   addDepartment: (dept: Omit<Department, "id">) => Department;
   updateDepartment: (dept: Department) => void;
   deleteDepartment: (id: string) => void;
@@ -92,6 +27,7 @@ interface DepartmentState {
 
 export const useDepartmentStore = create<DepartmentState>((set, get) => ({
   departments: INITIAL_DEPARTMENTS,
+  setDepartments: (depts) => set({ departments: depts }),
   addDepartment: (deptData) => {
     const newDept: Department = {
       ...deptData,
