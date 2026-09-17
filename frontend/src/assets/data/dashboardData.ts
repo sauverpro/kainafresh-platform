@@ -4,18 +4,8 @@ export interface MonthlyRevenuePoint {
   orders: number;
 }
 
-/** Commercial B2B Revenue & Dispatch volume (in Millions RWF) */
-export const monthlySalesData: MonthlyRevenuePoint[] = [
-  { month: "Jan", revenue_rwf: 18.5, orders: 42 },
-  { month: "Feb", revenue_rwf: 21.2, orders: 58 },
-  { month: "Mar", revenue_rwf: 19.8, orders: 50 },
-  { month: "Apr", revenue_rwf: 24.5, orders: 65 },
-  { month: "May", revenue_rwf: 22.1, orders: 60 },
-  { month: "Jun", revenue_rwf: 26.8, orders: 74 },
-  { month: "Jul", revenue_rwf: 25.4, orders: 70 },
-  { month: "Aug", revenue_rwf: 27.9, orders: 81 },
-  { month: "Sep", revenue_rwf: 28.4, orders: 86 },
-];
+/** Commercial B2B Revenue & Dispatch volume (in Millions RWF) - Default empty */
+export const monthlySalesData: MonthlyRevenuePoint[] = [];
 
 export interface ExecutiveKpi {
   id: string;
@@ -31,36 +21,36 @@ export const executiveKpis: ExecutiveKpi[] = [
   {
     id: "revenue",
     label: "Monthly Commercial Revenue",
-    value: "28.4M RWF",
-    subtext: "Gross B2B & Export Sales",
-    change: "+14.2%",
+    value: "0 RWF",
+    subtext: "No revenue data recorded yet",
+    change: "0%",
     trend: "up",
     color: "green",
   },
   {
     id: "workforce",
     label: "Active Workforce (HR)",
-    value: "148 Staff",
-    subtext: "Across 5 Operational Divisions",
-    change: "+6 Staff",
+    value: "0 Staff",
+    subtext: "No active staff recorded yet",
+    change: "0 Staff",
     trend: "up",
     color: "blue",
   },
   {
     id: "inventory",
     label: "Inventory & Stock Health",
-    value: "42 Products",
-    subtext: "3 Items Below Reorder Point",
-    change: "3 Alerts",
+    value: "0 Products",
+    subtext: "No inventory alerts recorded",
+    change: "0 Alerts",
     trend: "down",
     color: "orange",
   },
   {
     id: "orders",
     label: "Active Commercial Orders",
-    value: "86 Orders",
-    subtext: "12 Awaiting Packhouse Dispatch",
-    change: "+18.5%",
+    value: "0 Orders",
+    subtext: "No active orders recorded",
+    change: "0%",
     trend: "up",
     color: "emerald",
   },
@@ -75,40 +65,7 @@ export interface LiveActivity {
   badgeColor: string;
 }
 
-export const liveActivities: LiveActivity[] = [
-  {
-    id: "act-1",
-    title: "New Agronomist Onboarded",
-    category: "HR",
-    timestamp: "25 mins ago",
-    description: "Jean-Claude Mugisha assigned to Musanze Plot A.",
-    badgeColor: "bg-blue-100 text-blue-800 border-blue-200",
-  },
-  {
-    id: "act-2",
-    title: "B2B Export Order Received",
-    category: "Sales",
-    timestamp: "1 hour ago",
-    description: "Kigali Marriott Hotel placed 450kg organic avocados order.",
-    badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  },
-  {
-    id: "act-3",
-    title: "Stock Reorder Warning",
-    category: "Inventory",
-    timestamp: "3 hours ago",
-    description: "Hass Avocados stock reached threshold (180kg remaining).",
-    badgeColor: "bg-amber-100 text-amber-800 border-amber-200",
-  },
-  {
-    id: "act-4",
-    title: "CMS Homepage Banner Updated",
-    category: "CMS",
-    timestamp: "5 hours ago",
-    description: "Wholesale harvest promotion published by Content Admin.",
-    badgeColor: "bg-purple-100 text-purple-800 border-purple-200",
-  },
-];
+export const liveActivities: LiveActivity[] = [];
 
 export interface InventoryAlert {
   id: string;
@@ -119,32 +76,7 @@ export interface InventoryAlert {
   location: string;
 }
 
-export const inventoryAlerts: InventoryAlert[] = [
-  {
-    id: "inv-1",
-    product: "Organic Hass Avocados (Grade A)",
-    sku: "KF-PRD-AVO",
-    stock: "180 kg",
-    status: "Low Stock",
-    location: "Musanze Cold Store A",
-  },
-  {
-    id: "inv-2",
-    product: "Fresh Harvest French Beans",
-    sku: "KF-PRD-BEA",
-    stock: "420 kg",
-    status: "Optimal",
-    location: "Kigali Packhouse Hub",
-  },
-  {
-    id: "inv-3",
-    product: "Birdseye Red Chillies (Export)",
-    sku: "KF-PRD-CHI",
-    stock: "45 kg",
-    status: "Critical",
-    location: "Kigali Packhouse Hub",
-  },
-];
+export const inventoryAlerts: InventoryAlert[] = [];
 
 /** Legacy exports for compatibility */
 export const monthlySales = monthlySalesData.map((d) => ({
@@ -153,25 +85,18 @@ export const monthlySales = monthlySalesData.map((d) => ({
 }));
 
 export const monthlyTarget = {
-  percent: 78.5,
-  changeLabel: "+14.2%",
-  target: "28.4M RWF",
-  revenue: "28.4M RWF",
-  today: "1.2M RWF",
-  message: "Commercial B2B performance is tracking +14.2% higher than target.",
+  percent: 0,
+  changeLabel: "0%",
+  target: "0 RWF",
+  revenue: "0 RWF",
+  today: "0 RWF",
+  message: "No current target performance data recorded.",
 };
 
-export const weeklyStatistics = [
-  { label: "Aug 11", revenue: 18.2, sales: 42 },
-  { label: "Aug 12", revenue: 19.0, sales: 38 },
-  { label: "Aug 13", revenue: 17.0, sales: 55 },
-  { label: "Aug 14", revenue: 17.8, sales: 60 },
-  { label: "Aug 15", revenue: 16.8, sales: 58 },
-  { label: "Aug 16", revenue: 19.5, sales: 90 },
-  { label: "Aug 17", revenue: 22.5, sales: 108 },
-];
+export const weeklyStatistics: { label: string; revenue: number; sales: number }[] = [];
 
 export const overviewStats = [
-  { id: "customers", label: "Customers", value: "3,782", change: "11.01%", trend: "up" as const },
-  { id: "orders", label: "Orders", value: "5,359", change: "9.05%", trend: "down" as const },
+  { id: "customers", label: "Customers", value: "0", change: "0%", trend: "up" as const },
+  { id: "orders", label: "Orders", value: "0", change: "0%", trend: "down" as const },
 ];
+

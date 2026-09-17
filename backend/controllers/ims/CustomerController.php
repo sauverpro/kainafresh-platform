@@ -101,6 +101,17 @@ class CustomerController extends BaseController
      */
     public function store()
     {
+            // get user id
+      $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
        
         $data = $this->getRequestData();
 
@@ -110,8 +121,7 @@ class CustomerController extends BaseController
         $validation = $this->validateRequired(
             $data,
             [
-                'first_name',
-                'last_name',
+                'full_name',
                 'phone',
                 'segment'
             ]
@@ -129,10 +139,10 @@ class CustomerController extends BaseController
         /*
          * Validate first name
          */
-        if (trim($data['first_name']) === '') {
+        if (trim($data['full_name']) === '') {
             $this->jsonResponse([
                 'success' => false,
-                'message' => 'First name cannot be empty'
+                'message' => 'Name cannot be empty'
             ], 422);
 
             return;
@@ -141,14 +151,14 @@ class CustomerController extends BaseController
         /*
          * Validate last name
          */
-        if (trim($data['last_name']) === '') {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Last name cannot be empty'
-            ], 422);
+        // if (trim($data['last_name']) === '') {
+        //     $this->jsonResponse([
+        //         'success' => false,
+        //         'message' => 'Last name cannot be empty'
+        //     ], 422);
 
-            return;
-        }
+        //     return;
+        // }
 
         /*
          * Validate phone
@@ -162,36 +172,23 @@ class CustomerController extends BaseController
             return;
         }
 
-        /*
-         * Validate email if provided
-         */
-        if (
-            isset($data['email']) &&
-            trim($data['email']) !== '' &&
-            !filter_var($data['email'], FILTER_VALIDATE_EMAIL)
-        ) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Invalid email address'
-            ], 422);
-
-            return;
-        }
+        
 
         /*
          * Normalize values
          */
-        $data['first_name'] = trim($data['first_name']);
-        $data['last_name'] = trim($data['last_name']);
+        // get first name and last name from full_name field
+        $name = explode(" ",$data['full_name']);
+         $first_name = $name[0];
+         $last_name = implode(" ", array_slice($name, 1));
+
+        $data['first_name'] = $first_name;
+        $data['last_name'] = $last_name;
         $data['phone'] = trim($data['phone']);
+        $data['user_id'] = $userid;
+        $data['email'] = $user['email'];
 
-        if (isset($data['email'])) {
-            $data['email'] = trim($data['email']);
-
-            if ($data['email'] === '') {
-                $data['email'] = null;
-            }
-        }
+        
 
         if (isset($data['address'])) {
             $data['address'] = trim($data['address']);

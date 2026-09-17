@@ -4,10 +4,12 @@ class OrderController extends BaseController
 {
     private $orderModel;
     private $userModel;
+    private $customerModel;
     public function __construct()
     {
         $this->orderModel = new Order();
         $this->userModel = new User();
+        $this->customerModel = new Customer();
     }
 
     /**
@@ -92,7 +94,16 @@ class OrderController extends BaseController
      */
     public function store()
     {
-        
+        $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
         $data = $this->getRequestData();
 
         /*
@@ -101,7 +112,7 @@ class OrderController extends BaseController
         $validation = $this->validateRequired(
             $data,
             [
-                'user_id',
+               
                 'total'
             ]
         );
@@ -118,7 +129,7 @@ class OrderController extends BaseController
         /*
          * Validate user
          */
-        $userId = (int) $data['user_id'];
+        $userId = (int) $userid;
 
         if ($userId <= 0 || !$this->orderModel->userExists($userId)) {
             $this->jsonResponse([
@@ -132,12 +143,13 @@ class OrderController extends BaseController
         /*
          * Validate optional customer
          */
+        // get customer id by using user_id 
+
+        $customer = $this->customerModel->findCustomerByUserId($userid);
         if (
-            isset($data['customer_id']) &&
-            $data['customer_id'] !== null &&
-            $data['customer_id'] !== ''
+            $customer['id'] !== ''
         ) {
-            $customerId = (int) $data['customer_id'];
+            $customerId = (int) $customer['id'];
 
             if (
                 $customerId <= 0 ||

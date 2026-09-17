@@ -235,7 +235,7 @@ $router->addRoute(
 $router->addRoute(
     'POST',
     '/api/customers',
-    'CustomerController@store'
+    'CustomerController@store','auth'
 );
 
 $router->addRoute(
@@ -271,7 +271,7 @@ $router->addRoute(
 $router->addRoute(
     'POST',
     '/api/orders',
-    'OrderController@store'
+    'OrderController@store','auth'
 );
 
 $router->addRoute(

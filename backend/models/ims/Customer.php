@@ -7,6 +7,7 @@ class Customer extends Model
     protected $primaryKey = 'id';
 
     protected $fillable = [
+        'user_id',
         'first_name',
         'last_name',
         'phone',
@@ -41,6 +42,25 @@ class Customer extends Model
         $sql = "SELECT *
                 FROM `{$this->table}`
                 WHERE id = ?
+                LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->bind_param("i", $id);
+
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        return $this->fetchOne($result);
+    }
+
+    // get customer by user_id
+    public function findCustomerByUserId($id)
+    {
+        $sql = "SELECT *
+                FROM `{$this->table}`
+                WHERE user_id = ?
                 LIMIT 1";
 
         $stmt = $this->db->prepare($sql);

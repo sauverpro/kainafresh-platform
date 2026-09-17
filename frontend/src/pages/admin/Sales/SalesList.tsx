@@ -8,12 +8,12 @@ import {
   Eye,
   Building2,
   Plus,
-  ArrowUpRight,
   ArrowLeft,
   Download,
 } from "lucide-react";
 import DirectSaleModal from "../../../components/sales/DirectSaleModal";
 import { toast } from "sonner";
+import MetricCard from "../../../components/ui/MetricCard";
 
 export interface SalesTransaction {
   id: string;
@@ -28,68 +28,8 @@ export interface SalesTransaction {
   status: "completed" | "processing" | "refunded";
 }
 
-const INITIAL_TRANSACTIONS: SalesTransaction[] = [
-  {
-    id: "SL-9401",
-    order_id: "#KF-8942",
-    customer_name: "Serena Hotel Kigali",
-    segment: "wholesale",
-    sales_rep: "Jean-Pierre (Manager)",
-    items_summary: "250kg Hass Avocados, 500kg Kinigi Potatoes",
-    payment_method: "Corporate Bank Wire",
-    amount: 619500,
-    date: "2026-08-31",
-    status: "completed",
-  },
-  {
-    id: "SL-9402",
-    order_id: "#KF-8939",
-    customer_name: "Simba Supermarket Gishushu",
-    segment: "wholesale",
-    sales_rep: "Alice Uwimana",
-    items_summary: "100kg Spinach, 300kg Organic Tomatoes",
-    payment_method: "Corporate Invoice",
-    amount: 413000,
-    date: "2026-08-30",
-    status: "completed",
-  },
-  {
-    id: "SL-9403",
-    order_id: "#KF-8935",
-    customer_name: "Jean-Paul Habimana",
-    segment: "retail",
-    sales_rep: "Direct Web Order",
-    items_summary: "1 Household Organic Farm Box",
-    payment_method: "MTN Mobile Money",
-    amount: 25000,
-    date: "2026-08-29",
-    status: "completed",
-  },
-  {
-    id: "SL-9404",
-    order_id: "#KF-8930",
-    customer_name: "Aline Murekatete",
-    segment: "vip",
-    sales_rep: "Direct Web Order",
-    items_summary: "20kg Passion Fruit, 15kg Valencia Oranges",
-    payment_method: "Airtel Money",
-    amount: 54000,
-    date: "2026-08-28",
-    status: "completed",
-  },
-  {
-    id: "SL-9405",
-    order_id: "#KF-8924",
-    customer_name: "Inyange Exporters Ltd",
-    segment: "wholesale",
-    sales_rep: "Jean-Pierre (Manager)",
-    items_summary: "500kg Export Red Habanero Chilli",
-    payment_method: "Bank Wire",
-    amount: 1298000,
-    date: "2026-08-25",
-    status: "completed",
-  },
-];
+const INITIAL_TRANSACTIONS: SalesTransaction[] = [];
+
 
 export default function SalesList() {
   const [transactions, setTransactions] = useState<SalesTransaction[]>(INITIAL_TRANSACTIONS);
@@ -310,77 +250,46 @@ export default function SalesList() {
 
       {/* 1. Bento Summary Grid — 100% Homogeneous with StatCard.tsx */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Card 1: Gross Sales Revenue */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#076935]/10 text-[#076935] dark:bg-green-500/15 dark:text-green-300">
-            <Wallet className="h-5.5 w-5.5" />
-          </div>
-          <div className="mt-5 flex items-end justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Gross Sales Revenue</p>
-              <p className="mt-1.5 text-2xl font-semibold text-gray-800 dark:text-white">
-                {(grossRevenue / 1000000).toFixed(2)}M <span className="text-xs font-normal text-gray-400">RWF</span>
-              </p>
-            </div>
-            <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300">
-              <ArrowUpRight size={14} /> +18.4%
-            </span>
-          </div>
-        </div>
-
-        {/* Card 2: Total Volume Sold */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400">
-            <ShoppingBag className="h-5.5 w-5.5" />
-          </div>
-          <div className="mt-5 flex items-end justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Total Produce Orders</p>
-              <p className="mt-1.5 text-2xl font-semibold text-gray-800 dark:text-white">
-                {totalOrdersCount} <span className="text-xs font-normal text-gray-400">transactions</span>
-              </p>
-            </div>
-            <span className="flex items-center gap-0.5 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
-              Completed
-            </span>
-          </div>
-        </div>
-
-        {/* Card 3: Avg Order Value */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400">
-            <TrendingUp className="h-5.5 w-5.5" />
-          </div>
-          <div className="mt-5 flex items-end justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Avg Order Value (AOV)</p>
-              <p className="mt-1.5 text-2xl font-semibold text-gray-800 dark:text-white">
-                {(avgOrderValue / 1000).toFixed(0)}k <span className="text-xs font-normal text-gray-400">RWF</span>
-              </p>
-            </div>
-            <span className="flex items-center gap-0.5 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-600 dark:bg-amber-500/15 dark:text-amber-300">
-              Avg Ticket
-            </span>
-          </div>
-        </div>
-
-        {/* Card 4: Monthly Revenue Target */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-500/15 dark:text-purple-400">
-            <Target className="h-5.5 w-5.5" />
-          </div>
-          <div className="mt-5 flex items-end justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Monthly Revenue Quota</p>
-              <p className="mt-1.5 text-2xl font-semibold text-purple-600 dark:text-purple-400">
-                {targetGoalPercent}% <span className="text-xs font-normal text-gray-400">Goal</span>
-              </p>
-            </div>
-            <span className="flex items-center gap-0.5 rounded-full bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-600 dark:bg-purple-500/15 dark:text-purple-300">
-              On Track
-            </span>
-          </div>
-        </div>
+        <MetricCard
+          label="GROSS SALES REVENUE"
+          value={grossRevenue > 0 ? (grossRevenue / 1000000).toFixed(2) + "M" : "0"}
+          unit="RWF"
+          subtext={grossRevenue > 0 ? "Total sales revenue record" : "No sales revenue recorded"}
+          icon={<Wallet className="h-5 w-5" />}
+          iconBg="bg-emerald-50 text-emerald-600"
+          badgeText="+18.4%"
+          badgeColor="bg-emerald-50 text-emerald-600 border-emerald-200"
+        />
+        <MetricCard
+          label="TOTAL PRODUCE ORDERS"
+          value={totalOrdersCount}
+          unit="orders"
+          subtext={totalOrdersCount > 0 ? "Processed sales orders" : "No orders recorded"}
+          icon={<ShoppingBag className="h-5 w-5" />}
+          iconBg="bg-blue-50 text-blue-600"
+          badgeText="Completed"
+          badgeColor="bg-blue-50 text-blue-600 border-blue-200"
+        />
+        <MetricCard
+          label="AVG ORDER VALUE (AOV)"
+          value={avgOrderValue > 0 ? (avgOrderValue / 1000).toFixed(0) + "k" : "0"}
+          unit="RWF"
+          subtext={avgOrderValue > 0 ? "Average ticket size" : "No sales recorded yet"}
+          icon={<TrendingUp className="h-5 w-5" />}
+          iconBg="bg-amber-50 text-amber-600"
+          badgeText="Avg Ticket"
+          badgeColor="bg-amber-50 text-amber-600 border-amber-200"
+        />
+        <MetricCard
+          label="MONTHLY REVENUE QUOTA"
+          value={`${targetGoalPercent}%`}
+          unit="Goal"
+          subtext="Target progress metric"
+          icon={<Target className="h-5 w-5" />}
+          iconBg="bg-purple-50 text-purple-600"
+          badgeText="On Track"
+          badgeColor="bg-purple-50 text-purple-600 border-purple-200"
+        />
       </div>
 
       {/* 2. Monthly & 30-Day Daily Sales Trend Chart & Segment Breakdown */}

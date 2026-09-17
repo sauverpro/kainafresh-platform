@@ -14,117 +14,11 @@ import {
 } from "lucide-react";
 import InvoiceDrawer, { type InvoiceRecord } from "../../../components/invoices/InvoiceDrawer";
 import { toast } from "sonner";
+import MetricCard from "../../../components/ui/MetricCard";
 
-// Initial Mock Dataset for Invoices Management
-const INITIAL_INVOICES: InvoiceRecord[] = [
-  {
-    id: "INV-2026-089",
-    order_id: "#KF-8942",
-    customer_name: "Serena Hotel Kigali",
-    customer_email: "procurement@serenahotels.rw",
-    customer_phone: "+250 788 987 654",
-    customer_tin: "102-491-002",
-    district: "Nyarugenge",
-    address: "KN 3 Ave, Nyarugenge",
-    issue_date: "2026-08-25",
-    due_date: "2026-09-09",
-    status: "pending",
-    payment_method: "Bank Wire / Corporate Invoice",
-    momo_code: "492019",
-    items: [
-      { produce: "Hass Avocados", variety: "Hass", grade: "A", qty: 250, unit: "kg", price: 1200, total: 300000 },
-      { produce: "Irish Potatoes", variety: "Kinigi", grade: "A", qty: 500, unit: "kg", price: 450, total: 225000 },
-    ],
-    subtotal: 525000,
-    tax: 94500,
-    total: 619500,
-    notes: "Corporate Net-15 invoice. Delivery accepted by Chef Patrick.",
-  },
-  {
-    id: "INV-2026-088",
-    order_id: "#KF-8939",
-    customer_name: "Simba Supermarket Gishushu",
-    customer_email: "inventory@simbasupermarket.rw",
-    customer_phone: "+250 788 333 444",
-    customer_tin: "100-291-883",
-    district: "Gasabo",
-    address: "KG 7 Ave, Gishushu",
-    issue_date: "2026-08-20",
-    due_date: "2026-08-28",
-    status: "overdue",
-    payment_method: "Corporate Invoice",
-    momo_code: "492019",
-    items: [
-      { produce: "Fresh Spinach & Kale", variety: "Local", grade: "A+", qty: 100, unit: "kg", price: 800, total: 80000 },
-      { produce: "Organic Tomatoes", variety: "Ansell", grade: "A", qty: 300, unit: "kg", price: 900, total: 270000 },
-    ],
-    subtotal: 350000,
-    tax: 63000,
-    total: 413000,
-    notes: "Overdue by 4 days. Payment reminder sent via WhatsApp.",
-  },
-  {
-    id: "INV-2026-087",
-    order_id: "#KF-8935",
-    customer_name: "Jean-Paul Habimana",
-    customer_email: "jeanpaul@kigali.rw",
-    customer_phone: "+250 788 123 456",
-    district: "Gasabo",
-    address: "KG 14 Ave, Remera",
-    issue_date: "2026-08-28",
-    due_date: "2026-08-28",
-    status: "paid",
-    payment_method: "MTN Mobile Money",
-    momo_code: "492019",
-    items: [
-      { produce: "Organic Produce Household Box", variety: "Mixed", grade: "A", qty: 1, unit: "box", price: 25000, total: 25000 },
-    ],
-    subtotal: 25000,
-    tax: 0,
-    total: 25000,
-    notes: "Paid instantly via MoMo *182*8*1*492019#.",
-  },
-  {
-    id: "INV-2026-086",
-    order_id: "#KF-8930",
-    customer_name: "Aline Murekatete",
-    customer_email: "aline.murekatete@gmail.com",
-    customer_phone: "+250 783 456 789",
-    district: "Kicukiro",
-    address: "KK 15 Rd, Niboye",
-    issue_date: "2026-08-27",
-    due_date: "2026-08-27",
-    status: "paid",
-    payment_method: "Airtel Money",
-    items: [
-      { produce: "Passion Fruit", variety: "Purple", grade: "A", qty: 20, unit: "kg", price: 1800, total: 36000 },
-      { produce: "Sweet Oranges", variety: "Valencia", grade: "A", qty: 15, unit: "kg", price: 1200, total: 18000 },
-    ],
-    subtotal: 54000,
-    tax: 0,
-    total: 54000,
-  },
-  {
-    id: "INV-2026-085",
-    order_id: "#KF-8924",
-    customer_name: "Inyange Exporters Ltd",
-    customer_email: "exports@inyange.rw",
-    customer_phone: "+250 788 555 777",
-    customer_tin: "108-941-204",
-    district: "Gasabo",
-    address: "Masoro Free Zone",
-    issue_date: "2026-08-15",
-    due_date: "2026-08-30",
-    status: "overdue",
-    payment_method: "Bank Wire",
-    items: [
-      { produce: "Export Habanero Chilli", variety: "Red", grade: "Export", qty: 500, unit: "kg", price: 2200, total: 1100000 },
-    ],
-    subtotal: 1100000,
-    tax: 198000,
-    total: 1298000,
-  },
-];
+// Initial Dataset for Invoices Management
+const INITIAL_INVOICES: InvoiceRecord[] = [];
+
 
 export default function InvoicesList() {
   const [invoices, setInvoices] = useState<InvoiceRecord[]>(INITIAL_INVOICES);
@@ -216,77 +110,46 @@ export default function InvoicesList() {
 
       {/* 1. Bento Summary Cards — 100% Homogeneous with StatCard.tsx */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Card 1: Total Invoices */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-100 dark:bg-white/5">
-            <FileText className="h-5.5 w-5.5 text-gray-700 dark:text-gray-300" />
-          </div>
-          <div className="mt-5 flex items-end justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Total Issued</p>
-              <p className="mt-1.5 text-2xl font-semibold text-gray-800 dark:text-white">
-                {totalCount}
-              </p>
-            </div>
-            <span className="flex items-center gap-0.5 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
-              Tax Documents
-            </span>
-          </div>
-        </div>
-
-        {/* Card 2: Paid Revenue */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#076935]/10 text-[#076935] dark:bg-green-500/15 dark:text-green-300">
-            <CheckCircle className="h-5.5 w-5.5" />
-          </div>
-          <div className="mt-5 flex items-end justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Paid & Cleared ({paidCount})</p>
-              <p className="mt-1.5 text-2xl font-semibold text-[#076935] dark:text-green-300">
-                {(paidRevenue / 1000).toFixed(0)}k <span className="text-xs font-normal text-gray-400">RWF</span>
-              </p>
-            </div>
-            <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300">
-              Collected
-            </span>
-          </div>
-        </div>
-
-        {/* Card 3: Pending Payments */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400">
-            <Clock className="h-5.5 w-5.5" />
-          </div>
-          <div className="mt-5 flex items-end justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Pending Payments ({pendingCount})</p>
-              <p className="mt-1.5 text-2xl font-semibold text-amber-600 dark:text-amber-400">
-                {(pendingRevenue / 1000).toFixed(0)}k <span className="text-xs font-normal text-gray-400">RWF</span>
-              </p>
-            </div>
-            <span className="flex items-center gap-0.5 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-600 dark:bg-amber-500/15 dark:text-amber-300">
-              Awaiting
-            </span>
-          </div>
-        </div>
-
-        {/* Card 4: Overdue Outstanding */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-400">
-            <AlertOctagon className="h-5.5 w-5.5" />
-          </div>
-          <div className="mt-5 flex items-end justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Overdue ({overdueCount})</p>
-              <p className="mt-1.5 text-2xl font-semibold text-red-600 dark:text-red-400">
-                {(overdueRevenue / 1000000).toFixed(2)}M <span className="text-xs font-normal text-gray-400">RWF</span>
-              </p>
-            </div>
-            <span className="flex items-center gap-0.5 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600 dark:bg-red-500/15 dark:text-red-300">
-              Action Required
-            </span>
-          </div>
-        </div>
+        <MetricCard
+          label="TOTAL ISSUED"
+          value={totalCount}
+          unit="invoices"
+          subtext={totalCount > 0 ? "Tax documents issued" : "No invoices issued"}
+          icon={<FileText className="h-5 w-5" />}
+          iconBg="bg-blue-50 text-blue-600"
+          badgeText="Tax Docs"
+          badgeColor="bg-blue-50 text-blue-600 border-blue-200"
+        />
+        <MetricCard
+          label="PAID & CLEARED"
+          value={paidRevenue > 0 ? (paidRevenue / 1000).toFixed(0) + "k" : "0"}
+          unit="RWF"
+          subtext={paidCount > 0 ? `${paidCount} paid invoices` : "No paid invoices yet"}
+          icon={<CheckCircle className="h-5 w-5" />}
+          iconBg="bg-emerald-50 text-emerald-600"
+          badgeText="Collected"
+          badgeColor="bg-emerald-50 text-emerald-600 border-emerald-200"
+        />
+        <MetricCard
+          label="PENDING PAYMENTS"
+          value={pendingRevenue > 0 ? (pendingRevenue / 1000).toFixed(0) + "k" : "0"}
+          unit="RWF"
+          subtext={pendingCount > 0 ? `${pendingCount} awaiting payment` : "No pending payments"}
+          icon={<Clock className="h-5 w-5" />}
+          iconBg="bg-amber-50 text-amber-600"
+          badgeText="Awaiting"
+          badgeColor="bg-amber-50 text-amber-600 border-amber-200"
+        />
+        <MetricCard
+          label="OVERDUE OUTSTANDING"
+          value={overdueRevenue > 0 ? (overdueRevenue / 1000000).toFixed(2) + "M" : "0"}
+          unit="RWF"
+          subtext={overdueCount > 0 ? `${overdueCount} overdue invoices` : "No overdue invoices"}
+          icon={<AlertOctagon className="h-5 w-5" />}
+          iconBg="bg-rose-50 text-rose-600"
+          badgeText="Action Req."
+          badgeColor="bg-rose-50 text-rose-600 border-rose-200"
+        />
       </div>
 
       {/* 2. Filter Controls Bar */}

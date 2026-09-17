@@ -24,68 +24,7 @@ export interface PayrollRecord {
   cycle_month: string;
 }
 
-const INITIAL_PAYROLL: PayrollRecord[] = [
-  {
-    id: "PAY-2026-08-01",
-    employee_name: "Jean-Claude Mugisha",
-    employee_code: "KF-EMP-101",
-    job_title: "Senior Agronomist",
-    department: "Farm Operations",
-    base_salary_rwf: 650000,
-    allowances_rwf: 50000,
-    paye_tax_rwf: 95000,
-    rssb_pension_rwf: 19500,
-    net_salary_rwf: 585500,
-    payment_method: "Bank Transfer",
-    payment_status: "Paid",
-    cycle_month: "August 2026",
-  },
-  {
-    id: "PAY-2026-08-02",
-    employee_name: "Alice Uwimana",
-    employee_code: "KF-EMP-102",
-    job_title: "Quality Control Supervisor",
-    department: "Post-Harvest & Packaging",
-    base_salary_rwf: 520000,
-    allowances_rwf: 30000,
-    paye_tax_rwf: 68000,
-    rssb_pension_rwf: 15600,
-    net_salary_rwf: 466400,
-    payment_method: "MTN MoMo Bulk",
-    payment_status: "Paid",
-    cycle_month: "August 2026",
-  },
-  {
-    id: "PAY-2026-08-03",
-    employee_name: "Emmanuel Habimana",
-    employee_code: "KF-EMP-103",
-    job_title: "Cold-Chain Driver",
-    department: "Logistics & Fleet",
-    base_salary_rwf: 380000,
-    allowances_rwf: 40000,
-    paye_tax_rwf: 42000,
-    rssb_pension_rwf: 11400,
-    net_salary_rwf: 366600,
-    payment_method: "MTN MoMo Bulk",
-    payment_status: "Processing",
-    cycle_month: "August 2026",
-  },
-  {
-    id: "PAY-2026-08-04",
-    employee_name: "Patrick Nshimiyimana",
-    employee_code: "KF-EMP-105",
-    job_title: "Harvest Supervisor",
-    department: "Farm Operations",
-    base_salary_rwf: 250000,
-    allowances_rwf: 20000,
-    paye_tax_rwf: 18000,
-    rssb_pension_rwf: 7500,
-    net_salary_rwf: 244500,
-    payment_method: "MTN MoMo Bulk",
-    payment_status: "Processing",
-    cycle_month: "August 2026",
-  },
-];
+const INITIAL_PAYROLL: PayrollRecord[] = [];
 
 export default function Payroll() {
   usePageTitle("payroll-management", "Payroll & Salary Processing");
@@ -97,6 +36,10 @@ export default function Payroll() {
   const totalTax = records.reduce((acc, r) => acc + r.paye_tax_rwf + r.rssb_pension_rwf, 0);
 
   const handleDisbursePayroll = () => {
+    if (records.length === 0) {
+      toast.info("No payroll records present to disburse.");
+      return;
+    }
     setRecords((prev) => prev.map((r) => ({ ...r, payment_status: "Paid" })));
     toast.success("Bulk MoMo & Bank Payroll disbursement sent successfully!");
   };
@@ -119,7 +62,7 @@ export default function Payroll() {
             onClick={handleDisbursePayroll}
             className="inline-flex items-center gap-2 rounded-xl bg-[#076935] px-4 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-[#055028]"
           >
-            <Send size={15} /> Disburse August Payroll
+            <Send size={15} /> Disburse Current Payroll
           </button>
         </div>
       </div>
@@ -129,7 +72,7 @@ export default function Payroll() {
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
           <p className="text-xs font-bold uppercase tracking-wider text-emerald-900">Total Net Disbursement</p>
           <p className="text-2xl font-extrabold text-[#076935] mt-1">{totalNet.toLocaleString()} RWF</p>
-          <p className="text-[11px] text-emerald-700 mt-0.5">August 2026 Salary Cycle</p>
+          <p className="text-[11px] text-emerald-700 mt-0.5">Current Salary Cycle</p>
         </div>
 
         <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4">
@@ -140,8 +83,10 @@ export default function Payroll() {
 
         <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-4">
           <p className="text-xs font-bold uppercase tracking-wider text-blue-900">Payment Channels</p>
-          <p className="text-lg font-bold text-blue-900 mt-1">75% MoMo Bulk / 25% Bank</p>
-          <p className="text-[11px] text-blue-700 mt-0.5">Instant Mobile Money Payout</p>
+          <p className="text-lg font-bold text-blue-900 mt-1">
+            {records.length > 0 ? "75% MoMo Bulk / 25% Bank" : "No active disbursements"}
+          </p>
+          <p className="text-[11px] text-blue-700 mt-0.5">Mobile Money & Direct Deposit</p>
         </div>
       </div>
 
@@ -162,45 +107,57 @@ export default function Payroll() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {records.map((rec) => (
-              <tr key={rec.id} className="hover:bg-[#F4FAF7]/50 transition">
-                <td className="px-4 py-3 font-bold font-mono text-gray-900">{rec.id}</td>
-                <td className="px-4 py-3">
-                  <p className="font-semibold text-gray-900">{rec.employee_name}</p>
-                  <p className="text-[10px] text-gray-400 font-mono">{rec.employee_code}</p>
-                </td>
-                <td className="px-4 py-3 text-gray-600">{rec.department}</td>
-                <td className="px-4 py-3 font-medium text-gray-800">{rec.base_salary_rwf.toLocaleString()} RWF</td>
-                <td className="px-4 py-3 text-rose-600 font-medium">
-                  -{(rec.paye_tax_rwf + rec.rssb_pension_rwf).toLocaleString()} RWF
-                </td>
-                <td className="px-4 py-3 font-bold text-[#076935]">{rec.net_salary_rwf.toLocaleString()} RWF</td>
-                <td className="px-4 py-3 text-gray-600">{rec.payment_method}</td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                      rec.payment_status === "Paid"
-                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                        : "bg-amber-50 text-amber-700 border border-amber-200"
-                    }`}
-                  >
-                    {rec.payment_status}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => setSelectedPayslip(rec)}
-                    className="p-1.5 text-[#076935] hover:bg-[#076935]/10 rounded-lg transition"
-                    title="View Payslip"
-                  >
-                    <Eye size={16} />
-                  </button>
+            {records.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="px-4 py-12 text-center text-gray-500">
+                  <div className="flex flex-col items-center justify-center space-y-2">
+                    <p className="text-sm font-semibold text-gray-700">No current payroll records</p>
+                    <p className="text-xs text-gray-400">Payroll disbursements and slips will be listed here once generated.</p>
+                  </div>
                 </td>
               </tr>
-            ))}
+            ) : (
+              records.map((rec) => (
+                <tr key={rec.id} className="hover:bg-[#F4FAF7]/50 transition">
+                  <td className="px-4 py-3 font-bold font-mono text-gray-900">{rec.id}</td>
+                  <td className="px-4 py-3">
+                    <p className="font-semibold text-gray-900">{rec.employee_name}</p>
+                    <p className="text-[10px] text-gray-400 font-mono">{rec.employee_code}</p>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">{rec.department}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800">{rec.base_salary_rwf.toLocaleString()} RWF</td>
+                  <td className="px-4 py-3 text-rose-600 font-medium">
+                    -{(rec.paye_tax_rwf + rec.rssb_pension_rwf).toLocaleString()} RWF
+                  </td>
+                  <td className="px-4 py-3 font-bold text-[#076935]">{rec.net_salary_rwf.toLocaleString()} RWF</td>
+                  <td className="px-4 py-3 text-gray-600">{rec.payment_method}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                        rec.payment_status === "Paid"
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-amber-50 text-amber-700 border border-amber-200"
+                      }`}
+                    >
+                      {rec.payment_status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => setSelectedPayslip(rec)}
+                      className="p-1.5 text-[#076935] hover:bg-[#076935]/10 rounded-lg transition"
+                      title="View Payslip"
+                    >
+                      <Eye size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
+
 
       {/* Payslip Modal */}
       <Modal open={Boolean(selectedPayslip)} onClose={() => setSelectedPayslip(null)} size="md" title="Official KainaFresh Pay Slip">
