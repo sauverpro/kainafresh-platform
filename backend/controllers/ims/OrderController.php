@@ -113,7 +113,8 @@ class OrderController extends BaseController
             $data,
             [
                
-                'total'
+                'total',
+                'orderId'
             ]
         );
 
@@ -215,6 +216,7 @@ class OrderController extends BaseController
          */
         $data['user_id'] = $userId;
         $data['total'] = (float) $data['total'];
+        $data['orderId'] = $data['orderId'];
 
         /*
          * Create order

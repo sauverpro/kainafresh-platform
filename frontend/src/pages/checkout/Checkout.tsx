@@ -243,10 +243,14 @@ export default function Checkout() {
       const orderId = orderResponse.data?.id || orderResponse.id;
 
       // Step 3: Create Order Items
+      // create order reference code
+      const randomRef = `KF-${String(orderId).padStart(5, "0")}`;
       const orderItemsPromises = cartItems.map(async (item) => {
         const itemPayload = {
           product_id: item.product.id,
           quantity: item.quantity,
+          orderId: randomRef 
+
         };
 
         const itemResponse = await apiPost<{
@@ -267,7 +271,7 @@ export default function Checkout() {
       await Promise.all(orderItemsPromises);
 
       // Step 4: Generate Order Reference
-      const randomRef = `KF-${String(orderId).padStart(5, "0")}`;
+      
 
       // Step 5: Show Confirmation
       setOrderConfirmation({
