@@ -45,6 +45,18 @@ const GlobalSettings = lazy(
 const UserManagement = lazy(() => import("./pages/admin/Users/UserManagement"));
 const TeamManagement = lazy(() => import("./pages/admin/Team/TeamManagement"));
 
+// Lazy load HR pages
+const HRDashboard = lazy(() => import("./pages/admin/HR/HRDashboard"));
+const DepartmentManagement = lazy(() => import("./pages/admin/HR/DepartmentManagement"));
+const EmployeeProfiles = lazy(() => import("./pages/admin/HR/EmployeeProfiles"));
+const EmploymentRecords = lazy(() => import("./pages/admin/HR/EmploymentRecords"));
+const LeaveManagement = lazy(() => import("./pages/admin/HR/LeaveManagement"));
+const Payroll = lazy(() => import("./pages/admin/HR/Payroll"));
+const Performance = lazy(() => import("./pages/admin/HR/Performance"));
+const TrainingDevelopment = lazy(() => import("./pages/admin/HR/TrainingDevelopment"));
+const HealthSafety = lazy(() => import("./pages/admin/HR/HealthSafety"));
+const Insurance = lazy(() => import("./pages/admin/HR/Insurance"));
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
@@ -95,6 +107,7 @@ const routes = sideNavData
   .filter(
     (route) =>
       !route.path.startsWith("/cms/") &&
+      !route.path.startsWith("/admin/hr/") &&
       route.path !== "/settings" &&
       route.path !== "/admin/users" &&
       route.path !== "/admin/products" &&
@@ -155,6 +168,18 @@ function App() {
                 <Route path="/stock/:id" element={<StockDetail />} />
                 <Route path="/inventory" element={<InventoryList />} />
                 <Route path="/inventory/:id" element={<StockDetail />} />
+
+                {/* HR Module Routes */}
+                <Route path="/admin/hr/dashboard" element={<HRDashboard />} />
+                <Route path="/admin/hr/departments" element={<DepartmentManagement />} />
+                <Route path="/admin/hr/employees" element={<EmployeeProfiles />} />
+                <Route path="/admin/hr/employment-records" element={<EmploymentRecords />} />
+                <Route path="/admin/hr/leave" element={<LeaveManagement />} />
+                <Route path="/admin/hr/payroll" element={<Payroll />} />
+                <Route path="/admin/hr/performance" element={<Performance />} />
+                <Route path="/admin/hr/training" element={<TrainingDevelopment />} />
+                <Route path="/admin/hr/health-safety" element={<HealthSafety />} />
+                <Route path="/admin/hr/insurance" element={<Insurance />} />
                 {routes.map((route) => (
                   <Route
                     key={route.path}

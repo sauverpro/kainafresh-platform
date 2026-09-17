@@ -358,7 +358,7 @@ export default function OurProducts() {
                   placeholder="Search products, organic produce, or categories (e.g. avocados, spinach)..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full py-2.5 pl-6 pr-28 bg-transparent text-gray-800 text-sm md:text-base focus:outline-none font-sans"
+                  className="w-full rounded-full py-2.5 pl-6 pr-28 bg-transparent text-gray-800 text-sm md:text-base focus:outline-none font-sans"
                 />
                 {search && (
                   <button

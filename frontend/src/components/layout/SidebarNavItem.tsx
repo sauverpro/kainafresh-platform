@@ -129,11 +129,12 @@ export default function SidebarNavItem({ item }: Props) {
                         setOpenOtherSub(isGroupOpen ? null : sub.label)
                       }
                       className={[
-                        "flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-sm transition-colors cursor-pointer",
+                        "flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-sm font-normal transition-colors cursor-pointer",
                         isGroupOpen
-                          ? "text-white font-bold bg-white/20"
+                          ? "text-white bg-white/20"
                           : "text-white/75 hover:text-white hover:bg-white/10",
                       ].join(" ")}
+                      style={{ fontFamily: 'var(--font-heading)' }}
                     >
                       <span>{sub.label}</span>
                       <ChevronDown
@@ -152,13 +153,16 @@ export default function SidebarNavItem({ item }: Props) {
                                 to={child.path}
                                 className={({ isActive }) =>
                                   [
-                                    "block rounded-md px-3 py-2 text-[13px] transition-all duration-150",
+                                    "block rounded-md px-3 py-1.5 text-sm font-normal transition-all duration-150",
                                     isActive
-                                      ? "bg-white/25 text-white font-bold backdrop-blur-md border-l-4 border-[#F39927] shadow-sm"
+                                      ? "bg-white/25 text-white backdrop-blur-md border-l-4 border-[#F39927] shadow-xs"
                                       : "text-white/75 hover:text-white hover:bg-white/10",
                                   ].join(" ")
                                 }
-                                style={({ isActive }) => (isActive ? { color: '#ffffff' } : {})}
+                                style={({ isActive }) => ({
+                                  fontFamily: 'var(--font-heading)',
+                                  color: isActive ? '#ffffff' : undefined,
+                                })}
                               >
                                 {child.label}
                               </NavLink>
@@ -177,13 +181,16 @@ export default function SidebarNavItem({ item }: Props) {
                     to={sub.path}
                     className={({ isActive }) =>
                       [
-                        "block rounded-lg px-3.5 py-2 text-sm transition-all duration-150 font-medium",
+                        "block rounded-lg px-3.5 py-2 text-sm font-normal transition-all duration-150",
                         isActive
-                          ? "bg-white/25 text-white font-bold backdrop-blur-md border-l-4 border-[#F39927] shadow-sm"
+                          ? "bg-white/25 text-white backdrop-blur-md border-l-4 border-[#F39927] shadow-xs"
                           : "text-white/80 hover:text-white hover:bg-white/10",
                       ].join(" ")
                     }
-                    style={({ isActive }) => (isActive ? { color: '#ffffff' } : {})}
+                    style={({ isActive }) => ({
+                      fontFamily: 'var(--font-heading)',
+                      color: isActive ? '#ffffff' : undefined,
+                    })}
                   >
                     {sub.label}
                   </NavLink>

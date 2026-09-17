@@ -64,7 +64,7 @@ export default function Header({ onOpenProfile }: HeaderProps) {
         <input
           type="text"
           placeholder="Search or type command..."
-          className="h-11 w-full rounded-lg border border-gray-200 bg-white pl-10 pr-14 text-sm text-gray-700 placeholder:text-gray-400 outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-white/10 dark:bg-gray-900 dark:text-gray-200"
+          className="h-11 w-full rounded-full border border-gray-200 bg-white pl-10 pr-14 text-sm text-gray-700 placeholder:text-gray-400 outline-none transition-colors focus:border-[#076935] focus:ring-2 focus:ring-[#076935]/15 dark:border-white/10 dark:bg-gray-900 dark:text-gray-200"
         />
         <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[11px] font-medium text-gray-400 dark:border-white/10 dark:bg-white/5">
           Search
