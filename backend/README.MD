@@ -21,6 +21,7 @@ A minimal, dependency-free PHP API: a small custom router, `mysqli` for the data
   - [HR — Departments](#hr--departments)
   - [HR — Employee Profiles](#hr--employee-profiles)
   - [HR — Trainings](#hr--trainings)
+  - [HR — Incidents](#hr--incidents)
 - [Database Import Notes](#database-import-notes)
 - [Troubleshooting](#troubleshooting)
 
@@ -101,7 +102,7 @@ backend/
 ├── controllers/       HTTP request handlers
 ├── models/            Model.php (base ActiveRecord-style class) + entity models
 ├── migrations/         Migration system (base class, generator, CLI runner, migration files)
-├── routes/api.php     All route definitions
+├── routes/api.php     All route definitionsphp migrations/MigrationRunner.php
 ├── uploads/            Uploaded files (logos, product images, ...)
 └── index.php           Entrypoint: autoload, CORS, dispatch
 ```
@@ -1052,8 +1053,8 @@ trainings
 | POST   | `/api/trainings` 🔒               | Create a training record                             |
 | GET    | `/api/trainings` 🔒               | List trainings (joined with employee `fullname`)     |
 | GET    | `/api/trainings/{id}` 🔒          | Get a training (joined with employee `fullname`)     |
-| PUT    | `/api/trainings/update/{id}` 🔒   | Update a training record                             |
-| DELETE | `/api/trainings/delete/{id}` 🔒   | Delete a training record — admin/sales_manager/hr_manager only |
+| PUT    | `/api/trainings/{id}` 🔒          | Update a training record                             |
+| DELETE | `/api/trainings/{id}` 🔒          | Delete a training record — admin/sales_manager/hr_manager only |
 
 All routes require auth. `emp_id` must reference an existing employee (checked against `EmployeeProfile::findById()`, not a database foreign key).
 
@@ -1104,6 +1105,90 @@ Content-Type: application/json
 | `500`  | Database insert/update/delete failed                                                     |
 
 Required on create/update: `emp_id`, `training_name`, `training_type`, `start_date`, `end_date`, `duration_days`, `cost`, `status`.
+
+### HR — Incidents
+
+Workplace incident reports: what happened, who it involved, where, and how severe.
+
+```
+incident
+├── id
+├── emp_id             (required → employee_profiles.id, no DB-level FK)
+├── incident_date       (required, date)
+├── incident_type       (required)
+├── duration_days        (nullable)
+├── severity              (required)
+├── description           (required)
+├── location              (nullable)
+├── reported_by           (set automatically from the authenticated user, no DB-level FK → users.id)
+├── created_at
+└── updated_at
+```
+
+| Method | Endpoint                  | Description                                                |
+| ------ | -------------------------- | ------------------------------------------------------------ |
+| POST   | `/api/incidents` 🔒        | Create an incident report                                     |
+| GET    | `/api/incidents` 🔒        | List incidents (joined with employee & reporter names)        |
+| GET    | `/api/incidents/{id}` 🔒   | Get an incident (joined with employee & reporter names)       |
+| PUT    | `/api/incidents/{id}` 🔒   | Update an incident (partial)                                   |
+| DELETE | `/api/incidents/{id}` 🔒   | Delete an incident — admin/sales_manager/hr_manager only       |
+
+All routes require auth. `emp_id` must reference an existing employee (checked against `EmployeeProfile::findById()`, not a database foreign key). `reported_by` is always taken from the authenticated user's token — the field is silently ignored if sent by the client on create, and stripped entirely on update, so nobody can attribute a report to someone else.
+
+Files: [controllers/HR/IncidentController.php](controllers/HR/IncidentController.php), [models/HR/Incident.php](models/HR/Incident.php), migration `*_create_incident_table.php`.
+
+> As committed, this module had three bugs fixed before it worked: the migration's `down()` dropped a table named `incident_table`, which doesn't exist (the table is `incident`) — rollback would silently no-op and leave the real table behind. The model's `$fillable` array used bare, unquoted words (`emp_id` instead of `'emp_id'`), which PHP parses as constants — a fatal `Undefined constant` error on PHP 8. And the model's hand-written `createIncident`/`updateincident` queries referenced a `name` column that doesn't exist anywhere in this table. The model now relies on the shared `Model::create()`/`update()`/`delete()`/`find()` (same pattern as `Product`/`Unit`) instead of hand-rolled SQL, plus two custom joined-read methods.
+
+#### Example: Create an incident report
+
+```
+POST /api/incidents
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "emp_id": 2,
+  "incident_date": "2026-09-17",
+  "incident_type": "safety",
+  "severity": "medium",
+  "description": "Slipped near the packing area",
+  "location": "Warehouse B",
+  "duration_days": 1
+}
+```
+
+```json
+{
+  "success": true,
+  "message": "Incident created successfully",
+  "data": {
+    "id": 1,
+    "emp_id": 2,
+    "incident_date": "2026-09-17",
+    "incident_type": "safety",
+    "duration_days": 1,
+    "severity": "medium",
+    "description": "Slipped near the packing area",
+    "location": "Warehouse B",
+    "reported_by": 6,
+    "employee_name": "Alice Iradukunda",
+    "reported_by_name": "Training Tester"
+  }
+}
+```
+
+#### Validation
+
+| Status | When                                                                                     |
+| ------ | ------------------------------------------------------------------------------------------ |
+| `201`  | Incident created                                                                            |
+| `401`  | Missing or invalid auth token                                                                |
+| `403`  | Delete attempted by a role other than `admin`, `sales_manager`, or `hr_manager`              |
+| `404`  | Incident not found, or `emp_id` does not match an existing employee                          |
+| `422`  | Missing `emp_id`/`incident_date`/`incident_type`/`severity`/`description`, or empty update body |
+| `500`  | Database insert/update/delete failed                                                         |
+
+Required on create: `emp_id`, `incident_date`, `incident_type`, `severity`, `description`. `location` and `duration_days` are optional. `PUT` accepts a partial body — only the fields sent are changed.
 
 ## Database Import Notes
 

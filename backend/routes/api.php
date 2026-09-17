@@ -496,3 +496,49 @@ $router->addRoute(
     'TrainingController@deleteTraining',
     'auth'
 );
+
+/*
+|--------------------------------------------------------------------------
+| HR - Incident Management
+|--------------------------------------------------------------------------
+*/
+
+// Create incident
+$router->addRoute(
+    'POST',
+    '/api/incidents',
+    'IncidentController@store',
+    'auth'
+);
+
+// Get all incidents
+$router->addRoute(
+    'GET',
+    '/api/incidents',
+    'IncidentController@index',
+    'auth'
+);
+
+// Get single incident
+$router->addRoute(
+    'GET',
+    '/api/incidents/{id}',
+    'IncidentController@show',
+    'auth'
+);
+
+// Update incident
+$router->addRoute(
+    'PUT',
+    '/api/incidents/{id}',
+    'IncidentController@update',
+    'auth'
+);
+
+// Delete incident
+$router->addRoute(
+    'DELETE',
+    '/api/incidents/{id}',
+    'IncidentController@delete',
+    'auth'
+);
