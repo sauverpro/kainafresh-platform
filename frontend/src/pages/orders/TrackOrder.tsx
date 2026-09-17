@@ -191,7 +191,7 @@ export default function TrackOrder() {
     }
 
     try {
-      const res = await apiGet<{ success: boolean; data: BackendOrder[] | BackendOrder }>('/api/orders');
+      const res = await apiGet<{ success: boolean; data: BackendOrder[] | BackendOrder }>(`/api/orders/track/${cleanId}`);
       let foundBackendOrder: BackendOrder | null = null;
 
       if (Array.isArray(res?.data)) {

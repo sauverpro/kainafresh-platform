@@ -96,4 +96,30 @@ class Order extends Model
 
         return $stmt->get_result()->num_rows > 0;
     }
+    // get order by orderId
+    public function findWithRelationsOrderId($id)
+    {
+        $sql = "SELECT
+                    o.*,
+                    u.username AS user_username,
+                    u.full_name AS user_full_name,
+                    c.first_name AS customer_first_name,
+                    c.last_name AS customer_last_name,
+                    c.phone AS customer_phone,
+                    c.email AS customer_email
+                FROM `{$this->table}` o
+                INNER JOIN `users` u ON u.id = o.user_id
+                LEFT JOIN `customers` c ON c.id = o.customer_id
+                WHERE o.orderId = ?
+                LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        return $this->fetchOne($result);
+    }
+
 }

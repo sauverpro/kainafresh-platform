@@ -89,6 +89,24 @@ class OrderController extends BaseController
         ]);
     }
 
+    public function showorder($id)
+    {
+        $order = $this->orderModel->findWithRelationsOrderId($id);
+
+        if (!$order) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Order not found'
+            ], 404);
+
+            return;
+        }
+
+        $this->jsonResponse([
+            'success' => true,
+            'data' => $order
+        ]);
+    }
     /**
      * POST /api/orders
      */

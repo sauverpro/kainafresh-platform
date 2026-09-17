@@ -1,5 +1,4 @@
 {
-  "css.lint.unknownAtRules": "ignore",
   "search.exclude": {
     "**/.sst": true
   },
@@ -20,10 +19,5 @@
     "type": "shell",
     "command": "npm run lint",
     "runOn": "folderOpen"
-  },
-  "workbench.colorTheme": "Default Dark Modern",
-  "workbench.iconTheme": "vscode-modern-icons",
-  "workbench.preferredDarkColorTheme": "Default High Contrast",
-  "workbench.preferredHighContrastColorTheme": "Visual Studio Dark",
-  "workbench.preferredHighContrastLightColorTheme": "Monokai Dimmed"
+  }
 }
