@@ -53,18 +53,19 @@
   gap: 2rem;
 }
 
-.navbar-links a {
+.nav-center a {
   font-family: var(--font-heading);
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-text-dark);
   text-decoration: none;
   position: relative;
+  white-space: nowrap;
   transition: color 0.2s ease;
 }
 
 /* Underline indicator for active link */
-.navbar-links a::after {
+.nav-center a::after {
   content: '';
   position: absolute;
   bottom: -4px;
@@ -76,37 +77,31 @@
   transition: width 0.25s ease;
 }
 
-.navbar-links a:hover,
-.navbar-links a.active {
+.nav-center a:hover,
+.nav-center a.active {
   color: var(--color-secondary);
 }
 
-.navbar-links a:hover::after,
-.navbar-links a.active::after {
+.nav-center a:hover::after,
+.nav-center a.active::after {
   width: 100%;
 }
 
-/* Login & Signup buttons: no underline, orange hover */
-.navbar-actions a::after {
-  display: none;
-}
-
-.navbar-actions a:hover {
-  color: inherit;
-}
-
-.site-title{
+.site-title {
   color: #FF6B00;
   text-transform: capitalize;
   font-size: 15px;
+  white-space: nowrap;
 }
 
-/* Action buttons inside the nav */
+/* Action buttons container inside the nav */
 .navbar-actions {
   margin-left: auto;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Shopping Cart & Action Icon Buttons */
@@ -115,9 +110,13 @@
   position: relative;
   width: 40px;
   height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
   border-radius: 50%;
   background: rgba(7, 105, 53, 0.08);
-  border: 1px solid rgba(7, 105, 53, 0.12);
+  border: 1px solid rgba(7, 105, 53, 0.15);
   color: var(--color-primary);
   display: flex;
   align-items: center;
@@ -156,11 +155,14 @@
 .nav-icon-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
+  white-space: nowrap;
 }
 
 .nav-icon-link svg {
-  opacity: 0.75;
+  color: var(--color-primary);
+  opacity: 0.85;
+  flex-shrink: 0;
   transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease;
 }
 
@@ -194,10 +196,82 @@
   box-shadow: 0 4px 12px rgba(243, 153, 39, 0.35);
 }
 
-/* Signup (btn-primary) inside navbar: orange hover, not dark green */
+/* Explicit high-contrast styling for Login & Sign Up buttons */
+.navbar-actions a::after {
+  display: none !important;
+}
+
+.navbar-actions a.btn-primary,
+.navbar-actions .btn-primary {
+  background-color: var(--color-primary) !important;
+  color: #ffffff !important;
+  border: 1.5px solid var(--color-primary) !important;
+  font-family: var(--font-heading);
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.25rem;
+  border-radius: 50px;
+  text-decoration: none !important;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(7, 105, 53, 0.2);
+  cursor: pointer;
+}
+
+.navbar-actions a.btn-primary svg,
+.navbar-actions .btn-primary svg {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  flex-shrink: 0;
+}
+
+.navbar-actions a.btn-primary:hover,
 .navbar-actions .btn-primary:hover {
-  background-color: var(--color-secondary);
-  transform: scale(1.05);
+  background-color: var(--color-secondary) !important;
+  border-color: var(--color-secondary) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(243, 153, 39, 0.35);
+}
+
+.navbar-actions a.btn-outline,
+.navbar-actions .btn-outline {
+  background-color: transparent !important;
+  color: var(--color-primary) !important;
+  border: 1.5px solid var(--color-primary) !important;
+  font-family: var(--font-heading);
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1.15rem;
+  border-radius: 50px;
+  text-decoration: none !important;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.navbar-actions a.btn-outline svg,
+.navbar-actions .btn-outline svg {
+  color: var(--color-primary) !important;
+  opacity: 1 !important;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.navbar-actions a.btn-outline:hover,
+.navbar-actions .btn-outline:hover {
+  background-color: rgba(7, 105, 53, 0.08) !important;
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  transform: translateY(-1px);
 }
 
 /* ── User Profile Dropdown ────────────────────────────── */
@@ -416,8 +490,55 @@
   transform: translateY(-7.5px) rotate(-45deg);
 }
 
-/* ── Mobile ──────────────────────────────────── */
-@media (max-width: 768px) {
+/* ── Tablet Landscape / Medium Screens (961px to 1250px) ───── */
+@media (min-width: 961px) and (max-width: 1250px) {
+  .navbar {
+    padding: 0.9rem 2.5%;
+  }
+
+  .site-title {
+    font-size: 13px;
+  }
+
+  .brand-row img.site-logo {
+    height: 34px !important;
+    width: 34px !important;
+  }
+
+  .nav-center {
+    position: static;
+    transform: none;
+    gap: 0.65rem;
+    margin: 0 auto;
+  }
+
+  .navbar-links a {
+    font-size: 0.8rem;
+    gap: 0.3rem;
+  }
+
+  .nav-icon-link svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .navbar-actions {
+    gap: 0.4rem;
+  }
+
+  .navbar-actions .btn {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.78rem;
+  }
+
+  .nav-cart-btn {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ── Tablet & Mobile Drawer (<= 960px) ────────────────────────── */
+@media (max-width: 960px) {
   .navbar-toggle {
     display: flex;
   }
@@ -492,4 +613,4 @@
     width: 100%;
     max-width: 250px;
   }
-}
+}

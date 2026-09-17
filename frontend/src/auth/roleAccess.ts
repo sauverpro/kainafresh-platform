@@ -9,11 +9,21 @@ export type UserRole = "admin" | "sales_manager" | "customer";
  */
 const NAV_ACCESS: Record<string, UserRole[]> = {
   dashboard: ["admin"],
+  hr: ["admin"],
   cms: ["admin"],
   settings: ["admin"],
   inventory: ["admin", "sales_manager"],
   customers: ["admin", "sales_manager"],
   sales: ["admin", "sales_manager"],
+  hr_dashboard: ["admin"],
+  hr_employees: ["admin"],
+  hr_employment_records: ["admin"],
+  hr_leave: ["admin"],
+  hr_payroll: ["admin"],
+  hr_performance: ["admin"],
+  hr_training: ["admin"],
+  hr_health_safety: ["admin"],
+  hr_insurance: ["admin"],
 };
 
 /** Default landing page for a role after login / when access is denied. */

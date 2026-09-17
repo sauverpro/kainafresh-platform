@@ -74,11 +74,14 @@ export default function Sidebar() {
             if (item.id !== "cms") return item;
             return {
               ...item,
-              subItems: pages.map((p) => ({
-                label: p.title,
-                path: `/cms/${encodeURIComponent(p.slug)}`,
-                role: ["admin"],
-              })),
+              subItems: [
+                ...pages.map((p) => ({
+                  label: p.title,
+                  path: `/cms/${encodeURIComponent(p.slug)}`,
+                  role: ["admin"],
+                })),
+                { label: "Settings", path: "/cms/settings", role: ["admin"] },
+              ],
             };
           })
           .filter((item) => canAccessNav(item.id, user)),

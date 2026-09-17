@@ -1,21 +1,16 @@
-<?php
-
-class PayrollController extends BaseController
-{
-    protected $payrollModel;
+<?php 
+class InsuranceController extends BaseController{
     protected $userModel;
-    protected $employeeModel;
-
-    public function __construct()
+protected $insuranceModel;
+protected $employeeModel;
+public function __construct()
     {
-        $this->payrollModel = new Payroll();
+        $this->insuranceModel = new Insurance();
         $this->userModel = new User();
         $this->employeeModel = new EmployeeProfile();
     }
 
-    // get all payroll records
-
- public function index()
+    public function index()
     {
         // check if user is authorized to view leave requests
         $user = $this->getAuthenticatedUserId();
@@ -28,21 +23,21 @@ class PayrollController extends BaseController
             $this->jsonResponse(['error' => 'Unauthorized'], 403);
         }
 
-        $payroll = $this->payrollModel->findAll();
+        $insurance = $this->insuranceModel->findAll();
         // get associated employee
-         foreach ($payroll as &$payrolls) {
-        $employee = $this->employeeModel->findById($payrolls['employee_id']);
+         foreach ($insurance as &$performances) {
+        $employee = $this->employeeModel->findById($performances['employee_id']);
 
-        $payrolls['employee_name'] = $employee['fullname'] ?? 'Unknown Employee';
+        $performances['employee_name'] = $employee['fullname'] ?? 'Unknown Employee';
        
     }
-    unset($payrolls); 
+    unset($performances); 
 
-        $this->jsonResponse(['message' => 'Payroll records retrieved successfully', 'data' => $payroll], 200);
+        $this->jsonResponse(['message' => 'insurance records retrieved successfully', 'data' => $insurance], 200);
     } 
-    // create payroll record
-    public function createPayroll()
-    {
+
+    // create performance
+    public function store(){
         // check if user is authorized to create payroll record
         $user = $this->getAuthenticatedUserId();
         if (!$user) {
@@ -55,7 +50,7 @@ class PayrollController extends BaseController
         }
         // validate the data before creating the payroll record
         $data = $this->getRequestData();
-        $validation = $this->validateRequired($data, ['employee_id', 'base_salary', 'pay_date', 'payment_start_date', 'bank_account_number', 'bank_name', 'payment_ref','allowances','overtime','bonus','tax_deductions','pension_deductions']);
+        $validation = $this->validateRequired($data, ['employee_id', 'insurance_type', 'insurance_provider', 'policy_number', 'start_date', 'expiration_date', 'status','premium_amount','coverage_details','notify_days']);
         if ($validation) {
             $this->jsonResponse(['error' => $validation], 400);
         }
@@ -64,14 +59,15 @@ class PayrollController extends BaseController
         if (!$employee) {
             $this->jsonResponse(['error' => 'Employee not found'], 404);
         }
-        // calculate net pay
-        $data['net_pay'] = $data['base_salary'] + $data['allowances'] + $data['overtime'] + $data['bonus'] - $data['tax_deductions'] - $data['pension_deductions'] - $data['other_deductions'];
-        $created = $this->payrollModel->createPayroll($data);
-        $this->jsonResponse(['message' => 'Payroll record created successfully', 'data' => $created], 201);
+      
+        $created = $this->insuranceModel->createInsurance($data);
+        $this->jsonResponse(['message' => 'Insurance  created successfully', 'data' => $created], 201);
+
+
 
     }
-    // update payroll record
-    public function updatePayroll($id)
+
+    public function updateInsurance($id)
     {
         // check if user is authorized to update payroll record
         $user = $this->getAuthenticatedUserId();
@@ -83,21 +79,21 @@ class PayrollController extends BaseController
         if ($userData['role'] !== 'admin' && $userData['role'] !== 'sales_manager' && $userData['role'] !== 'hr_manager') {
             $this->jsonResponse(['error' => 'Unauthorized'], 403);
         }
-        $payrollRecord = $this->payrollModel->findById($id);
-        if (!$payrollRecord) {
-            $this->jsonResponse(['error' => 'Payroll record not found'], 404);
+        $insurance = $this->insuranceModel->findById($id);
+        if (!$insurance) {
+            $this->jsonResponse(['error' => 'Performance record not found'], 404);
         }
-        // validate the data before updating the payroll record
+        // validate the data before updating the insurance record
         $data = $this->getRequestData();
-        $validation = $this->validateRequired($data, ['employee_id', 'base_salary', 'pay_date', 'payment_start_date', 'bank_account_number', 'bank_name', 'payment_ref','other_deductions','allowances','overtime','bonus','tax_deductions','pension_deductions']);
+        $validation = $this->validateRequired($data, ['employee_id', 'insurance_type', 'insurance_provider', 'policy_number', 'start_date', 'expiration_date', 'status','premium_amount','coverage_details','notify_days']);
         if($validation){
             $this->jsonResponse(['status'=>false,'error'=>$validation]);
         }
-        $updatedata = $this->payrollModel->updatePayroll($id, $data);
+        $updatedata = $this->insuranceModel->updateInsurance($id, $data);
         $this->jsonResponse(['status'=>true,'message'=>'Updated','data'=>$updatedata]);
     }
 
-    public function deletePayroll($id)
+    public function deleteInsurance($id)
     {
         // check if user is authorized to delete leave request
         $user = $this->getAuthenticatedUserId();
@@ -109,11 +105,12 @@ class PayrollController extends BaseController
         if ($userData['role'] !== 'admin' && $userData['role'] !== 'sales_manager' && $userData['role'] !== 'hr_manager') {
             $this->jsonResponse(['error' => 'Unauthorized'], 403);
         }
-        $payroll = $this->payrollModel->findById($id);
-        if (!$payroll) {
-            $this->jsonResponse(['error' => 'Payroll not found'], 404);
+        $insurance = $this->insuranceModel->findById($id);
+        if (!$insurance) {
+            $this->jsonResponse(['error' => 'Insurance record not found'], 404);
         }
-        $deleted = $this->payrollModel->deletePayroll($id);
+        $deleted = $this->insuranceModel->deleteInsurance($id);
         $this->jsonResponse(['message' => 'Deleted successfully', 'data' => $deleted], 200);
     }
+
 }

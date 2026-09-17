@@ -1,0 +1,238 @@
+import { useState } from "react";
+import {
+  Activity,
+  ShieldAlert,
+  CheckCircle,
+  Plus,
+} from "lucide-react";
+import { usePageTitle } from "../../../hooks/usePageTitle";
+import Modal from "../../../components/ui/Modal";
+import { toast } from "sonner";
+
+export interface IncidentRecord {
+  id: string;
+  date: string;
+  location: string;
+  severity: "Minor" | "Moderate" | "Critical";
+  description: string;
+  staff_involved: string;
+  action_taken: string;
+  status: "Resolved" | "Under Investigation" | "Open";
+}
+
+const INITIAL_INCIDENTS: IncidentRecord[] = [
+  {
+    id: "INC-2026-05",
+    date: "2026-08-28",
+    location: "Kigali Packhouse (Loading Bay)",
+    severity: "Minor",
+    description: "Minor hand abrasion while operating box sealing machine",
+    staff_involved: "Pascal Ndayishimiye",
+    action_taken: "First aid applied on site; safety gloves replaced",
+    status: "Resolved",
+  },
+  {
+    id: "INC-2026-04",
+    date: "2026-07-14",
+    location: "Musanze Farm Plot B",
+    severity: "Minor",
+    description: "Slip on wet irrigation furrow during morning harvest",
+    staff_involved: "Claudine Uwera",
+    action_taken: "First aid administered; non-slip farm boots issued",
+    status: "Resolved",
+  },
+];
+
+export default function HealthSafety() {
+  usePageTitle("health-safety", "Health & Workplace Safety");
+
+  const [incidents, setIncidents] = useState<IncidentRecord[]>(INITIAL_INCIDENTS);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [form, setForm] = useState({
+    location: "Musanze Farm Plot A",
+    severity: "Minor" as IncidentRecord["severity"],
+    description: "",
+    staff_involved: "",
+    action_taken: "",
+  });
+
+  const handleReportIncident = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.description.trim()) {
+      toast.error("Please describe the incident.");
+      return;
+    }
+
+    const newInc: IncidentRecord = {
+      id: `INC-2026-0${incidents.length + 1}`,
+      date: new Date().toISOString().split("T")[0],
+      location: form.location,
+      severity: form.severity,
+      description: form.description.trim(),
+      staff_involved: form.staff_involved || "Farm Worker",
+      action_taken: form.action_taken || "First aid applied",
+      status: "Under Investigation",
+    };
+
+    setIncidents([newInc, ...incidents]);
+    setIsAddOpen(false);
+    toast.success("Health & Safety incident report logged.");
+  };
+
+  return (
+    <div className="px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+      {/* Top Banner */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: "var(--font-heading)" }}>
+            Health & Workplace Safety
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Workplace safety audits, PPE compliance, farm hazard reporting, and medical incident logs.
+          </p>
+        </div>
+        <button
+          onClick={() => setIsAddOpen(true)}
+          className="inline-flex items-center gap-2 rounded-xl bg-[#076935] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#055028]"
+        >
+          <Plus size={16} /> Report Safety Incident
+        </button>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#076935] text-white font-bold">
+              <ShieldAlert size={20} />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald-900">Days Incident-Free</p>
+              <p className="text-2xl font-extrabold text-[#076935]">18 working days</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-bold">
+              <CheckCircle size={20} />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-blue-900">PPE Gear Compliance</p>
+              <p className="text-2xl font-extrabold text-blue-900">100% Certified</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500 text-white font-bold">
+              <Activity size={20} />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-amber-900">Open Audits</p>
+              <p className="text-2xl font-extrabold text-amber-900">0 Critical</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Incident Log Table */}
+      <div className="overflow-hidden rounded-2xl border border-[#076935]/10 bg-white">
+        <div className="p-4 border-b border-gray-100 font-bold text-gray-800 text-sm">
+          Workplace Incident & Hazard Log
+        </div>
+        <table className="w-full text-left text-xs border-collapse">
+          <thead className="bg-[#F4FAF7] border-b border-[#076935]/10 text-gray-500 font-bold uppercase tracking-wider">
+            <tr>
+              <th className="px-4 py-3">Incident ID</th>
+              <th className="px-4 py-3">Date & Location</th>
+              <th className="px-4 py-3">Severity</th>
+              <th className="px-4 py-3">Staff Involved</th>
+              <th className="px-4 py-3">Description</th>
+              <th className="px-4 py-3">Corrective Action Taken</th>
+              <th className="px-4 py-3">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {incidents.map((inc) => (
+              <tr key={inc.id} className="hover:bg-[#F4FAF7]/50 transition">
+                <td className="px-4 py-3 font-bold font-mono text-gray-900">{inc.id}</td>
+                <td className="px-4 py-3">
+                  <p className="font-semibold text-gray-900">{inc.location}</p>
+                  <p className="text-[11px] text-gray-400">{inc.date}</p>
+                </td>
+                <td className="px-4 py-3">
+                  <span className="inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200">
+                    {inc.severity}
+                  </span>
+                </td>
+                <td className="px-4 py-3 font-medium text-gray-800">{inc.staff_involved}</td>
+                <td className="px-4 py-3 text-gray-600 max-w-[200px] truncate">{inc.description}</td>
+                <td className="px-4 py-3 text-gray-600 max-w-[200px] truncate">{inc.action_taken}</td>
+                <td className="px-4 py-3">
+                  <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                    {inc.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Report Incident Modal */}
+      <Modal open={isAddOpen} onClose={() => setIsAddOpen(false)} size="md" title="Report Workplace Incident">
+        <form onSubmit={handleReportIncident} className="space-y-3 text-xs">
+          <div>
+            <label className="font-bold text-gray-700">Location *</label>
+            <input
+              type="text"
+              required
+              value={form.location}
+              onChange={(e) => setForm({ ...form, location: e.target.value })}
+              className="mt-1 w-full rounded-xl border p-2.5 outline-none focus:border-[#076935]"
+              placeholder="e.g. Musanze Plot B Harvest"
+            />
+          </div>
+          <div>
+            <label className="font-bold text-gray-700">Staff Involved</label>
+            <input
+              type="text"
+              value={form.staff_involved}
+              onChange={(e) => setForm({ ...form, staff_involved: e.target.value })}
+              className="mt-1 w-full rounded-xl border p-2.5 outline-none focus:border-[#076935]"
+              placeholder="Name of worker"
+            />
+          </div>
+          <div>
+            <label className="font-bold text-gray-700">Incident Description *</label>
+            <textarea
+              rows={2}
+              required
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              className="mt-1 w-full rounded-xl border p-2.5 outline-none focus:border-[#076935]"
+            />
+          </div>
+          <div className="flex justify-end gap-2 border-t pt-3">
+            <button
+              type="button"
+              onClick={() => setIsAddOpen(false)}
+              className="rounded-xl border px-4 py-2 font-semibold text-gray-600 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="rounded-xl bg-[#076935] px-4 py-2 font-bold text-white hover:bg-[#055028]"
+            >
+              Submit Report
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  );
+}
