@@ -7,6 +7,11 @@ class CreateCustomersTable extends Migration
     public function up()
     {
         $this->createTable('customers', [
+             [
+                'name' => 'user_id',
+                'type' => 'INT',
+                'nullable' => false
+            ],
             [
                 'name' => 'first_name',
                 'type' => 'VARCHAR',
