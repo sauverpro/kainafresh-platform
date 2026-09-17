@@ -92,7 +92,16 @@ export const useProductStore = create<ProductState>((set, get) => ({
         ...p,
         product_image: resolveImageUrl(p.product_image),
       }));
-      set({ products: items, loading: false });
+      const uniqueItems = items.filter(
+        (p, idx, self) =>
+          idx ===
+          self.findIndex(
+            (t) =>
+              String(t.id) === String(p.id) ||
+              (t.name && p.name && t.name.trim().toLowerCase() === p.name.trim().toLowerCase()),
+          ),
+      );
+      set({ products: uniqueItems, loading: false });
     } catch (err: unknown) {
       set({
         error: err instanceof Error ? err.message : "Failed to fetch products",

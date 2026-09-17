@@ -4,10 +4,12 @@ import {
   ShieldAlert,
   CheckCircle,
   Plus,
+  FileText,
 } from "lucide-react";
 import { usePageTitle } from "../../../hooks/usePageTitle";
 import Modal from "../../../components/ui/Modal";
 import { toast } from "sonner";
+import MetricCard from "../../../components/ui/MetricCard";
 
 export interface IncidentRecord {
   id: string;
@@ -79,42 +81,46 @@ export default function HealthSafety() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#076935] text-white font-bold">
-              <ShieldAlert size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-emerald-900">Safety Compliance</p>
-              <p className="text-2xl font-extrabold text-[#076935]">100% Active</p>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          label="Safety Compliance"
+          value="100%"
+          subtext="Active workplace safety standards"
+          icon={<ShieldAlert size={22} className="text-[#076935]" />}
+          iconBg="bg-[#076935]/10"
+          badgeText="Compliant"
+          badgeColor="bg-emerald-50 text-emerald-700 border-emerald-200"
+        />
 
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-bold">
-              <CheckCircle size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-blue-900">PPE Gear Compliance</p>
-              <p className="text-2xl font-extrabold text-blue-900">100% Certified</p>
-            </div>
-          </div>
-        </div>
+        <MetricCard
+          label="PPE Gear Compliance"
+          value="100%"
+          subtext="Farm & packhouse protective gear"
+          icon={<CheckCircle size={22} className="text-blue-600" />}
+          iconBg="bg-blue-50"
+          badgeText="Certified"
+          badgeColor="bg-blue-50 text-blue-700 border-blue-200"
+        />
 
-        <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500 text-white font-bold">
-              <Activity size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-amber-900">Open Audits</p>
-              <p className="text-2xl font-extrabold text-amber-900">0 Critical</p>
-            </div>
-          </div>
-        </div>
+        <MetricCard
+          label="Reported Incidents"
+          value={`${incidents.length}`}
+          subtext={incidents.length > 0 ? "Logged hazard & safety cases" : "Zero open safety incidents"}
+          icon={<Activity size={22} className="text-amber-600" />}
+          iconBg="bg-amber-50"
+          badgeText="Incident Log"
+          badgeColor="bg-amber-50 text-amber-700 border-amber-200"
+        />
+
+        <MetricCard
+          label="Open Audits"
+          value="0"
+          subtext="Critical hazard audits"
+          icon={<FileText size={22} className="text-purple-600" />}
+          iconBg="bg-purple-50"
+          badgeText="Audits Clear"
+          badgeColor="bg-purple-50 text-purple-700 border-purple-200"
+        />
       </div>
 
       {/* Incident Log Table */}

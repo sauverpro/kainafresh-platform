@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Building2,
   Users,
@@ -8,19 +8,87 @@ import {
   Pencil,
   Briefcase,
   User,
+  Landmark,
 } from "lucide-react";
 import { usePageTitle } from "../../../hooks/usePageTitle";
 import Modal from "../../../components/ui/Modal";
 import { toast } from "sonner";
 import MetricCard from "../../../components/ui/MetricCard";
 import { useDepartmentStore, type Department } from "../../../store/useDepartmentStore";
+import { apiGet } from "../../../api/client";
+
+const DEFAULT_EMPLOYEES: Array<{ id: string; name: string; email: string; title: string }> = [];
 
 export default function DepartmentManagement() {
   usePageTitle("department-management", "Department Management");
 
-  const { departments, addDepartment, updateDepartment } = useDepartmentStore();
+  const { departments, setDepartments, addDepartment, updateDepartment } = useDepartmentStore();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [employeesList, setEmployeesList] = useState<Array<{ id: string; name: string; email: string; title: string }>>(DEFAULT_EMPLOYEES);
+
+  useEffect(() => {
+    apiGet<{ success: boolean; data: any[] }>("/api/departments")
+      .then((res) => {
+        if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
+          const mapped: Department[] = res.data.map((d: any) => ({
+            id: `DEP-${d.id}`,
+            code: d.code || `KF-DEP-${d.id}`,
+            name: d.name,
+            lead_name: d.lead_name || "Unassigned",
+            lead_email: d.lead_email || "",
+            staff_count: Number(d.staff_count) || 0,
+            capacity: Number(d.capacity) || 10,
+            monthly_budget_rwf: Number(d.monthly_budget_rwf) || 0,
+            location: d.location || "Kigali HQ",
+            status: d.status || "Active",
+            description: d.description || "",
+          }));
+          const uniqueDepts = mapped.filter(
+            (d, idx, self) =>
+              idx ===
+              self.findIndex(
+                (t) =>
+                  String(t.id) === String(d.id) ||
+                  (t.name && d.name && t.name.trim().toLowerCase() === d.name.trim().toLowerCase()),
+              ),
+          );
+          setDepartments(uniqueDepts);
+        } else {
+          setDepartments([]);
+        }
+      })
+      .catch(() => {
+        setDepartments([]);
+      });
+
+    apiGet<{ success: boolean; data: any[] }>("/api/employees")
+      .then((res) => {
+        if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
+          const mapped = res.data.map((emp: any) => ({
+            id: String(emp.id),
+            name: emp.fullname || `${emp.first_name || ""} ${emp.last_name || ""}`.trim(),
+            email: emp.email || "",
+            title: emp.job_title || "Staff Member",
+          }));
+          const uniqueEmps = mapped.filter(
+            (emp, idx, self) =>
+              idx ===
+              self.findIndex(
+                (t) =>
+                  String(t.id) === String(emp.id) ||
+                  (t.email && emp.email && t.email.trim().toLowerCase() === emp.email.trim().toLowerCase()),
+              ),
+          );
+          setEmployeesList(uniqueEmps);
+        } else {
+          setEmployeesList([]);
+        }
+      })
+      .catch(() => {
+        setEmployeesList([]);
+      });
+  }, [setDepartments]);
 
   const [selectedDept, setSelectedDept] = useState<Department | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -67,8 +135,8 @@ export default function DepartmentManagement() {
 
   const handleAddDepartment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!addForm.name.trim() || !addForm.lead_name.trim()) {
-      toast.error("Department name and lead manager name are required.");
+    if (!addForm.name.trim()) {
+      toast.error("Department name is required.");
       return;
     }
 
@@ -98,8 +166,8 @@ export default function DepartmentManagement() {
     e.preventDefault();
     if (!editForm) return;
 
-    if (!editForm.name.trim() || !editForm.lead_name.trim()) {
-      toast.error("Department name and lead name are required.");
+    if (!editForm.name.trim()) {
+      toast.error("Department name is required.");
       return;
     }
 
@@ -133,36 +201,46 @@ export default function DepartmentManagement() {
       </div>
 
       {/* KPI Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
-          label="TOTAL DEPARTMENTS"
+          label="Total Departments"
           value={stats.totalDepts}
           unit="units"
           subtext={stats.totalDepts > 0 ? "Active operational divisions" : "No departments recorded"}
-          icon={<Building2 className="h-5 w-5" />}
-          iconBg="bg-emerald-50 text-emerald-600"
+          icon={<Building2 size={22} className="text-[#076935]" />}
+          iconBg="bg-[#076935]/10"
           badgeText="Operational"
-          badgeColor="bg-emerald-50 text-emerald-600 border-emerald-200"
+          badgeColor="bg-emerald-50 text-emerald-700 border-emerald-200"
         />
         <MetricCard
-          label="ASSIGNED HEADCOUNT"
+          label="Assigned Headcount"
           value={stats.totalStaff}
           unit="staff"
           subtext={stats.totalStaff > 0 ? `Personnel across ${stats.totalDepts} divisions` : "No staff assigned"}
-          icon={<Users className="h-5 w-5" />}
-          iconBg="bg-blue-50 text-blue-600"
+          icon={<Users size={22} className="text-blue-600" />}
+          iconBg="bg-blue-50"
           badgeText="Active Workforce"
-          badgeColor="bg-blue-50 text-blue-600 border-blue-200"
+          badgeColor="bg-blue-50 text-blue-700 border-blue-200"
         />
         <MetricCard
-          label="MONTHLY COMBINED BUDGET"
+          label="Monthly Combined Budget"
           value={stats.totalBudget > 0 ? (stats.totalBudget / 1000000).toFixed(1) + "M" : "0"}
           unit="RWF"
           subtext={stats.totalBudget > 0 ? "Operational & payroll allocation" : "No budget allocated"}
-          icon={<Banknote className="h-5 w-5" />}
-          iconBg="bg-amber-50 text-amber-600"
-          badgeText="Approved"
-          badgeColor="bg-amber-50 text-amber-600 border-amber-200"
+          icon={<Banknote size={22} className="text-amber-600" />}
+          iconBg="bg-amber-50"
+          badgeText="Approved Budget"
+          badgeColor="bg-amber-50 text-amber-700 border-amber-200"
+        />
+        <MetricCard
+          label="Total Capacity Limit"
+          value={`${departments.reduce((s, d) => s + d.capacity, 0)}`}
+          unit="Slots"
+          subtext="Department capacity ceiling"
+          icon={<Landmark size={22} className="text-purple-600" />}
+          iconBg="bg-purple-50"
+          badgeText="Staff Capacity"
+          badgeColor="bg-purple-50 text-purple-700 border-purple-200"
         />
       </div>
 
@@ -199,79 +277,102 @@ export default function DepartmentManagement() {
 
       {/* Departments Grid Cards */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredDepartments.map((dept) => {
-          return (
-            <div
-              key={dept.id}
-              className="group rounded-2xl border border-[#076935]/15 bg-white overflow-hidden transition hover:shadow-md flex flex-col justify-between"
-            >
-              <div>
-                {/* Header Banner with non-white background */}
-                <div className="bg-[#F4FAF7] p-4 border-b border-[#076935]/10 flex items-start justify-between gap-2">
-                  <div>
-                    <span className="text-[11px] font-mono font-bold text-gray-500">{dept.code}</span>
-                    <h3 className="text-base font-bold text-gray-900 group-hover:text-[#076935] transition leading-snug mt-0.5">
-                      {dept.name}
-                    </h3>
-                  </div>
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold shrink-0 ${
-                      dept.status === "Active"
-                        ? "bg-emerald-100/80 text-emerald-800 border border-emerald-200"
-                        : "bg-amber-100/80 text-amber-800 border border-amber-200"
-                    }`}
-                  >
-                    {dept.status}
-                  </span>
-                </div>
-
-                <div className="p-4 space-y-3">
-                  {/* Department Lead Display: Increased font size & enlarged colored User icon */}
-                  <div className="flex items-center gap-2.5 text-sm">
-                    <User size={19} className="text-[#076935] shrink-0" />
-                    <span className="text-gray-500 font-medium">Lead:</span>
-                    <span className="text-gray-900 font-bold text-sm">{dept.lead_name}</span>
-                  </div>
-
-                  {/* Clean Inline Metrics: Circular Staff Count Badge & Monthly Budget */}
-                  <div className="flex items-center justify-between text-xs border-t border-gray-100 pt-3">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#076935]/10 text-xs font-bold text-[#076935] shrink-0">
-                        {dept.staff_count}
-                      </span>
-                      <span className="text-xs font-medium text-gray-600">Staff</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 font-bold text-[#076935]">
-                      <Banknote size={14} className="text-[#076935]" />
-                      <span>{dept.monthly_budget_rwf.toLocaleString()} RWF</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Card Actions */}
-              <div className="px-4 pb-4">
-                <div className="border-t border-gray-100 pt-3 flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedDept(dept)}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-gray-600 hover:text-gray-900 transition"
-                  >
-                    <Briefcase size={14} /> Full Details
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleStartEdit(dept)}
-                    className="inline-flex items-center gap-1 rounded-md bg-[#F39927]/10 px-3 py-1.5 text-xs font-bold text-[#F39927] hover:bg-[#F39927] hover:text-white transition"
-                  >
-                    <Pencil size={13} /> Edit Dept
-                  </button>
-                </div>
-              </div>
+        {filteredDepartments.length === 0 ? (
+          <div className="col-span-full rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center shadow-xs">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-[#076935] mb-3">
+              <Building2 size={28} />
             </div>
-          );
-        })}
+            <h3 className="text-base font-bold text-gray-900">
+              No Departments Recorded
+            </h3>
+            <p className="mt-1 text-xs text-gray-500 max-w-md mx-auto">
+              There are currently no operational departments in the database. Click "Add New Department" to create your first organizational division.
+            </p>
+            <div className="mt-5 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsAddOpen(true)}
+                className="inline-flex items-center gap-2 rounded-xl bg-[#076935] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#055028] transition"
+              >
+                <Plus size={15} /> Add New Department
+              </button>
+            </div>
+          </div>
+        ) : (
+          filteredDepartments.map((dept) => {
+            return (
+              <div
+                key={dept.id}
+                className="group rounded-2xl border border-[#076935]/15 bg-white overflow-hidden transition hover:shadow-md flex flex-col justify-between"
+              >
+                <div>
+                  {/* Header Banner with non-white background */}
+                  <div className="bg-[#F4FAF7] p-4 border-b border-[#076935]/10 flex items-start justify-between gap-2">
+                    <div>
+                      <span className="text-[11px] font-mono font-bold text-gray-500">{dept.code}</span>
+                      <h3 className="text-base font-bold text-gray-900 group-hover:text-[#076935] transition leading-snug mt-0.5">
+                        {dept.name}
+                      </h3>
+                    </div>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold shrink-0 ${
+                        dept.status === "Active"
+                          ? "bg-emerald-100/80 text-emerald-800 border border-emerald-200"
+                          : "bg-amber-100/80 text-amber-800 border border-amber-200"
+                      }`}
+                    >
+                      {dept.status}
+                    </span>
+                  </div>
+
+                  <div className="p-4 space-y-3">
+                    {/* Department Lead Display: Increased font size & enlarged colored User icon */}
+                    <div className="flex items-center gap-2.5 text-sm">
+                      <User size={19} className="text-[#076935] shrink-0" />
+                      <span className="text-gray-500 font-medium">Lead:</span>
+                      <span className="text-gray-900 font-bold text-sm">{dept.lead_name}</span>
+                    </div>
+
+                    {/* Clean Inline Metrics: Circular Staff Count Badge & Monthly Budget */}
+                    <div className="flex items-center justify-between text-xs border-t border-gray-100 pt-3">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#076935]/10 text-xs font-bold text-[#076935] shrink-0">
+                          {dept.staff_count}
+                        </span>
+                        <span className="text-xs font-medium text-gray-600">Staff</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 font-bold text-[#076935]">
+                        <Banknote size={14} className="text-[#076935]" />
+                        <span>{dept.monthly_budget_rwf.toLocaleString()} RWF</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Actions */}
+                <div className="px-4 pb-4">
+                  <div className="border-t border-gray-100 pt-3 flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDept(dept)}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-gray-600 hover:text-gray-900 transition"
+                    >
+                      <Briefcase size={14} /> Full Details
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleStartEdit(dept)}
+                      className="inline-flex items-center gap-1 rounded-md bg-[#F39927]/10 px-3 py-1.5 text-xs font-bold text-[#F39927] hover:bg-[#F39927] hover:text-white transition"
+                    >
+                      <Pencil size={13} /> Edit Dept
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* View Department Details Modal */}
@@ -355,25 +456,37 @@ export default function DepartmentManagement() {
             </div>
 
             <div>
-              <label className="font-bold text-gray-700">Department Lead Name *</label>
-              <input
-                type="text"
-                required
+              <label className="font-bold text-gray-700">Department Lead Manager (Optional)</label>
+              <select
                 value={addForm.lead_name}
-                onChange={(e) => setAddForm({ ...addForm, lead_name: e.target.value })}
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
-                placeholder="e.g. Marie Claire Uwase"
-              />
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const matched = employeesList.find((emp) => emp.name === val);
+                  setAddForm({
+                    ...addForm,
+                    lead_name: val,
+                    lead_email: matched && matched.email ? matched.email : "",
+                  });
+                }}
+                className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2.5 text-xs text-gray-900 outline-none focus:border-[#076935]"
+              >
+                <option value="">-- Select Employee as Department Lead --</option>
+                {employeesList.map((emp) => (
+                  <option key={emp.id} value={emp.name}>
+                    {emp.name} — {emp.title} ({emp.email})
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
               <label className="font-bold text-gray-700">Lead Email</label>
               <input
                 type="email"
+                readOnly
                 value={addForm.lead_email}
-                onChange={(e) => setAddForm({ ...addForm, lead_email: e.target.value })}
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
-                placeholder="e.g. m.uwase@kainafresh.rw"
+                className="mt-1 w-full rounded-md border border-gray-200 bg-gray-100/80 p-2.5 text-xs text-gray-700 outline-none cursor-not-allowed"
+                placeholder="Auto-filled from selected employee profile"
               />
             </div>
 
@@ -483,23 +596,37 @@ export default function DepartmentManagement() {
               </div>
 
               <div>
-                <label className="font-bold text-gray-700">Department Lead Name *</label>
-                <input
-                  type="text"
-                  required
+                <label className="font-bold text-gray-700">Department Lead Manager (Optional)</label>
+                <select
                   value={editForm.lead_name}
-                  onChange={(e) => setEditForm({ ...editForm, lead_name: e.target.value })}
-                  className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
-                />
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const matched = employeesList.find((emp) => emp.name === val);
+                    setEditForm({
+                      ...editForm,
+                      lead_name: val,
+                      lead_email: matched && matched.email ? matched.email : editForm.lead_email,
+                    });
+                  }}
+                  className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2.5 text-xs text-gray-900 outline-none focus:border-[#076935]"
+                >
+                  <option value="">-- Select Employee as Department Lead --</option>
+                  {employeesList.map((emp) => (
+                    <option key={emp.id} value={emp.name}>
+                      {emp.name} — {emp.title} ({emp.email})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
                 <label className="font-bold text-gray-700">Lead Email</label>
                 <input
                   type="email"
+                  readOnly
                   value={editForm.lead_email}
-                  onChange={(e) => setEditForm({ ...editForm, lead_email: e.target.value })}
-                  className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
+                  className="mt-1 w-full rounded-md border border-gray-200 bg-gray-100/80 p-2.5 text-xs text-gray-700 outline-none cursor-not-allowed"
+                  placeholder="Auto-filled from selected employee profile"
                 />
               </div>
 

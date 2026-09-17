@@ -3,10 +3,15 @@ import {
   Eye,
   Printer,
   Send,
+  Banknote,
+  Landmark,
+  Users,
+  CreditCard,
 } from "lucide-react";
 import { usePageTitle } from "../../../hooks/usePageTitle";
 import Modal from "../../../components/ui/Modal";
 import { toast } from "sonner";
+import MetricCard from "../../../components/ui/MetricCard";
 
 export interface PayrollRecord {
   id: string;
@@ -68,26 +73,48 @@ export default function Payroll() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-emerald-900">Total Net Disbursement</p>
-          <p className="text-2xl font-extrabold text-[#076935] mt-1">{totalNet.toLocaleString()} RWF</p>
-          <p className="text-[11px] text-emerald-700 mt-0.5">Current Salary Cycle</p>
-        </div>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          label="Total Net Disbursement"
+          value={totalNet > 0 ? totalNet.toLocaleString() : "0"}
+          unit="RWF"
+          subtext={totalNet > 0 ? "Current Net Salary Cycle" : "No current net payroll data"}
+          icon={<Banknote size={22} className="text-[#076935]" />}
+          iconBg="bg-[#076935]/10"
+          badgeText="Salary Cycle"
+          badgeColor="bg-emerald-50 text-emerald-700 border-emerald-200"
+        />
 
-        <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-amber-900">RSSB & PAYE Tax Total</p>
-          <p className="text-2xl font-extrabold text-amber-900 mt-1">{totalTax.toLocaleString()} RWF</p>
-          <p className="text-[11px] text-amber-700 mt-0.5">Remitted to RRA / RSSB</p>
-        </div>
+        <MetricCard
+          label="RSSB & PAYE Tax Total"
+          value={totalTax > 0 ? totalTax.toLocaleString() : "0"}
+          unit="RWF"
+          subtext={totalTax > 0 ? "Remitted to RRA / RSSB" : "No tax deductions recorded"}
+          icon={<Landmark size={22} className="text-amber-600" />}
+          iconBg="bg-amber-50"
+          badgeText="Statutory Tax"
+          badgeColor="bg-amber-50 text-amber-700 border-amber-200"
+        />
 
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-blue-900">Payment Channels</p>
-          <p className="text-lg font-bold text-blue-900 mt-1">
-            {records.length > 0 ? "75% MoMo Bulk / 25% Bank" : "No active disbursements"}
-          </p>
-          <p className="text-[11px] text-blue-700 mt-0.5">Mobile Money & Direct Deposit</p>
-        </div>
+        <MetricCard
+          label="Processed Employees"
+          value={`${records.length}`}
+          subtext={records.length > 0 ? "Active salary profiles" : "No active payroll records"}
+          icon={<Users size={22} className="text-blue-600" />}
+          iconBg="bg-blue-50"
+          badgeText="Staff Payroll"
+          badgeColor="bg-blue-50 text-blue-700 border-blue-200"
+        />
+
+        <MetricCard
+          label="Payment Channels"
+          value={records.length > 0 ? "MoMo / Bank" : "Inactive"}
+          subtext="Mobile Money & Direct Bank Deposit"
+          icon={<CreditCard size={22} className="text-purple-600" />}
+          iconBg="bg-purple-50"
+          badgeText="Channels"
+          badgeColor="bg-purple-50 text-purple-700 border-purple-200"
+        />
       </div>
 
       {/* Table */}

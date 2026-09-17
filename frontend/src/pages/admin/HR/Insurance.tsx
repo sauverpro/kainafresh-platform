@@ -4,10 +4,12 @@ import {
   Heart,
   Plus,
   Building,
+  FileText,
 } from "lucide-react";
 import { usePageTitle } from "../../../hooks/usePageTitle";
 import Modal from "../../../components/ui/Modal";
 import { toast } from "sonner";
+import MetricCard from "../../../components/ui/MetricCard";
 
 export interface InsurancePolicy {
   id: string;
@@ -83,42 +85,47 @@ export default function Insurance() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#076935] text-white font-bold">
-              <ShieldCheck size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-emerald-900">Covered Employees</p>
-              <p className="text-2xl font-extrabold text-[#076935]">{totalInsured} Staff Active</p>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          label="Covered Employees"
+          value={`${totalInsured}`}
+          subtext={totalInsured > 0 ? "Enrolled staff members" : "No active policyholders"}
+          icon={<ShieldCheck size={22} className="text-[#076935]" />}
+          iconBg="bg-[#076935]/10"
+          badgeText="Insured Staff"
+          badgeColor="bg-emerald-50 text-emerald-700 border-emerald-200"
+        />
 
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-bold">
-              <Heart size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-blue-900">Total Monthly Premium</p>
-              <p className="text-2xl font-extrabold text-blue-900">{totalPremiums.toLocaleString()} RWF</p>
-            </div>
-          </div>
-        </div>
+        <MetricCard
+          label="Total Monthly Premium"
+          value={totalPremiums > 0 ? totalPremiums.toLocaleString() : "0"}
+          unit="RWF"
+          subtext={totalPremiums > 0 ? "Monthly medical & RAMA contribution" : "No active premium payments"}
+          icon={<Heart size={22} className="text-blue-600" />}
+          iconBg="bg-blue-50"
+          badgeText="Monthly Premium"
+          badgeColor="bg-blue-50 text-blue-700 border-blue-200"
+        />
 
-        <div className="rounded-2xl border border-purple-200 bg-purple-50/50 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-600 text-white font-bold">
-              <Building size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-purple-900">Primary Partner</p>
-              <p className="text-lg font-bold text-purple-900">RSSB RAMA Rwanda</p>
-            </div>
-          </div>
-        </div>
+        <MetricCard
+          label="Active Policies"
+          value={`${policies.length}`}
+          subtext={policies.length > 0 ? "Verified coverage plans" : "No active policy records"}
+          icon={<FileText size={22} className="text-amber-600" />}
+          iconBg="bg-amber-50"
+          badgeText="Enrolled Plans"
+          badgeColor="bg-amber-50 text-amber-700 border-amber-200"
+        />
+
+        <MetricCard
+          label="Primary Medical Partner"
+          value={policies.length > 0 ? "RSSB RAMA" : "Inactive"}
+          subtext="Statutory health coverage"
+          icon={<Building size={22} className="text-purple-600" />}
+          iconBg="bg-purple-50"
+          badgeText="RAMA Rwanda"
+          badgeColor="bg-purple-50 text-purple-700 border-purple-200"
+        />
       </div>
 
       {/* Table */}

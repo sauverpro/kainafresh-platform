@@ -196,7 +196,14 @@ export default function OrdersList() {
     try {
       const res = await apiGet<{ success: boolean; data: BackendOrder[] }>('/api/orders');
       const items = (res.data ?? []).map(mapBackendOrder);
-      setOrders(items.length ? items : []);
+      const uniqueItemsMap = new Map<string, OrderItem>();
+      items.forEach(item => {
+        if (!uniqueItemsMap.has(item.id)) {
+          uniqueItemsMap.set(item.id, item);
+        }
+      });
+      const uniqueItems = Array.from(uniqueItemsMap.values());
+      setOrders(uniqueItems.length ? uniqueItems : []);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to load orders';
       setLoadError(message);

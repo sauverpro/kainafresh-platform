@@ -4,10 +4,12 @@ import {
   CheckCircle,
   Clock,
   Eye,
+  FileText,
 } from "lucide-react";
 import { usePageTitle } from "../../../hooks/usePageTitle";
 import Modal from "../../../components/ui/Modal";
 import { toast } from "sonner";
+import MetricCard from "../../../components/ui/MetricCard";
 
 export interface LeaveRequest {
   id: string;
@@ -64,42 +66,46 @@ export default function LeaveManagement() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500 text-white font-bold">
-              <Clock size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-amber-900">Pending Approvals</p>
-              <p className="text-2xl font-extrabold text-amber-900">{pendingCount}</p>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          label="Pending Approvals"
+          value={`${pendingCount}`}
+          subtext={pendingCount > 0 ? "Awaiting HR & team lead review" : "No pending leave requests"}
+          icon={<Clock size={22} className="text-amber-600" />}
+          iconBg="bg-amber-50"
+          badgeText="Pending Review"
+          badgeColor="bg-amber-50 text-amber-700 border-amber-200"
+        />
 
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#076935] text-white font-bold">
-              <CheckCircle size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-emerald-900">Approved Leaves</p>
-              <p className="text-2xl font-extrabold text-[#076935]">{approvedCount}</p>
-            </div>
-          </div>
-        </div>
+        <MetricCard
+          label="Approved Leaves"
+          value={`${approvedCount}`}
+          subtext={approvedCount > 0 ? "Processed annual & sick leaves" : "No approved leave records"}
+          icon={<CheckCircle size={22} className="text-[#076935]" />}
+          iconBg="bg-[#076935]/10"
+          badgeText="Approved"
+          badgeColor="bg-emerald-50 text-emerald-700 border-emerald-200"
+        />
 
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-bold">
-              <CalendarCheck size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-blue-900">Staff Currently On Leave</p>
-              <p className="text-2xl font-extrabold text-blue-900">0</p>
-            </div>
-          </div>
-        </div>
+        <MetricCard
+          label="Staff Currently On Leave"
+          value="0"
+          subtext="Active staff away today"
+          icon={<CalendarCheck size={22} className="text-blue-600" />}
+          iconBg="bg-blue-50"
+          badgeText="Active Absence"
+          badgeColor="bg-blue-50 text-blue-700 border-blue-200"
+        />
+
+        <MetricCard
+          label="Total Leave Applications"
+          value={`${leaves.length}`}
+          subtext={leaves.length > 0 ? "Total time-off applications" : "No leave requests submitted"}
+          icon={<FileText size={22} className="text-purple-600" />}
+          iconBg="bg-purple-50"
+          badgeText="Total Submitted"
+          badgeColor="bg-purple-50 text-purple-700 border-purple-200"
+        />
       </div>
 
       {/* Table */}

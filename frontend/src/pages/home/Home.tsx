@@ -187,7 +187,16 @@ function Home() {
                   shelf_life: item.shelf_life ? Number(item.shelf_life) : undefined,
                 };
               });
-              setProducts(mapped);
+              const uniqueMapped = mapped.filter(
+                (p, idx, self) =>
+                  idx ===
+                  self.findIndex(
+                    (t) =>
+                      String(t.id) === String(p.id) ||
+                      (t.name && p.name && t.name.trim().toLowerCase() === p.name.trim().toLowerCase()),
+                  ),
+              );
+              setProducts(uniqueMapped);
             } else {
               setProducts([]);
             }
