@@ -9,58 +9,77 @@ import {
   Briefcase,
   User,
   Landmark,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 import { usePageTitle } from "../../../hooks/usePageTitle";
 import Modal from "../../../components/ui/Modal";
 import { toast } from "sonner";
 import MetricCard from "../../../components/ui/MetricCard";
 import { useDepartmentStore, type Department } from "../../../store/useDepartmentStore";
-import { apiGet } from "../../../api/client";
+import { apiGet, apiPost, apiPut, apiDelete } from "../../../api/client";
 
 const DEFAULT_EMPLOYEES: Array<{ id: string; name: string; email: string; title: string }> = [];
+
+const ADD_FORM_INITIAL = {
+  name: "",
+  code: "",
+  lead_name: "",
+  lead_email: "",
+  staff_count: 5,
+  capacity: 15,
+  monthly_budget_rwf: 2000000,
+  location: "Kigali HQ",
+  status: "Active" as Department["status"],
+  description: "",
+};
 
 export default function DepartmentManagement() {
   usePageTitle("department-management", "Department Management");
 
-  const { departments, setDepartments, addDepartment, updateDepartment } = useDepartmentStore();
+  const { departments, setDepartments, updateDepartment } = useDepartmentStore();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [employeesList, setEmployeesList] = useState<Array<{ id: string; name: string; email: string; title: string }>>(DEFAULT_EMPLOYEES);
+  const [submitting, setSubmitting] = useState(false);
+
+  const fetchDepartments = async () => {
+    try {
+      const res = await apiGet<{ success: boolean; data: any[] }>("/api/departments");
+      if (res?.success && Array.isArray(res.data)) {
+        const mapped: Department[] = res.data.map((d: any) => ({
+          id: `DEP-${d.id}`,
+          code: d.code || `KF-DEP-${d.id}`,
+          name: d.name,
+          lead_name: d.lead_name || "Unassigned",
+          lead_email: d.lead_email || "",
+          staff_count: Number(d.staff_count) || 0,
+          capacity: Number(d.capacity) || 10,
+          monthly_budget_rwf: Number(d.monthly_budget_rwf) || 0,
+          location: d.location || "Kigali HQ",
+          status: (d.status as Department["status"]) || "Active",
+          description: d.description || "",
+        }));
+        const uniqueDepts = mapped.filter(
+          (d, idx, self) =>
+            idx ===
+            self.findIndex(
+              (t) =>
+                String(t.id) === String(d.id) ||
+                (t.name && d.name && t.name.trim().toLowerCase() === d.name.trim().toLowerCase()),
+            ),
+        );
+        setDepartments(uniqueDepts);
+      } else {
+        setDepartments([]);
+      }
+    } catch {
+      setDepartments([]);
+    }
+  };
 
   useEffect(() => {
-    apiGet<{ success: boolean; data: any[] }>("/api/departments")
-      .then((res) => {
-        if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
-          const mapped: Department[] = res.data.map((d: any) => ({
-            id: `DEP-${d.id}`,
-            code: d.code || `KF-DEP-${d.id}`,
-            name: d.name,
-            lead_name: d.lead_name || "Unassigned",
-            lead_email: d.lead_email || "",
-            staff_count: Number(d.staff_count) || 0,
-            capacity: Number(d.capacity) || 10,
-            monthly_budget_rwf: Number(d.monthly_budget_rwf) || 0,
-            location: d.location || "Kigali HQ",
-            status: d.status || "Active",
-            description: d.description || "",
-          }));
-          const uniqueDepts = mapped.filter(
-            (d, idx, self) =>
-              idx ===
-              self.findIndex(
-                (t) =>
-                  String(t.id) === String(d.id) ||
-                  (t.name && d.name && t.name.trim().toLowerCase() === d.name.trim().toLowerCase()),
-              ),
-          );
-          setDepartments(uniqueDepts);
-        } else {
-          setDepartments([]);
-        }
-      })
-      .catch(() => {
-        setDepartments([]);
-      });
+    fetchDepartments();
 
     apiGet<{ success: boolean; data: any[] }>("/api/employees")
       .then((res) => {
@@ -88,25 +107,15 @@ export default function DepartmentManagement() {
       .catch(() => {
         setEmployeesList([]);
       });
-  }, [setDepartments]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [selectedDept, setSelectedDept] = useState<Department | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
 
   // Add Form State
-  const [addForm, setAddForm] = useState({
-    name: "",
-    code: "",
-    lead_name: "",
-    lead_email: "",
-    staff_count: 5,
-    capacity: 15,
-    monthly_budget_rwf: 2000000,
-    location: "Kigali HQ",
-    status: "Active" as Department["status"],
-    description: "",
-  });
+  const [addForm, setAddForm] = useState({ ...ADD_FORM_INITIAL });
 
   // Edit Form State
   const [editForm, setEditForm] = useState<Department | null>(null);
@@ -133,28 +142,33 @@ export default function DepartmentManagement() {
     return { totalDepts, totalStaff, totalBudget };
   }, [departments]);
 
-  const handleAddDepartment = (e: React.FormEvent) => {
+  const handleAddDepartment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!addForm.name.trim()) {
+    const name = addForm.name.trim();
+    if (!name) {
       toast.error("Department name is required.");
       return;
     }
 
-    const newDept = addDepartment({
-      code: addForm.code.trim() || `KF-DEP-${addForm.name.substring(0, 4).toUpperCase()}`,
-      name: addForm.name.trim(),
-      lead_name: addForm.lead_name.trim(),
-      lead_email: addForm.lead_email.trim() || `${addForm.lead_name.toLowerCase().replace(" ", ".")}@kainafresh.rw`,
-      staff_count: Number(addForm.staff_count),
-      capacity: Number(addForm.capacity),
-      monthly_budget_rwf: Number(addForm.monthly_budget_rwf),
-      location: addForm.location.trim(),
-      status: addForm.status,
-      description: addForm.description.trim() || "Operational division under KainaFresh organizational structure.",
-    });
-
-    setIsAddOpen(false);
-    toast.success(`Department ${newDept.name} created successfully!`);
+    setSubmitting(true);
+    try {
+      const res = await apiPost<{ success: boolean; message?: string; data?: any }>(
+        "/api/departments",
+        { name },
+      );
+      if (!res?.success) {
+        toast.error(res?.message || "Failed to create department.");
+        return;
+      }
+      setIsAddOpen(false);
+      setAddForm({ ...ADD_FORM_INITIAL });
+      toast.success(`Department ${res.data?.name || name} created successfully!`);
+      await fetchDepartments();
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to create department.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleStartEdit = (dept: Department) => {
@@ -162,21 +176,71 @@ export default function DepartmentManagement() {
     setEditForm(JSON.parse(JSON.stringify(dept)));
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editForm) return;
 
-    if (!editForm.name.trim()) {
+    const name = editForm.name.trim();
+    if (!name) {
       toast.error("Department name is required.");
       return;
     }
 
-    updateDepartment(editForm);
-    if (selectedDept?.id === editForm.id) {
-      setSelectedDept(editForm);
+    const dbId = parseInt(String(editForm.id).replace("DEP-", ""), 10);
+    if (!dbId) {
+      toast.error("Cannot update an unsaved department.");
+      return;
     }
-    setEditingDept(null);
-    toast.success(`Updated department details for ${editForm.name}!`);
+
+    setSubmitting(true);
+    try {
+      const res = await apiPut<{ success: boolean; message?: string; data?: any }>(
+        `/api/departments/${dbId}`,
+        { name },
+      );
+      if (!res?.success) {
+        toast.error(res?.message || "Failed to update department.");
+        return;
+      }
+      // Backend persists only `name`; keep the rest of the rich UI state local.
+      updateDepartment(editForm);
+      if (selectedDept?.id === editForm.id) {
+        setSelectedDept(editForm);
+      }
+      setEditingDept(null);
+      toast.success(`Updated department details for ${name}!`);
+      await fetchDepartments();
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update department.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteDepartment = async (dept: Department) => {
+    const dbId = parseInt(String(dept.id).replace("DEP-", ""), 10);
+    if (!dbId) {
+      toast.error("Cannot delete an unsaved department.");
+      return;
+    }
+    if (!window.confirm(`Delete department "${dept.name}"? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const res = await apiDelete<{ success: boolean; message?: string }>(
+        `/api/departments/${dbId}`,
+      );
+      if (!res?.success) {
+        toast.error(res?.message || "Failed to delete department.");
+        return;
+      }
+      setSelectedDept(null);
+      toast.success(res?.message || "Department deleted successfully!");
+      await fetchDepartments();
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete department.");
+    }
   };
 
   return (
@@ -392,17 +456,26 @@ export default function DepartmentManagement() {
                 </h2>
                 <p className="text-xs text-[#076935] font-medium mt-0.5">Primary Location: {selectedDept.location}</p>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const d = selectedDept;
-                  setSelectedDept(null);
-                  handleStartEdit(d);
-                }}
-                className="inline-flex items-center gap-1.5 rounded-md bg-[#F39927] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#d8821a] transition"
-              >
-                <Pencil size={14} /> Edit Department
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleDeleteDepartment(selectedDept)}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-100"
+                >
+                  <Trash2 size={14} /> Delete
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const d = selectedDept;
+                    setSelectedDept(null);
+                    handleStartEdit(d);
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-[#F39927] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#d8821a] transition"
+                >
+                  <Pencil size={14} /> Edit Department
+                </button>
+              </div>
             </div>
 
             <p className="text-xs text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-xl border border-gray-200">
@@ -553,8 +626,10 @@ export default function DepartmentManagement() {
             </button>
             <button
               type="submit"
-              className="rounded-md bg-[#076935] px-4 py-2 font-bold text-white hover:bg-[#055028]"
+              disabled={submitting}
+              className="rounded-md bg-[#076935] px-4 py-2 font-bold text-white hover:bg-[#055028] disabled:opacity-60"
             >
+              {submitting ? <Loader2 size={15} className="animate-spin inline mr-1" /> : null}
               Create Department
             </button>
           </div>
@@ -707,8 +782,10 @@ export default function DepartmentManagement() {
               </button>
               <button
                 type="submit"
-                className="rounded-md bg-[#076935] px-4 py-2 font-bold text-white hover:bg-[#055028]"
+                disabled={submitting}
+                className="rounded-md bg-[#076935] px-4 py-2 font-bold text-white hover:bg-[#055028] disabled:opacity-60"
               >
+                {submitting ? <Loader2 size={15} className="animate-spin inline mr-1" /> : null}
                 Save Changes
               </button>
             </div>

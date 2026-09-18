@@ -16,15 +16,18 @@ import {
   FileSpreadsheet,
   Download,
   UserX,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 import { usePageTitle } from "../../../hooks/usePageTitle";
 import Modal from "../../../components/ui/Modal";
 import { toast } from "sonner";
 import { useDepartmentStore } from "../../../store/useDepartmentStore";
-import { apiGet } from "../../../api/client";
+import { apiGet, apiPost, apiPut, apiDelete } from "../../../api/client";
 
 export interface Employee {
   id: string;
+  db_id?: number;
   code: string;
   first_name: string;
   last_name: string;
@@ -50,20 +53,53 @@ export interface Employee {
   };
 }
 
+const EMPLOYMENT_TYPE_TO_BACKEND: Record<string, string> = {
+  "Full-Time Permanent": "full_time",
+  "Part-Time": "part_time",
+  "Seasonal Farm Worker": "casual",
+  "Fixed-Term Contract": "contract",
+};
+
+const BACKEND_TO_EMPLOYMENT_TYPE: Record<string, string> = {
+  full_time: "Full-Time Permanent",
+  part_time: "Part-Time",
+  casual: "Seasonal Farm Worker",
+  contract: "Fixed-Term Contract",
+  internship: "Internship",
+};
+
+const STATUS_TO_BACKEND: Record<string, string> = {
+  Active: "active",
+  "On Leave": "on_leave",
+  Suspended: "suspended",
+  Terminated: "terminated",
+};
+
+const BACKEND_TO_STATUS: Record<string, string> = {
+  active: "Active",
+  on_leave: "On Leave",
+  suspended: "Suspended",
+  terminated: "Terminated",
+  inactive: "Inactive",
+};
+
 const INITIAL_EMPLOYEES: Employee[] = [];
 
 export default function EmployeeProfiles() {
   usePageTitle("employee-profiles", "Employee Profiles & Records");
 
-  const { departments } = useDepartmentStore();
+  const { departments, setDepartments } = useDepartmentStore();
   const [employees, setEmployees] = useState<Employee[]>(INITIAL_EMPLOYEES);
+  const [deptIdMap, setDeptIdMap] = useState<Record<string, number>>({});
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     apiGet<{ success: boolean; data: any[] }>("/api/employees")
       .then((res) => {
-        if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
+        if (res?.success && Array.isArray(res.data)) {
           const mapped: Employee[] = res.data.map((item: any) => ({
             id: `EMP-${item.id}`,
+            db_id: Number(item.id),
             code: item.emp_number || `KF-EMP-${item.id}`,
             first_name: item.fullname ? item.fullname.split(" ")[0] : "Staff",
             last_name: item.fullname ? item.fullname.split(" ").slice(1).join(" ") : "",
@@ -71,14 +107,17 @@ export default function EmployeeProfiles() {
             phone: item.phone || "",
             department: item.department_name || "General",
             job_title: item.job_title || "Staff Member",
-            employment_type: item.employment_type === "contract" ? "Fixed-Term Contract" : "Full-Time Permanent",
-            status: item.status === "active" ? "Active" : item.status === "on_leave" ? "On Leave" : "Inactive" as any,
+            employment_type:
+              (BACKEND_TO_EMPLOYMENT_TYPE[item.employment_type] as Employee["employment_type"]) ||
+              "Full-Time Permanent",
+            status: (BACKEND_TO_STATUS[item.status] || "Active") as Employee["status"],
             location: item.address || "Kigali HQ",
             hire_date: item.date_hired || new Date().toISOString().split("T")[0],
             salary_rwf: Number(item.salary_rwf) || 0,
             contract_id: item.contract_ref || undefined,
             contract_end_date: item.contract_end_date || null,
-            contract_status: item.contract_end_date ? "Expiring Soon" : "Active",
+            contract_status:
+              item.status === "terminated" ? "Expired" : item.contract_end_date ? "Expiring Soon" : "Active",
             emergency_contact: {
               name: item.emergency_person_name || "",
               relationship: "Family",
@@ -103,6 +142,33 @@ export default function EmployeeProfiles() {
       .catch(() => {
         setEmployees([]);
       });
+
+    apiGet<{ success: boolean; data: any[] }>("/api/departments")
+      .then((res) => {
+        if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
+          const mappedDepts = res.data.map((d: any) => ({
+            id: String(d.id),
+            code: d.code || `KF-DEP-${d.id}`,
+            name: d.name,
+            lead_name: d.lead_name || "Unassigned",
+            lead_email: d.lead_email || "",
+            staff_count: Number(d.staff_count) || 0,
+            capacity: Number(d.capacity) || 10,
+            monthly_budget_rwf: Number(d.monthly_budget_rwf) || 0,
+            location: d.location || "Kigali HQ",
+            status: d.status || "Active",
+            description: d.description || "",
+          }));
+          setDepartments(mappedDepts);
+          const map: Record<string, number> = {};
+          res.data.forEach((d: any) => {
+            map[String(d.name).trim().toLowerCase()] = Number(d.id);
+          });
+          setDeptIdMap(map);
+        }
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [viewMode, setViewMode] = useState<"table" | "grid">("grid");
   const [search, setSearch] = useState("");
@@ -214,7 +280,12 @@ export default function EmployeeProfiles() {
     return { total, active, onLeave, totalSalary };
   }, [filteredEmployees]);
 
-  const handleAddEmployee = (e: React.FormEvent) => {
+  const deptIdFor = (name: string): number | null => {
+    const key = name.trim().toLowerCase();
+    return deptIdMap[key] ?? Object.values(deptIdMap)[0] ?? null;
+  };
+
+  const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
       !form.first_name.trim() ||
@@ -225,56 +296,92 @@ export default function EmployeeProfiles() {
       return;
     }
 
-    const newEmp: Employee = {
-      id: `EMP-00${employees.length + 1}`,
-      code: `KF-EMP-10${employees.length + 1}`,
-      first_name: form.first_name.trim(),
-      last_name: form.last_name.trim(),
-      email:
-        form.email.trim() ||
-        `${form.first_name.toLowerCase()}.${form.last_name.toLowerCase()}@kainafresh.rw`,
-      phone: form.phone.trim(),
-      department: form.department,
-      job_title: form.job_title.trim() || "Operations Staff",
-      employment_type: form.employment_type,
-      status: "Active",
-      location: form.location,
-      hire_date: new Date().toISOString().split("T")[0],
-      salary_rwf: Number(form.salary_rwf),
-      contract_id: form.contract_id.trim() || undefined,
-      contract_start_date: form.contract_start_date || new Date().toISOString().split("T")[0],
-      contract_end_date: form.contract_end_date || null,
-      contract_status: form.contract_status,
-      emergency_contact: {
-        name: form.emergency_name.trim(),
-        relationship: form.emergency_relationship,
-        phone: form.emergency_phone.trim(),
-      },
-    };
+    setSubmitting(true);
+    try {
+      const fullname = `${form.first_name.trim()} ${form.last_name.trim()}`;
+      const deptId = deptIdFor(form.department);
+      const today = new Date().toISOString().split("T")[0];
+      const payload: Record<string, unknown> = {
+        fullname,
+        emp_number: `KF-EMP-${Date.now().toString().slice(-6)}`,
+        phone: form.phone.trim(),
+        email: form.email.trim() || `${form.first_name.trim().toLowerCase()}.${form.last_name.trim().toLowerCase()}@kainafresh.rw`,
+        address: form.location,
+        job_title: form.job_title.trim() || "Operations Staff",
+        employment_type: EMPLOYMENT_TYPE_TO_BACKEND[form.employment_type] || "full_time",
+        status: "active",
+        date_hired: form.contract_start_date || today,
+        contract_ref: form.contract_id.trim() || undefined,
+        contract_end_date: form.contract_end_date || null,
+        emergency_person_name: form.emergency_name.trim() || undefined,
+        emergency_phone_number: form.emergency_phone.trim() || undefined,
+      };
+      if (deptId) {
+        payload.dept_id = deptId;
+      }
 
-    setEmployees([newEmp, ...employees]);
-    setIsAddOpen(false);
-    setForm({
-      first_name: "",
-      last_name: "",
-      email: "",
-      phone: "",
-      department: "Farm Operations",
-      job_title: "",
-      employment_type: "Full-Time Permanent",
-      location: "Musanze Plot A",
-      salary_rwf: 350000,
-      contract_id: "",
-      contract_start_date: new Date().toISOString().split("T")[0],
-      contract_end_date: "",
-      contract_status: "Active",
-      emergency_name: "",
-      emergency_relationship: "Spouse",
-      emergency_phone: "",
-    });
-    toast.success(
-      `Employee ${newEmp.first_name} ${newEmp.last_name} registered successfully!`,
-    );
+      const res = await apiPost<{ success: boolean; message?: string; data?: any }>(
+        "/api/employees",
+        payload,
+      );
+      if (!res?.success) {
+        toast.error(res?.message || "Failed to register employee.");
+        return;
+      }
+
+      const created = res.data || {};
+      const newEmp: Employee = {
+        id: `EMP-${created.id ?? Date.now()}`,
+        db_id: Number(created.id),
+        code: created.emp_number || String(payload.emp_number),
+        first_name: form.first_name.trim(),
+        last_name: form.last_name.trim(),
+        email: String(payload.email),
+        phone: form.phone.trim(),
+        department: form.department,
+        job_title: created.job_title || form.job_title.trim() || "Operations Staff",
+        employment_type: form.employment_type,
+        status: "Active",
+        location: form.location,
+        hire_date: today,
+        salary_rwf: Number(form.salary_rwf) || 0,
+        contract_id: form.contract_id.trim() || undefined,
+        contract_start_date: form.contract_start_date || today,
+        contract_end_date: form.contract_end_date || null,
+        contract_status: "Active",
+        emergency_contact: {
+          name: form.emergency_name.trim(),
+          relationship: form.emergency_relationship,
+          phone: form.emergency_phone.trim(),
+        },
+      };
+
+      setEmployees((prev) => [newEmp, ...prev]);
+      setIsAddOpen(false);
+      setForm({
+        first_name: "",
+        last_name: "",
+        email: "",
+        phone: "",
+        department: departments[0]?.name || "Farm Operations",
+        job_title: "",
+        employment_type: "Full-Time Permanent",
+        location: "Musanze Plot A",
+        salary_rwf: 350000,
+        contract_id: "",
+        contract_start_date: today,
+        contract_end_date: "",
+        contract_status: "Active",
+        emergency_name: "",
+        emergency_relationship: "Spouse",
+        emergency_phone: "",
+      });
+      toast.success(`Employee ${newEmp.first_name} ${newEmp.last_name} registered successfully!`);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to register employee.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleStartEdit = (emp: Employee) => {
@@ -282,7 +389,7 @@ export default function EmployeeProfiles() {
     setEditForm(JSON.parse(JSON.stringify(emp)));
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editForm) return;
 
@@ -295,14 +402,78 @@ export default function EmployeeProfiles() {
       return;
     }
 
-    setEmployees(employees.map((e) => (e.id === editForm.id ? editForm : e)));
-    if (selectedEmp?.id === editForm.id) {
-      setSelectedEmp(editForm);
+    setSubmitting(true);
+    try {
+      const fullname = `${editForm.first_name.trim()} ${editForm.last_name.trim()}`;
+      const deptId = deptIdFor(editForm.department);
+      const payload: Record<string, unknown> = {
+        fullname,
+        phone: editForm.phone.trim(),
+        email: editForm.email.trim() || undefined,
+        address: editForm.location,
+        job_title: editForm.job_title || "Operations Staff",
+        employment_type: EMPLOYMENT_TYPE_TO_BACKEND[editForm.employment_type] || "full_time",
+        status: STATUS_TO_BACKEND[editForm.status] || "active",
+        contract_ref: editForm.contract_id?.trim() || undefined,
+        contract_end_date: editForm.contract_end_date || null,
+        emergency_person_name: editForm.emergency_contact?.name?.trim() || undefined,
+        emergency_phone_number: editForm.emergency_contact?.phone?.trim() || undefined,
+      };
+      if (deptId) {
+        payload.dept_id = deptId;
+      }
+
+      if (editForm.db_id) {
+        const res = await apiPut<{ success: boolean; message?: string; data?: any }>(
+          `/api/employees/${editForm.db_id}`,
+          payload,
+        );
+        if (!res?.success) {
+          toast.error(res?.message || "Failed to update employee.");
+          return;
+        }
+      } else {
+        toast.warning("Employee has no backend id; updating local copy only.");
+      }
+
+      setEmployees(employees.map((e) => (e.id === editForm.id ? editForm : e)));
+      if (selectedEmp?.id === editForm.id) {
+        setSelectedEmp(editForm);
+      }
+      setEditingEmp(null);
+      toast.success(`Updated profile for ${editForm.first_name} ${editForm.last_name}!`);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update employee.");
+    } finally {
+      setSubmitting(false);
     }
-    setEditingEmp(null);
-    toast.success(
-      `Updated profile for ${editForm.first_name} ${editForm.last_name}!`,
-    );
+  };
+
+  const handleDeleteEmployee = async (emp: Employee) => {
+    if (!emp.db_id) {
+      toast.error("Cannot delete an employee that was not saved to the backend.");
+      return;
+    }
+    if (!window.confirm(`Delete employee ${emp.first_name} ${emp.last_name} (ID ${emp.code})? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const res = await apiDelete<{ success: boolean; message?: string }>(
+        `/api/employees/${emp.db_id}`,
+      );
+      if (!res?.success) {
+        toast.error(res?.message || "Failed to delete employee.");
+        return;
+      }
+      setEmployees((prev) => prev.filter((p) => p.id !== emp.id));
+      if (selectedEmp?.id === emp.id) {
+        setSelectedEmp(null);
+      }
+      toast.success(res?.message || "Employee deleted successfully!");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete employee.");
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -827,6 +998,13 @@ export default function EmployeeProfiles() {
               </div>
               <button
                 type="button"
+                onClick={() => handleDeleteEmployee(selectedEmp)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-100"
+              >
+                <Trash2 size={14} /> Delete Profile
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   const emp = selectedEmp;
                   setSelectedEmp(null);
@@ -1085,7 +1263,9 @@ export default function EmployeeProfiles() {
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      contract_status: e.target.value as Employee["contract_status"],
+                      contract_status: e.target.value as NonNullable<
+                        Employee["contract_status"]
+                      >,
                     })
                   }
                   className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2.5 outline-none focus:border-[#076935]"
@@ -1171,12 +1351,16 @@ export default function EmployeeProfiles() {
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="rounded-md bg-[#076935] px-4 py-2 font-bold text-white hover:bg-[#055028]"
-            >
-              Register Staff & Record
-            </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="inline-flex items-center justify-center gap-1 rounded-md bg-[#076935] px-4 py-2 font-bold text-white hover:bg-[#055028] disabled:opacity-60"
+                >
+                  {submitting ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : null}
+                  Register Staff & Record
+                </button>
           </div>
         </form>
       </Modal>
@@ -1378,7 +1562,9 @@ export default function EmployeeProfiles() {
                     onChange={(e) =>
                       setEditForm({
                         ...editForm,
-                        contract_status: e.target.value as Employee["contract_status"],
+                      contract_status: e.target.value as NonNullable<
+                        Employee["contract_status"]
+                      >,
                       })
                     }
                     className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2.5 outline-none focus:border-[#076935]"
@@ -1481,12 +1667,14 @@ export default function EmployeeProfiles() {
               >
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="rounded-md bg-[#076935] px-4 py-2 font-bold text-white hover:bg-[#055028]"
-              >
-                Save Changes
-              </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#076935] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#055028] disabled:opacity-60"
+            >
+              {submitting ? <Loader2 size={15} className="animate-spin" /> : null}
+              Register Staff & Record
+            </button>
             </div>
           </form>
         )}
