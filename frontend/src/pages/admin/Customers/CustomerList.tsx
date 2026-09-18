@@ -41,7 +41,7 @@ import {
  * --------------------------------------------------------------------- */
 const SEGMENT_OPTIONS: StatusOption[] = [
   { value: "retail", label: "Retail Buyer", dotClassName: "bg-blue-500" },
-  { value: "wholesale", label: "B2B Wholesale", dotClassName: "bg-amber-500" },
+  { value: "wholesale", label: "Wholesale", dotClassName: "bg-amber-500" },
   { value: "vip", label: "VIP Subscriber", dotClassName: "bg-purple-500" },
 ];
 
@@ -58,6 +58,7 @@ interface Customer {
   id: number | string;
   first_name: string;
   last_name: string;
+  user_id?: number;  
   phone: string;
   email: string | null;
   address: string | null;
@@ -68,7 +69,7 @@ interface Customer {
   district?: string;
   segment?: "retail" | "wholesale" | "vip";
   status?: "active" | "inactive" | "suspended";
-  total_orders?: number;
+  total_orders?: number; 
   total_spent?: number;
   last_order?: string | null;
   preferred_payment?: string;
@@ -89,7 +90,7 @@ interface CustomerStats {
 
 const SEGMENT_LABELS: Record<SegmentKey, string> = {
   retail: "Retail Buyer",
-  wholesale: "B2B Wholesale",
+  wholesale: "Wholesale",
   vip: "VIP Subscriber",
 };
 
@@ -244,7 +245,7 @@ export default function CustomerList() {
         district: extractDistrict(c.address),
         segment: normalizeSegmentKey(c.segment),
         status: normalizeStatusKey(c.status),
-        total_orders: 0, // Would come from orders count
+        total_orders: Number(c.total_orders ?? 0) || 0,
         total_spent: 0, // Would come from orders total
         last_order: null,
         preferred_payment: "Cash on Delivery",
@@ -424,7 +425,7 @@ export default function CustomerList() {
       accent: "bg-blue-50",
     },
     {
-      label: "B2B Wholesale",
+      label: "Wholesale",
       value: stats.wholesale,
       icon: <Building2 size={22} className="text-amber-600" />,
       accent: "bg-amber-50",
@@ -606,9 +607,7 @@ export default function CustomerList() {
                             <p className="truncate font-semibold text-gray-800">
                               {fullName(c)}
                             </p>
-                            <p className="text-xs text-gray-400">
-                              ID: {c.id}
-                            </p>
+                            
                           </div>
                         </div>
                       </td>

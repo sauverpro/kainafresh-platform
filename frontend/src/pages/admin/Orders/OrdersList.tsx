@@ -57,6 +57,7 @@ interface BackendOrder {
   customer_last_name?: string;
   customer_phone?: string;
   customer_email?: string;
+  orderId?: string;
 }
 
 const STATUS_MAP: Record<string, OrderItem['status']> = {
@@ -116,13 +117,20 @@ function paymentLabelOf(source?: string): OrderItem['paymentMethod'] {
  * throughout this page. Item line items are fetched lazily when an
  * order is opened in the detail drawer.
  */
+function referenceOf(o: BackendOrder): string {
+  if (o.orderId && o.orderId.trim()) {
+    return o.orderId.trim().toUpperCase();
+  }
+  return `KF-${String(o.id).padStart(4, '0')}`;
+}
 function mapBackendOrder(o: BackendOrder): OrderItem {
   const status = STATUS_MAP[(o.status || '').toLowerCase()] || 'Pending';
   const { date, time } = formatOrderDate(o.order_date);
   const customerName = customerNameOf(o);
+  const reference = referenceOf(o);
 
   return {
-    id: `KF-${String(o.id).padStart(4, '0')}`,
+    id: reference,
     backendId: o.id,
     customerName,
     customerEmail: o.customer_email || '',

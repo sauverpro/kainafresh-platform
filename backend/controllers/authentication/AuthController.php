@@ -3,9 +3,11 @@ class AuthController extends BaseController {
 
 private $userModel;
 private $tokenModel;
+protected $customerModel;
     public function __construct() {
         $this->userModel = new User();
         $this->tokenModel = new Token();
+        $this->customerModel = new Customer();
         
     }
     public function test(){
@@ -44,6 +46,18 @@ private $tokenModel;
         $data['role'] = $data['role'] ?? 'customer';
 
         $user = $this->userModel->create($data);
+            if($user['role'] ==='customer'){
+         $name = explode(" ",$user['full_name']);
+         $first_name = $name[0];
+         $last_name = implode(" ", array_slice($name, 1));
+
+         $custom['first_name'] = $first_name;
+         $custom['last_name'] = $last_name;
+         $custom['phone'] = trim($user['phone_number']);
+         $custom['user_id'] = $user['id'];
+         $custom['email'] = $user['email'];
+          $this->customerModel->create($custom);
+            }
            $this->jsonResponse([
             'success' => true,
             'message' => 'User registered successfully',

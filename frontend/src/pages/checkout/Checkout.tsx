@@ -597,6 +597,7 @@ export default function Checkout() {
 
     setSubmitting(true);
     setErrorMsg(null);
+    const generatedOrderId = `KF-${Date.now().toString().slice(-6)}`;
 
     try {
       const nameParts = form.fullName.trim().split(/\s+/).filter(Boolean);
@@ -626,7 +627,7 @@ export default function Checkout() {
         console.warn("Customer record creation notice:", custErr);
       }
 
-      const generatedOrderId = `KF-${Date.now().toString().slice(-6)}`;
+     
 
       const orderResponse = await apiPost<{
         success?: boolean; message?: string; id?: number | string; data?: { id?: number | string };
@@ -657,10 +658,10 @@ export default function Checkout() {
         )
       );
 
-      const randomRef = `KF-${String(orderId).padStart(5, "0")}`;
-
+      //const randomRef = `KF-${String(orderId).padStart(5, "0")}`;
+     
       setOrderConfirmation({
-        orderRef: randomRef,
+        orderRef: generatedOrderId,
         date: new Date().toLocaleDateString("en-US", {
           year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",
         }),

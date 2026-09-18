@@ -10,6 +10,7 @@ class Order extends Model
         'user_id',
         'customer_id',
         'order_date',
+        'orderId',
         'status',
         'total',
         'order_source'
@@ -114,7 +115,7 @@ class Order extends Model
                 LIMIT 1";
 
         $stmt = $this->db->prepare($sql);
-        $stmt->bind_param("i", $id);
+        $stmt->bind_param("s", $id);
         $stmt->execute();
 
         $result = $stmt->get_result();

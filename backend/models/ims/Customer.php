@@ -21,9 +21,22 @@ class Customer extends Model
      */
     public function allCustomers()
     {
-        $sql = "SELECT *
+       $sql = "SELECT 
+                c.*,
+                COALESCE(o.order_count, 0) AS total_orders
+            FROM `{$this->table}` c
+            INNER JOIN (
+                SELECT user_id, MAX(id) AS max_id
                 FROM `{$this->table}`
-                ORDER BY id DESC";
+                WHERE user_id IS NOT NULL
+                GROUP BY user_id
+            ) latest ON latest.max_id = c.id
+            LEFT JOIN (
+                SELECT user_id, COUNT(*) AS order_count
+                FROM `orders`
+                GROUP BY user_id
+            ) o ON o.user_id = c.user_id
+            ORDER BY c.id DESC";
 
         $stmt = $this->db->prepare($sql);
 

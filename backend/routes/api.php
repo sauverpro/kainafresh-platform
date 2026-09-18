@@ -313,7 +313,7 @@ $router->addRoute(
 $router->addRoute(
     'GET',
     '/api/orders/{orderId}/items',
-    'OrderItemController@indexByOrder','auth'
+    'OrderItemController@indexByOrder'
 );
 
 $router->addRoute(
@@ -333,6 +333,7 @@ $router->addRoute(
     '/api/order-items/{id}',
     'OrderItemController@destroy','auth'
 );
+
 
 
 /*
