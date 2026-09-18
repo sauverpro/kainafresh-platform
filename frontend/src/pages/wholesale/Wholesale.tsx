@@ -10,12 +10,11 @@ import {
   ArrowRight,
   Phone,
   Mail,
-  ChevronDown,
 } from "lucide-react";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import PageShellSkeleton from "../../components/skeletons/PageShellSkeleton";
-import { apiGet,apiPost } from "../../api/client";
+import { apiGet, apiPost } from "../../api/client";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import "./Wholesale.css";
 
@@ -26,8 +25,16 @@ import "./Wholesale.css";
  * Contact form submission: POST /api/wholesale/inquiry — NOT YET IMPLEMENTED (mock).
  */
 // Icon map: CMS stores icon names as strings, we map them to lucide-react components
-const ICON_MAP: Record<string, React.FC<{ size?: number; color?: string; strokeWidth?: number }>> = {
-  Package, Truck, Globe, CheckCircle,TrendingUp,Handshake
+const ICON_MAP: Record<
+  string,
+  React.FC<{ size?: number; color?: string; strokeWidth?: number }>
+> = {
+  Package,
+  Truck,
+  Globe,
+  CheckCircle,
+  TrendingUp,
+  Handshake,
 };
 interface WholesaleHero {
   badge?: string;
@@ -36,152 +43,51 @@ interface WholesaleHero {
   description?: string;
   primaryCta?: { label: string; to: string };
   secondaryCta?: { label: string; to: string };
-  client_stat?:{stat_label:string; stat_number:string};
-  export_stat?:{stat_label:string; stat_number:string};
-  product_stat?:{stat_label:string; stat_number:string};
+  client_stat?: { stat_label: string; stat_number: string };
+  export_stat?: { stat_label: string; stat_number: string };
+  product_stat?: { stat_label: string; stat_number: string };
 }
-interface WhyContentItem {icon:string; title:string; description:string}
+interface WhyContentItem {
+  icon: string;
+  title: string;
+  description: string;
+}
 interface WhyContent {
-  tag?:string;
+  tag?: string;
   heading?: string;
-  paragraphs?:string;
-  items?:WhyContentItem[];
+  paragraphs?: string;
+  items?: WhyContentItem[];
 }
-interface DestinationContentItem {destination:string};
+interface DestinationContentItem {
+  destination: string;
+}
 interface DestinationContent {
-  tag?:string;
+  tag?: string;
   heading?: string;
-  paragraphs?:string;
+  paragraphs?: string;
   items?: DestinationContentItem[];
-
 }
-interface ProgressItem {number:string; title:string; description:string;}
+interface ProgressItem {
+  number: string;
+  title: string;
+  description: string;
+}
 interface ProgressContent {
-  tag?:string;
+  tag?: string;
   heading?: string;
-  paragraphs?:string;
+  paragraphs?: string;
   items?: ProgressItem[];
 }
-// const BENEFITS = [
-//   {
-//     icon: Package,
-//     title: "Bulk Pricing",
-//     description:
-//       "Competitive tiered pricing for large volume orders. The more you order, the better the rate.",
-//   },
-//   {
-//     icon: Truck,
-//     title: "Reliable Delivery",
-//     description:
-//       "Scheduled, on-time delivery with cold-chain logistics to preserve freshness throughout transit.",
-//   },
-//   {
-//     icon: Globe,
-//     title: "Export Ready",
-//     description:
-//       "All produce is certified and packaged to meet international export standards and phytosanitary requirements.",
-//   },
-//   {
-//     icon: TrendingUp,
-//     title: "Consistent Supply",
-//     description:
-//       "Year-round availability on most produce lines. We plan our harvests to match your supply needs.",
-//   },
-//   {
-//     icon: Handshake,
-//     title: "Dedicated Account Manager",
-//     description:
-//       "Every wholesale client gets a dedicated point of contact for orders, queries, and custom arrangements.",
-//   },
-//   {
-//     icon: CheckCircle,
-//     title: "Certified Quality",
-//     description:
-//       "All products are organically certified, inspected, and graded before any bulk order is dispatched.",
-//   },
-// ];
-
-const PRODUCT_CATEGORIES = [
-  {
-    name: "Fresh Vegetables",
-    examples: "Tomatoes, Peppers, Onions, Carrots, Cabbage",
-    minOrder: "50 kg",
-    emoji: "🥬",
-  },
-  {
-    name: "Tropical Fruits",
-    examples: "Avocados, Mangoes, Pineapples, Passion Fruit",
-    minOrder: "30 kg",
-    emoji: "🥭",
-  },
-  {
-    name: "Root Crops",
-    examples: "Potatoes, Sweet Potatoes, Cassava, Yams",
-    minOrder: "100 kg",
-    emoji: "🥔",
-  },
-  {
-    name: "Leafy Greens",
-    examples: "Kale, Spinach, Amaranth, Lettuce",
-    minOrder: "20 kg",
-    emoji: "🌿",
-  },
-  {
-    name: "Legumes",
-    examples: "Beans, Lentils, Peas, Soybeans",
-    minOrder: "50 kg",
-    emoji: "🫘",
-  },
-  {
-    name: "Grains & Cereals",
-    examples: "Maize, Sorghum, Rice, Millet",
-    minOrder: "100 kg",
-    emoji: "🌾",
-  },
-];
-
-// const PROCESS_STEPS = [
-//   {
-//     number: "01",
-//     title: "Submit an Inquiry",
-//     description:
-//       "Fill in the inquiry form below or email us directly. Tell us what you need, quantities, and your preferred delivery schedule.",
-//   },
-//   {
-//     number: "02",
-//     title: "Get a Custom Quote",
-//     description:
-//       "Our team reviews your requirements and sends back a tailored pricing proposal within 24 hours.",
-//   },
-//   {
-//     number: "03",
-//     title: "Confirm & Sign",
-//     description:
-//       "Review the quote, agree on terms, and sign a supply agreement. A deposit confirms your order slot.",
-//   },
-//   {
-//     number: "04",
-//     title: "Harvest, Pack & Deliver",
-//     description:
-//       "We harvest to your schedule, pack under quality control, and dispatch with full tracking.",
-//   },
-// ];
-
 /**
  * ============================================================================
  * KainaFresh Organic Platform — Wholesale B2B & Export Program Component
  * ============================================================================
- * 
+ *
  * Features:
  * 1. B2B Wholesale inquiry form with country, product interest, and volume specs.
  * 2. Export capabilities showcase, cold-chain logistics specs, and certifications.
  * 3. Integrated glassmorphic page loading screen during database fetch.
  */
-
-
-
-
-
 
 function Wholesale() {
   usePageTitle("wholesale", "Wholesale & Exports");
@@ -199,50 +105,61 @@ function Wholesale() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [cmsWhy, setCmsWhy] = useState<WhyContent |null>(null);
-  const [cmsDestination, setCmsDestination] = useState<DestinationContent | null>(null);
+  const [cmsWhy, setCmsWhy] = useState<WhyContent | null>(null);
+  const [cmsDestination, setCmsDestination] =
+    useState<DestinationContent | null>(null);
   const [cmsProgress, setCmsProgress] = useState<ProgressContent | null>(null);
   const [primaryEmail, setPrimaryEmail] = useState<string | null>(null);
   const [secondaryEmail, setSecondaryEmail] = useState<string | null>(null);
   const [primaryNumber, setPrimaryNumber] = useState<string | null>(null);
   const [secondaryNumber, setSecondaryNumber] = useState<string | null>(null);
   useEffect(() => {
-    async function loadData(){
+    async function loadData() {
       try {
-        const settings = await apiGet<Record<string, unknown>>('/api/settings/');
-                const settingsPayload = (settings as { data?: unknown })?.data ?? settings ?? {};
-        
-                const payloadAsObj = settingsPayload as Record<string, unknown>;
-                const settingData = Array.isArray(settingsPayload)
-                  ? settingsPayload[0] ?? null
-                  : Array.isArray(payloadAsObj?.results)
-                    ? payloadAsObj.results[0] ?? null
-                    : payloadAsObj?.settings && typeof payloadAsObj.settings === 'object'
-                      ? payloadAsObj.settings
-                      : settingsPayload ?? null;
-                  const finalData = (settingData || {}) as Record<string, string>;
-                  setPrimaryEmail(finalData.primary_email ?? null);
-                  setSecondaryEmail(finalData.secondary_email ?? null);
-                  setPrimaryNumber(finalData.primary_number ?? null);
-                  setSecondaryNumber(finalData.secondary_nummber ?? null);
+        const settings =
+          await apiGet<Record<string, unknown>>("/api/settings/");
+        const settingsPayload =
+          (settings as { data?: unknown })?.data ?? settings ?? {};
 
+        const payloadAsObj = settingsPayload as Record<string, unknown>;
+        const settingData = Array.isArray(settingsPayload)
+          ? (settingsPayload[0] ?? null)
+          : Array.isArray(payloadAsObj?.results)
+            ? (payloadAsObj.results[0] ?? null)
+            : payloadAsObj?.settings &&
+                typeof payloadAsObj.settings === "object"
+              ? payloadAsObj.settings
+              : (settingsPayload ?? null);
+        const finalData = (settingData || {}) as Record<string, string>;
+        setPrimaryEmail(finalData.primary_email ?? null);
+        setSecondaryEmail(finalData.secondary_email ?? null);
+        setPrimaryNumber(finalData.primary_number ?? null);
+        setSecondaryNumber(finalData.secondary_nummber ?? null);
       } catch (error) {
         console.debug("Failed to load data", error);
       }
     }
-    apiGet<{ success: boolean; data: { sections: { type: string; content: WholesaleHero }[] } }>('/api/pages/slug/wholesale')
+    apiGet<{
+      success: boolean;
+      data: { sections: { type: string; content: WholesaleHero }[] };
+    }>("/api/pages/slug/wholesale")
       .then((res) => {
         if (!res.success || !res.data?.sections) return;
-        const heroSection = res.data.sections.find((s) => s.type === 'wholesale-hero');
+        const heroSection = res.data.sections.find(
+          (s) => s.type === "wholesale-hero" || s.type === "hero",
+        );
         if (heroSection) setCmsHero(heroSection.content);
-        const Whysection = res.data.sections.find((s)=> s.type === 'ws-benefits');
+        const Whysection = res.data.sections.find(
+          (s) =>
+            s.type === "ws-benefits" ||
+            s.type === "benefits" ||
+            s.type === "why_us",
+        );
         const whycontents = Whysection?.content;
-        if(Array.isArray(whycontents)){
-          setCmsWhy({items: whycontents as WhyContentItem []});
-
-        }
-        else if(whycontents && typeof whycontents ==='object'){
-          if ('items' in whycontents && Array.isArray(whycontents.items)) {
+        if (Array.isArray(whycontents)) {
+          setCmsWhy({ items: whycontents as WhyContentItem[] });
+        } else if (whycontents && typeof whycontents === "object") {
+          if ("items" in whycontents && Array.isArray(whycontents.items)) {
             setCmsWhy(whycontents as WhyContent);
           } else {
             // If it's an object but no items, treat it as the content with tag, heading, etc.
@@ -251,99 +168,118 @@ function Wholesale() {
               tag: obj.tag,
               heading: obj.heading,
               paragraphs: obj.paragraphs,
-              items: obj.items || []
+              items: obj.items || [],
             });
           }
-
         }
-        const destinationSec = res.data.sections.find((sec)=>sec.type === 'ws-exports');
+        const destinationSec = res.data.sections.find(
+          (sec) =>
+            sec.type === "ws-exports" ||
+            sec.type === "exports" ||
+            sec.type === "destinations",
+        );
         const destinationValue = destinationSec?.content;
-        if(Array.isArray(destinationValue)){
-          setCmsDestination({items: destinationValue  as DestinationContentItem[]})
-        }
-        else if(destinationValue && typeof destinationValue === 'object'){
-          if('items' in destinationValue && Array.isArray(destinationValue.items)){
+        if (Array.isArray(destinationValue)) {
+          setCmsDestination({
+            items: destinationValue as DestinationContentItem[],
+          });
+        } else if (destinationValue && typeof destinationValue === "object") {
+          if (
+            "items" in destinationValue &&
+            Array.isArray(destinationValue.items)
+          ) {
             setCmsDestination(destinationValue as DestinationContent);
-          }
-          else{
+          } else {
             const obj = destinationValue as Partial<DestinationContent>;
             setCmsDestination({
               tag: obj.tag,
-               heading: obj.heading,
+              heading: obj.heading,
               paragraphs: obj.paragraphs,
-              items: obj.items || []
+              items: obj.items || [],
             });
           }
-        }
-        else{
+        } else {
           setCmsDestination(null);
         }
         // progress section
-        const progressT = res.data.sections.find((sec)=>sec.type ==="ws-process");
+        const progressT = res.data.sections.find(
+          (sec) =>
+            sec.type === "ws-process" ||
+            sec.type === "process" ||
+            sec.type === "how_it_works",
+        );
         const progressContent = progressT?.content;
-        if(Array.isArray(progressContent)){
-          setCmsProgress({items: progressContent as ProgressItem[]});
-        } 
-        else if( progressContent &&  typeof progressContent === 'object'){
-
-        if('items' in progressContent && Array.isArray(progressContent.items)){
+        if (Array.isArray(progressContent)) {
+          setCmsProgress({ items: progressContent as ProgressItem[] });
+        } else if (progressContent && typeof progressContent === "object") {
+          if (
+            "items" in progressContent &&
+            Array.isArray(progressContent.items)
+          ) {
             setCmsProgress(progressContent as ProgressContent);
-          }
-          else{
+          } else {
             const obj = progressContent as Partial<ProgressContent>;
             setCmsProgress({
               tag: obj.tag,
-               heading: obj.heading,
+              heading: obj.heading,
               paragraphs: obj.paragraphs,
-              items: obj.items || []
+              items: obj.items || [],
             });
           }
-        }
-        else{
+        } else {
           setCmsProgress(null);
         }
       })
-      
-      .catch(() => { /* silently use defaults */ })
-      .finally(() => { setPageLoading(false); });
-      loadData();
+
+      .catch(() => {
+        /* silently use defaults */
+      })
+      .finally(() => {
+        setPageLoading(false);
+      });
+    loadData();
   }, []);
 
   // Merge CMS with defaults
   const hero: WholesaleHero = {
     badge: cmsHero?.badge,
-    heading: cmsHero?.heading ,
-    headingHighlight: cmsHero?.headingHighlight ,
-    description: cmsHero?.description ,
-    primaryCta: cmsHero?.primaryCta ,
+    heading: cmsHero?.heading,
+    headingHighlight: cmsHero?.headingHighlight,
+    description: cmsHero?.description,
+    primaryCta: cmsHero?.primaryCta,
     secondaryCta: cmsHero?.secondaryCta,
-    client_stat : cmsHero?.client_stat,
-    export_stat : cmsHero?.export_stat,
-    product_stat: cmsHero?.product_stat
+    client_stat: cmsHero?.client_stat,
+    export_stat: cmsHero?.export_stat,
+    product_stat: cmsHero?.product_stat,
   };
-  const wholesale_why = cmsWhy || {items: []};
-  //  map value icons 
-  const values = wholesale_why?.items && wholesale_why.items.length > 0
-        ? wholesale_why.items.map((v) =>({
+  const wholesale_why = cmsWhy || { items: [] };
+  //  map value icons
+  const values =
+    wholesale_why?.items && wholesale_why.items.length > 0
+      ? wholesale_why.items.map((v) => ({
           icon: ICON_MAP[v.icon] ?? Package,
           title: v.title,
           description: v.description,
         }))
-        : [];
-  const destinationcontent = cmsDestination || {items: []};
-  const destinationVal = destinationcontent?.items && destinationcontent.items.length > 0
-        ? destinationcontent.items.map((v)=>({
-          destination: v.destination
-        })):[];
-  const progresscontent = cmsProgress || {items: []};
-   const progressVal = progresscontent?.items && progresscontent.items.length >0
-        ? progresscontent.items.map((v)=>({
+      : [];
+  const destinationcontent = cmsDestination || { items: [] };
+  const destinationVal =
+    destinationcontent?.items && destinationcontent.items.length > 0
+      ? destinationcontent.items.map((v) => ({
+          destination: v.destination,
+        }))
+      : [];
+  const progresscontent = cmsProgress || { items: [] };
+  const progressVal =
+    progresscontent?.items && progresscontent.items.length > 0
+      ? progresscontent.items.map((v) => ({
           number: v.number,
-          title : v.title,
-          description: v.description
-        })):[];
+          title: v.title,
+          description: v.description,
+        }))
+      : [];
   const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -352,26 +288,24 @@ function Wholesale() {
     e.preventDefault();
     setIsLoading(true);
     // TODO: Replace with apiPost('/api/wholesale/inquiry', form) when endpoint is ready
-   try {
-     await apiPost('/api/inquiry/create',{
-      companyName: form.companyName.trim(),
-      contactName : form.contactName.trim(),
-      country : form.country.trim(),
-      phone: form.phone.trim(),
-      email: form.email.trim(),
-      productInterest: form.productInterest.trim(),
-      message: form.message.trim(),
-      estimatedQuantity: form.estimatedQuantity.trim()
-
-     });
-     setTimeout(() => {
-      setIsLoading(false);
-      setSubmitted(true);
-    }, 1200);
-   } catch (error) {
-    console.debug("Failed", error);
-   } 
-   
+    try {
+      await apiPost("/api/inquiry/create", {
+        companyName: form.companyName.trim(),
+        contactName: form.contactName.trim(),
+        country: form.country.trim(),
+        phone: form.phone.trim(),
+        email: form.email.trim(),
+        productInterest: form.productInterest.trim(),
+        message: form.message.trim(),
+        estimatedQuantity: form.estimatedQuantity.trim(),
+      });
+      setTimeout(() => {
+        setIsLoading(false);
+        setSubmitted(true);
+      }, 1200);
+    } catch (error) {
+      console.debug("Failed", error);
+    }
   };
 
   if (pageLoading) {
@@ -395,11 +329,11 @@ function Wholesale() {
             </h1>
             <p>{hero.description}</p>
             <div className="ws-hero-actions">
-              <a href={hero.primaryCta?.to } className="btn btn-secondary">
-                {hero.primaryCta?.label }
+              <a href={hero.primaryCta?.to} className="btn btn-secondary">
+                {hero.primaryCta?.label}
               </a>
-              <a href={hero.secondaryCta?.to } className="btn btn-outline-white">
-                {hero.secondaryCta?.label }
+              <a href={hero.secondaryCta?.to} className="btn btn-outline-white">
+                {hero.secondaryCta?.label}
               </a>
             </div>
             <div className="ws-hero-stats">
@@ -424,9 +358,7 @@ function Wholesale() {
           <div className="ws-section-header">
             <span className="section-tag">{wholesale_why.tag}</span>
             <h2>{wholesale_why.heading}</h2>
-            <p>
-              {wholesale_why.paragraphs}
-            </p>
+            <p>{wholesale_why.paragraphs}</p>
           </div>
           <div className="benefits-grid">
             {values.map(({ icon: Icon, title, description }) => (
@@ -478,9 +410,7 @@ function Wholesale() {
                 {destinationcontent.tag}
               </span>
               <h2>{destinationcontent.heading}</h2>
-              <p>
-                {destinationcontent.paragraphs}
-              </p>
+              <p>{destinationcontent.paragraphs}</p>
               <div className="export-destinations">
                 {destinationVal.map((dest) => (
                   <span key={dest.destination} className="export-badge">
@@ -500,9 +430,7 @@ function Wholesale() {
           <div className="ws-section-header">
             <span className="section-tag">{progresscontent.tag}</span>
             <h2>{progresscontent.heading}</h2>
-            <p>
-             {progresscontent.paragraphs}
-            </p>
+            <p>{progresscontent.paragraphs}</p>
           </div>
           <div className="process-steps">
             {progressVal.map((step, index) => (
@@ -511,8 +439,7 @@ function Wholesale() {
                 <div
                   className="step-connector"
                   style={{
-                    display:
-                      index < progressVal.length - 1 ? "block" : "none",
+                    display: index < progressVal.length - 1 ? "block" : "none",
                   }}
                 />
                 <div className="step-content">
@@ -537,34 +464,34 @@ function Wholesale() {
               <div className="ws-contact-links">
                 {primaryNumber && (
                   <a href={`tel:${primaryNumber}`} className="ws-contact-link">
-                  <Phone size={16} /> {primaryNumber}
-                </a>
+                    <Phone size={16} /> {primaryNumber}
+                  </a>
                 )}
                 {secondaryNumber && (
-                  <a href={`tel:${secondaryNumber}`} className="ws-contact-link">
-                  <Phone size={16} /> {secondaryNumber}
-                </a>
+                  <a
+                    href={`tel:${secondaryNumber}`}
+                    className="ws-contact-link"
+                  >
+                    <Phone size={16} /> {secondaryNumber}
+                  </a>
                 )}
 
-                { primaryEmail &&(
+                {primaryEmail && (
                   <a
-                  href={`mailto:${primaryEmail}`}
-                  className="ws-contact-link"
-                >
-                  <Mail size={16} /> {primaryEmail}
-                </a>
-                )
-                }
-                { secondaryEmail &&(
+                    href={`mailto:${primaryEmail}`}
+                    className="ws-contact-link"
+                  >
+                    <Mail size={16} /> {primaryEmail}
+                  </a>
+                )}
+                {secondaryEmail && (
                   <a
-                  href={`mailto:${secondaryEmail}`}
-                  className="ws-contact-link"
-                >
-                  <Mail size={16} /> {secondaryEmail}
-                </a>
-                )
-                }
-                
+                    href={`mailto:${secondaryEmail}`}
+                    className="ws-contact-link"
+                  >
+                    <Mail size={16} /> {secondaryEmail}
+                  </a>
+                )}
               </div>
             </div>
 
@@ -653,25 +580,14 @@ function Wholesale() {
                   </div>
                   <div className="form-group">
                     <label htmlFor="ws-product">Product Interest</label>
-                    <div className="select-wrapper">
-                      <select
-                        id="ws-product"
-                        name="productInterest"
-                        value={form.productInterest}
-                        onChange={handleChange}
-                      >
-                        <option value="">Select a category</option>
-                        {PRODUCT_CATEGORIES.map((c) => (
-                          <option key={c.name} value={c.name}>
-                            {c.name}
-                          </option>
-                        ))}
-                        <option value="Mixed">
-                          Mixed / Multiple categories
-                        </option>
-                      </select>
-                      <ChevronDown size={16} className="select-icon" />
-                    </div>
+                    <input
+                      id="ws-product"
+                      type="text"
+                      name="productInterest"
+                      value={form.productInterest}
+                      onChange={handleChange}
+                      placeholder="e.g. Organic Avocados, Fresh Tomatoes..."
+                    />
                   </div>
                 </div>
                 <div className="form-group">
