@@ -41,7 +41,8 @@ private $tokenModel;
         }
         $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
         
-       
+        $data['role'] = $data['role'] ?? 'customer';
+
         $user = $this->userModel->create($data);
            $this->jsonResponse([
             'success' => true,
