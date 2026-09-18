@@ -247,7 +247,8 @@ export default function AdminDashboard() {
                       fontSize: 12,
                       fontWeight: 600,
                     }}
-                    formatter={(value: number) => [`${value.toFixed(1)}M RWF`, "Revenue"]}
+                  formatter={(value) => [`${(Number(value) || 0).toFixed(1)}M RWF`, "Revenue"]}
+
                   />
                   <Bar dataKey="revenue_rwf" fill="#076935" radius={[6, 6, 0, 0]} maxBarSize={28} />
                 </BarChart>
