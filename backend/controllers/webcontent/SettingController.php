@@ -11,6 +11,7 @@ public function __construct(){
     
 }
 
+
 public function index(){
     $data = $this->settingModel->getSettings();
     $this->jsonResponse([
@@ -150,4 +151,5 @@ public function uploadlogo(){
     }
 
 }
+
 }

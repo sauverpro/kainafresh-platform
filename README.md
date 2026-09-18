@@ -1,5 +1,4 @@
-for better experience, drop all tables you have on your local kainafresh database and import fresh tables from db folder
-
+# KainaFresh Platform
 # Stock Management
 
 The `stocks` module manages available agricultural product stock, including product variety, grade, quantity, farm plot, harvest date, and packing date.

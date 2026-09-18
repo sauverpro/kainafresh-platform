@@ -3,11 +3,11 @@
 class NavLinkController extends BaseController {
 
     private $nav_link_model;
-    private $user_model;
+    private $userModel;
 
     public function __construct() {
         $this->nav_link_model = new NavLink();
-        $this->user_model = new User();
+        $this->userModel = new User();
     }
     public function index() {
         $data = $this->nav_link_model->getNavlinks();
@@ -19,7 +19,7 @@ class NavLinkController extends BaseController {
         if(!$userId){
             $this->jsonResponse(['message'=> 'You must login'],400);
         }
-        $user = $this->user_model->findByUserId($userId);
+        $user = $this->userModel->findByUserId($userId);
         if($user['role'] !== 'admin'){
             $this->jsonResponse(['message'=> 'Unauthorized access!'],401);
         }
@@ -47,7 +47,7 @@ class NavLinkController extends BaseController {
         if(!$userId){
             $this->jsonResponse(['message'=> 'You must Login'],400);
         }
-        $user = $this->user_model->findByUserId($userId);
+        $user = $this->userModel->findByUserId($userId);
         if($user['role'] !== 'admin'){
             $this->jsonResponse([
                 'success'=> false,
@@ -69,7 +69,7 @@ class NavLinkController extends BaseController {
         if(!$userId){
             $this->jsonResponse(['message'=> 'You must Login'],400);
         }
-        $user = $this->user_model->findByUserId($userId);
+        $user = $this->userModel->findByUserId($userId);
         if($user['role'] !== 'admin'){
             $this->jsonResponse([
                 'success'=> false,
@@ -90,6 +90,19 @@ class NavLinkController extends BaseController {
                 ],500);
         }
     }
+    public function disable($id){
+    $userId = $this->getAuthenticatedUserId();
+
+    if(!$userId){
+        $this->jsonResponse(['message'=>"You must login!"],400);
+    }
+    $user = $this->userModel->findByUserId($userId);
+    // check user access privileges
+    if($user['role'] !=='admin'){
+        $this->jsonResponse(['message'=> 'Unauthorized access!'],401);
+    }
+    
+}
     // function to get only navigation links
     public function navs(){
         $nav_links = $this->nav_link_model->getNavs();

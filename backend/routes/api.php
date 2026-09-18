@@ -103,6 +103,8 @@ $router->addRoute('POST','/api/settings/uploadlogo','SettingController@uploadlog
 $router->addRoute('POST','/api/navlinks/create','NavLinkController@store','auth');
 $router->addRoute('PUT','/api/navlinks/update/{id}','NavLinkController@update','auth');
 $router->addRoute('DELETE','/api/navlinks/delete/{id}','NavLinkController@delete','auth');
+//disable route
+$router->addRoute('POST','/api/navlinks/disable/{id}'.'NavLinkController@disable','auth');
 // create team
 $router->addRoute('POST','/api/team/new','TeamController@create','auth');
 $router->addRoute('POST','/api/team/edit/{id}','TeamController@update','auth');
