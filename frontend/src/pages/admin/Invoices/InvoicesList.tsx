@@ -13,6 +13,7 @@ import {
   Plus,
 } from "lucide-react";
 import InvoiceDrawer, { type InvoiceRecord } from "../../../components/invoices/InvoiceDrawer";
+import Modal from "../../../components/ui/Modal";
 import { toast } from "sonner";
 import MetricCard from "../../../components/ui/MetricCard";
 
@@ -26,6 +27,88 @@ export default function InvoicesList() {
   const [statusFilter, setStatusFilter] = useState<"all" | "paid" | "pending" | "overdue">("all");
   const [methodFilter, setMethodFilter] = useState<string>("all");
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRecord | null>(null);
+
+  // New Invoice Modal State
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [invoiceForm, setInvoiceForm] = useState({
+    customer_name: "",
+    customer_phone: "+250 788 123 456",
+    customer_email: "",
+    customer_tin: "",
+    order_id: "ORD-2026-089",
+    district: "Kigali (Nyarugenge)",
+    address: "Nyabugogo Market #B12",
+    produce_name: "Fresh Hass Avocados & Chillies",
+    qty: 50,
+    unit: "kg",
+    price_per_unit: 1500,
+    payment_method: "MTN MoMo Merchant",
+    status: "pending" as "paid" | "pending" | "overdue",
+    due_date: new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0],
+  });
+
+  const handleCreateInvoice = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!invoiceForm.customer_name.trim()) {
+      toast.error("Please provide a Customer / Business Name.");
+      return;
+    }
+
+    const calculatedTotal = invoiceForm.qty * invoiceForm.price_per_unit;
+    const calculatedSubtotal = Math.round(calculatedTotal / 1.18);
+    const calculatedTax = calculatedTotal - calculatedSubtotal;
+    const invId = `INV-2026-${String(invoices.length + 101).padStart(4, "0")}`;
+
+    const newInvoice: InvoiceRecord = {
+      id: invId,
+      order_id: invoiceForm.order_id.trim() || "ORD-2026-GEN",
+      customer_name: invoiceForm.customer_name.trim(),
+      customer_email: invoiceForm.customer_email.trim() || `${invoiceForm.customer_name.toLowerCase().replace(/\s+/g, "")}@buyer.rw`,
+      customer_phone: invoiceForm.customer_phone.trim(),
+      customer_tin: invoiceForm.customer_tin.trim() || "109-842-999",
+      district: invoiceForm.district,
+      address: invoiceForm.address,
+      issue_date: new Date().toISOString().split("T")[0],
+      due_date: invoiceForm.due_date,
+      status: invoiceForm.status,
+      payment_method: invoiceForm.payment_method,
+      momo_code: "492019",
+      subtotal: calculatedSubtotal,
+      tax: calculatedTax,
+      total: calculatedTotal,
+      items: [
+        {
+          produce: invoiceForm.produce_name,
+          variety: "Export Standard Grade A",
+          grade: "A",
+          qty: Number(invoiceForm.qty),
+          unit: invoiceForm.unit,
+          price: Number(invoiceForm.price_per_unit),
+          total: calculatedTotal,
+        },
+      ],
+    };
+
+    setInvoices([newInvoice, ...invoices]);
+    setIsAddModalOpen(false);
+    setInvoiceForm({
+      customer_name: "",
+      customer_phone: "+250 788 123 456",
+      customer_email: "",
+      customer_tin: "",
+      order_id: `ORD-2026-0${invoices.length + 90}`,
+      district: "Kigali (Nyarugenge)",
+      address: "Nyabugogo Market #B12",
+      produce_name: "Fresh Hass Avocados & Chillies",
+      qty: 50,
+      unit: "kg",
+      price_per_unit: 1500,
+      payment_method: "MTN MoMo Merchant",
+      status: "pending",
+      due_date: new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0],
+    });
+    toast.success(`Tax Invoice #${newInvoice.id} issued successfully!`);
+  };
 
   // Bento Card Calculations
   const totalCount = invoices.length;
@@ -100,7 +183,7 @@ export default function InvoicesList() {
             <RefreshCw size={14} /> Refresh
           </button>
           <button
-            onClick={() => toast.info("Create invoice modal triggered")}
+            onClick={() => setIsAddModalOpen(true)}
             className="flex items-center gap-2 rounded-xl bg-[#076935] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#055028] shadow-xs transition-all"
           >
             <Plus size={16} /> Issue New Invoice
@@ -359,6 +442,191 @@ export default function InvoicesList() {
         onClose={() => setSelectedInvoice(null)}
         onMarkAsPaid={handleMarkAsPaid}
       />
+
+      {/* Issue New Invoice Modal */}
+      <Modal
+        open={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        size="lg"
+        title="Issue New Official Tax Invoice"
+      >
+        <form onSubmit={handleCreateInvoice} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-gray-800 mb-1">Customer / Business Name *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Nyarugenge Supermarket / Inyange Foods"
+                value={invoiceForm.customer_name}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, customer_name: e.target.value })}
+                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-800 mb-1">Order Ref / ID *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. ORD-2026-089"
+                value={invoiceForm.order_id}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, order_id: e.target.value })}
+                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-gray-800 mb-1">Phone Number *</label>
+              <input
+                type="text"
+                required
+                placeholder="+250 788 000 000"
+                value={invoiceForm.customer_phone}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, customer_phone: e.target.value })}
+                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-800 mb-1">Customer Email</label>
+              <input
+                type="email"
+                placeholder="billing@customer.rw"
+                value={invoiceForm.customer_email}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, customer_email: e.target.value })}
+                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-800 mb-1">RRA TIN (Tax ID)</label>
+              <input
+                type="text"
+                placeholder="109-842-999"
+                value={invoiceForm.customer_tin}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, customer_tin: e.target.value })}
+                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-gray-800 mb-1">District / Province</label>
+              <input
+                type="text"
+                value={invoiceForm.district}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, district: e.target.value })}
+                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-800 mb-1">Delivery Address</label>
+              <input
+                type="text"
+                value={invoiceForm.address}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, address: e.target.value })}
+                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+              />
+            </div>
+          </div>
+
+          <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
+            <h4 className="text-xs font-bold text-[#076935] uppercase tracking-wider">Produce & Pricing Details</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-bold text-gray-700 mb-1">Produce Description</label>
+                <input
+                  type="text"
+                  value={invoiceForm.produce_name}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, produce_name: e.target.value })}
+                  className="w-full rounded-xl border border-gray-300 p-2 text-sm outline-none focus:border-[#076935]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Qty (kg/boxes)</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={invoiceForm.qty}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, qty: Number(e.target.value) })}
+                  className="w-full rounded-xl border border-gray-300 p-2 text-sm outline-none focus:border-[#076935]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Unit Price (RWF)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={invoiceForm.price_per_unit}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, price_per_unit: Number(e.target.value) })}
+                  className="w-full rounded-xl border border-gray-300 p-2 text-sm outline-none focus:border-[#076935]"
+                />
+              </div>
+            </div>
+            <div className="flex justify-between items-center text-sm font-bold text-gray-900 border-t border-gray-200 pt-2">
+              <span>Calculated Total (Inc. 18% VAT):</span>
+              <span className="text-base text-[#076935]">
+                {(invoiceForm.qty * invoiceForm.price_per_unit).toLocaleString()} RWF
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-gray-800 mb-1">Payment Method *</label>
+              <select
+                value={invoiceForm.payment_method}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, payment_method: e.target.value })}
+                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+              >
+                <option value="MTN MoMo Merchant">MTN MoMo Merchant</option>
+                <option value="Bank Transfer">Bank Wire (BK / Equity)</option>
+                <option value="Airtel Money">Airtel Money</option>
+                <option value="Cash on Delivery">Cash on Delivery</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-800 mb-1">Initial Status *</label>
+              <select
+                value={invoiceForm.status}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, status: e.target.value as any })}
+                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+              >
+                <option value="pending">Awaiting Payment (Pending)</option>
+                <option value="paid">Paid & Cleared</option>
+                <option value="overdue">Overdue</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-800 mb-1">Payment Due Date *</label>
+              <input
+                type="date"
+                required
+                value={invoiceForm.due_date}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, due_date: e.target.value })}
+                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 border-t border-gray-200 pt-4">
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(false)}
+              className="rounded-xl border border-gray-300 px-5 py-2.5 font-bold text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="rounded-xl bg-[#076935] px-6 py-2.5 font-bold text-white hover:bg-[#055028] shadow-sm"
+            >
+              Issue Tax Invoice
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

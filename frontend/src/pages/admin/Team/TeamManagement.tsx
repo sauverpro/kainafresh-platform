@@ -69,7 +69,25 @@ export default function TeamManagement() {
       const res = await apiGet<{ status: boolean; data: TeamMember[] }>(
         "/api/team",
       );
-      setMembers(Array.isArray(res?.data) ? res.data : []);
+      const raw = Array.isArray(res?.data) ? res.data : [];
+
+      // Deduplicate team members by id and name+email+role
+      const seenIds = new Set<string | number>();
+      const seenKeys = new Set<string>();
+      const uniqueMembers: TeamMember[] = [];
+
+      for (const m of raw) {
+        const idKey = m.id;
+        const comboKey = `${(m.name || "").trim().toLowerCase()}|${(m.email || "").trim().toLowerCase()}|${(m.role || "").trim().toLowerCase()}`;
+
+        if ((!idKey || !seenIds.has(idKey)) && !seenKeys.has(comboKey)) {
+          if (idKey) seenIds.add(idKey);
+          if (comboKey !== "||") seenKeys.add(comboKey);
+          uniqueMembers.push(m);
+        }
+      }
+
+      setMembers(uniqueMembers);
     } catch (err: unknown) {
       setLoadError(err instanceof Error ? err.message : "Failed to load team");
     } finally {

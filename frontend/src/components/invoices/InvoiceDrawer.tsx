@@ -8,7 +8,6 @@ import {
   CheckCircle,
   Clock,
   AlertOctagon,
-  CreditCard,
   Check,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -287,24 +286,6 @@ export default function InvoiceDrawer({
                 </div>
               </div>
 
-              {/* Payment Instructions Box */}
-              <div className="mt-6 rounded-xl border border-[#076935]/20 bg-[#076935]/5 p-4 dark:border-green-500/20 dark:bg-green-500/10">
-                <h4 className="text-xs font-bold text-[#076935] dark:text-green-300 uppercase tracking-wider flex items-center gap-1.5">
-                  <CreditCard size={14} /> Official Payment Instructions
-                </h4>
-                <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-gray-700 dark:text-gray-300">
-                  <div>
-                    <p className="font-bold text-gray-900 dark:text-white">MTN Mobile Money Merchant Code:</p>
-                    <p className="text-[#076935] font-bold dark:text-green-400">
-                      Dial *182*8*1*{invoice.momo_code || "492019"}#
-                    </p>
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900 dark:text-white">Bank Wire Transfer:</p>
-                    <p>Bank of Kigali (BK) · Acc: 00049-082914-01</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 

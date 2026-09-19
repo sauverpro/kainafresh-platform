@@ -40,6 +40,9 @@ export interface Employee {
   location: string;
   hire_date: string;
   salary_rwf: number;
+  dob?: string;
+  nid?: string;
+  gender?: string;
   avatar_url?: string;
   // Integrated Contract & Employment Record Fields
   contract_id?: string;
@@ -117,6 +120,9 @@ export default function EmployeeProfiles() {
             hire_date:
               item.date_hired || new Date().toISOString().split("T")[0],
             salary_rwf: Number(item.salary_rwf) || 0,
+            dob: item.dob || item.date_of_birth || "",
+            nid: item.nid || item.national_id || "",
+            gender: item.gender || "Male",
             contract_id: item.contract_ref || undefined,
             contract_end_date: item.contract_end_date || null,
             contract_status:
@@ -196,6 +202,9 @@ export default function EmployeeProfiles() {
     last_name: string;
     email: string;
     phone: string;
+    dob: string;
+    nid: string;
+    gender: string;
     department: string;
     job_title: string;
     employment_type: EmploymentType;
@@ -213,6 +222,9 @@ export default function EmployeeProfiles() {
     last_name: "",
     email: "",
     phone: "",
+    dob: "1995-05-15",
+    nid: "",
+    gender: "Male",
     department: "Farm Operations",
     job_title: "",
     employment_type: "Full-Time Permanent",
@@ -320,92 +332,63 @@ export default function EmployeeProfiles() {
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const fullname = `${form.first_name.trim()} ${form.last_name.trim()}`;
-      const deptId = deptIdFor(form.department);
-      const today = new Date().toISOString().split("T")[0];
-      const payload: Record<string, unknown> = {
-        fullname,
-        emp_number: `KF-EMP-${Date.now().toString().slice(-6)}`,
-        phone: form.phone.trim(),
-        email: form.email.trim() || `${form.first_name.trim().toLowerCase()}.${form.last_name.trim().toLowerCase()}@kainafresh.rw`,
-        address: form.location,
-        job_title: form.job_title.trim() || "Operations Staff",
-        employment_type: EMPLOYMENT_TYPE_TO_BACKEND[form.employment_type] || "full_time",
-        status: "active",
-        date_hired: form.contract_start_date || today,
-        contract_ref: form.contract_id.trim() || undefined,
-        contract_end_date: form.contract_end_date || null,
-        emergency_person_name: form.emergency_name.trim() || undefined,
-        emergency_phone_number: form.emergency_phone.trim() || undefined,
-      };
-      if (deptId) {
-        payload.dept_id = deptId;
-      }
+    const newEmp: Employee = {
+      id: `EMP-00${employees.length + 1}`,
+      code: `KF-EMP-10${employees.length + 1}`,
+      first_name: form.first_name.trim(),
+      last_name: form.last_name.trim(),
+      email:
+        form.email.trim() ||
+        `${form.first_name.toLowerCase()}.${form.last_name.toLowerCase()}@kainafresh.rw`,
+      phone: form.phone.trim(),
+      dob: form.dob,
+      nid: form.nid.trim(),
+      gender: form.gender,
+      department: form.department,
+      job_title: form.job_title.trim() || "Operations Staff",
+      employment_type: form.employment_type,
+      status: "Active",
+      location: form.location,
+      hire_date: new Date().toISOString().split("T")[0],
+      salary_rwf: Number(form.salary_rwf),
+      contract_id: form.contract_id.trim() || undefined,
+      contract_start_date:
+        form.contract_start_date || new Date().toISOString().split("T")[0],
+      contract_end_date: form.contract_end_date || null,
+      contract_status: form.contract_status,
+      emergency_contact: {
+        name: form.emergency_name.trim(),
+        relationship: form.emergency_relationship,
+        phone: form.emergency_phone.trim(),
+      },
+    };
 
-      const res = await apiPost<{ success: boolean; message?: string; data?: any }>(
-        "/api/employees",
-        payload,
-      );
-      if (!res?.success) {
-        toast.error(res?.message || "Failed to register employee.");
-        return;
-      }
-
-      const created = res.data || {};
-      const newEmp: Employee = {
-        id: `EMP-${created.id ?? Date.now()}`,
-        db_id: Number(created.id),
-        code: created.emp_number || String(payload.emp_number),
-        first_name: form.first_name.trim(),
-        last_name: form.last_name.trim(),
-        email: String(payload.email),
-        phone: form.phone.trim(),
-        department: form.department,
-        job_title: created.job_title || form.job_title.trim() || "Operations Staff",
-        employment_type: form.employment_type,
-        status: "Active",
-        location: form.location,
-        hire_date: today,
-        salary_rwf: Number(form.salary_rwf) || 0,
-        contract_id: form.contract_id.trim() || undefined,
-        contract_start_date: form.contract_start_date || today,
-        contract_end_date: form.contract_end_date || null,
-        contract_status: "Active",
-        emergency_contact: {
-          name: form.emergency_name.trim(),
-          relationship: form.emergency_relationship,
-          phone: form.emergency_phone.trim(),
-        },
-      };
-
-      setEmployees((prev) => [newEmp, ...prev]);
-      setIsAddOpen(false);
-      setForm({
-        first_name: "",
-        last_name: "",
-        email: "",
-        phone: "",
-        department: departments[0]?.name || "Farm Operations",
-        job_title: "",
-        employment_type: "Full-Time Permanent",
-        location: "Musanze Plot A",
-        salary_rwf: 350000,
-        contract_id: "",
-        contract_start_date: today,
-        contract_end_date: "",
-        contract_status: "Active",
-        emergency_name: "",
-        emergency_relationship: "Spouse",
-        emergency_phone: "",
-      });
-      toast.success(`Employee ${newEmp.first_name} ${newEmp.last_name} registered successfully!`);
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to register employee.");
-    } finally {
-      setSubmitting(false);
-    }
+    setEmployees([newEmp, ...employees]);
+    setIsAddOpen(false);
+    setForm({
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone: "",
+      dob: "1995-05-15",
+      nid: "",
+      gender: "Male",
+      department: "Farm Operations",
+      job_title: "",
+      employment_type: "Full-Time Permanent",
+      location: "Musanze Plot A",
+      salary_rwf: 350000,
+      contract_id: "",
+      contract_start_date: new Date().toISOString().split("T")[0],
+      contract_end_date: "",
+      contract_status: "Active",
+      emergency_name: "",
+      emergency_relationship: "Spouse",
+      emergency_phone: "",
+    });
+    toast.success(
+      `Employee ${newEmp.first_name} ${newEmp.last_name} registered successfully!`,
+    );
   };
 
   const handleStartEdit = (emp: Employee) => {
@@ -1148,7 +1131,7 @@ export default function EmployeeProfiles() {
         <form onSubmit={handleAddEmployee} className="space-y-4 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="font-bold text-gray-700">First Name *</label>
+              <label className="font-bold text-gray-700">First Name <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 required
@@ -1156,12 +1139,12 @@ export default function EmployeeProfiles() {
                 onChange={(e) =>
                   setForm({ ...form, first_name: e.target.value })
                 }
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
                 placeholder="e.g. Jean"
               />
             </div>
             <div>
-              <label className="font-bold text-gray-700">Last Name *</label>
+              <label className="font-bold text-gray-700">Last Name <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 required
@@ -1169,20 +1152,53 @@ export default function EmployeeProfiles() {
                 onChange={(e) =>
                   setForm({ ...form, last_name: e.target.value })
                 }
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
                 placeholder="e.g. Habimana"
               />
             </div>
             <div>
-              <label className="font-bold text-gray-700">Phone Number *</label>
+              <label className="font-bold text-gray-700">Phone Number <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 required
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
                 placeholder="+250 788 000 000"
               />
+            </div>
+            <div>
+              <label className="font-bold text-gray-700">National ID (NID) <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                required
+                value={form.nid}
+                onChange={(e) => setForm({ ...form, nid: e.target.value })}
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+                placeholder="e.g. 1 1995 8 0012345 1 23"
+              />
+            </div>
+            <div>
+              <label className="font-bold text-gray-700">Date of Birth (DOB) <span className="text-red-500">*</span></label>
+              <input
+                type="date"
+                required
+                value={form.dob}
+                onChange={(e) => setForm({ ...form, dob: e.target.value })}
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+              />
+            </div>
+            <div>
+              <label className="font-bold text-gray-700">Gender <span className="text-red-500">*</span></label>
+              <select
+                value={form.gender}
+                onChange={(e) => setForm({ ...form, gender: e.target.value })}
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
             <div>
               <label className="font-bold text-gray-700">Department</label>
@@ -1191,7 +1207,7 @@ export default function EmployeeProfiles() {
                 onChange={(e) =>
                   setForm({ ...form, department: e.target.value })
                 }
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
               >
                 {departments.map((d) => (
                   <option key={d.id} value={d.name}>
@@ -1208,7 +1224,7 @@ export default function EmployeeProfiles() {
                 onChange={(e) =>
                   setForm({ ...form, job_title: e.target.value })
                 }
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
                 placeholder="e.g. Agronomist Lead"
               />
             </div>
@@ -1218,7 +1234,7 @@ export default function EmployeeProfiles() {
                 type="text"
                 value={form.location}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
                 placeholder="e.g. Musanze Plot A"
               />
             </div>

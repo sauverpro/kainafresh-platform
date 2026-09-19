@@ -107,10 +107,9 @@ const ROLE_DOT: Record<RoleKey, string> = {
  * Helpers
  * --------------------------------------------------------------------- */
 function normalizeRoleKey(role?: string): RoleKey {
-  const r = (role || "").toLowerCase();
+  const r = (role || "").toLowerCase().trim().replace(/[\s\-_]+/g, "_");
   if (r === "admin") return "admin";
-  if (r === "sales_manager" || r === "sales-manager" || r === "salesmanager")
-    return "sales_manager";
+  if (r.includes("sales") || r === "sales_manager") return "sales_manager";
   return "customer";
 }
 
@@ -216,7 +215,27 @@ export default function UserManagement() {
       const res = await apiGet<{ success: boolean; data: ManagedUser[] }>(
         "/api/admin/users",
       );
-      setUsers(Array.isArray(res?.data) ? res.data : []);
+      const raw = Array.isArray(res?.data) ? res.data : [];
+
+      // Deduplicate users by ID and username/email
+      const seenIds = new Set<string | number>();
+      const seenKeys = new Set<string>();
+      const uniqueUsers: ManagedUser[] = [];
+
+      for (const u of raw) {
+        const idKey = u.id;
+        const emailKey = (u.email || "").trim().toLowerCase();
+        const usernameKey = (u.username || "").trim().toLowerCase();
+        const comboKey = `${emailKey}|${usernameKey}`;
+
+        if ((!idKey || !seenIds.has(idKey)) && (!comboKey || comboKey === "|" || !seenKeys.has(comboKey))) {
+          if (idKey) seenIds.add(idKey);
+          if (comboKey && comboKey !== "|") seenKeys.add(comboKey);
+          uniqueUsers.push(u);
+        }
+      }
+
+      setUsers(uniqueUsers);
     } catch (err: unknown) {
       setLoadError(err instanceof Error ? err.message : "Failed to load users");
     } finally {

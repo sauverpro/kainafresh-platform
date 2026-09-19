@@ -29,52 +29,54 @@
   animation: cf-pop-in 0.2s ease;
 }
 
-.cf-modal--sm { max-width: 440px; }
-.cf-modal--md { max-width: 600px; }
-.cf-modal--lg { max-width: 760px; }
-.cf-modal--xl { max-width: 960px; }
+.cf-modal--sm { max-width: 540px; }
+.cf-modal--md { max-width: 760px; }
+.cf-modal--lg { max-width: 980px; }
+.cf-modal--xl { max-width: 1200px; }
 
 .cf-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 1.25rem;
+  padding: 1.25rem 1.75rem;
   border-bottom: 1px solid #f1f5f9;
 }
 
 .cf-modal-title {
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: #111827;
+  line-height: 1.3;
 }
 
 .cf-modal-close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: #9ca3af;
+  color: #6b7280;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
   flex-shrink: 0;
 }
 .cf-modal-close:hover {
-  background: #f3f4f6;
+  background: rgba(0, 0, 0, 0.08);
   color: #111827;
 }
 
 .cf-modal-body {
-  padding: 1.25rem;
+  padding: 1.5rem 1.75rem;
   overflow-y: auto;
+  font-size: 0.925rem;
 }
 
 .cf-modal-footer {
-  padding: 1rem 1.25rem;
+  padding: 1.25rem 1.75rem;
   border-top: 1px solid #f1f5f9;
 }
 

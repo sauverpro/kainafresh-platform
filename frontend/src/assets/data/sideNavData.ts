@@ -1,5 +1,5 @@
 import {
-  LayoutGrid,
+  Layers,
   LayoutTemplate,
   Wallet,
   Warehouse,
@@ -17,7 +17,7 @@ export const sideNavData: NavSection[] = [
       {
         id: "dashboard",
         label: "Dashboard",
-        icon: LayoutGrid,
+        icon: Layers,
         path: "/dashboard",
       },
       {
@@ -42,7 +42,6 @@ export const sideNavData: NavSection[] = [
         icon: LayoutTemplate,
         subItems: [
           { label: "Pages", otherSub: [] },
-          { label: "Settings", path: "/cms/settings" },
         ],
       },
       {
@@ -67,7 +66,11 @@ export const sideNavData: NavSection[] = [
         id: "settings",
         label: "Settings",
         icon: Settings,
-        path: "/settings",
+        subItems: [
+          { label: "Global Settings", path: "/settings" },
+          { label: "User Access & Controls", path: "/admin/users" },
+          { label: "Team Management", path: "/admin/team" },
+        ],
       },
     ],
   },

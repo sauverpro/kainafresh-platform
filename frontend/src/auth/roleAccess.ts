@@ -30,7 +30,7 @@ const NAV_ACCESS: Record<string, UserRole[]> = {
 export const DEFAULT_HOME: Record<UserRole, string> = {
   admin: "/dashboard",
   sales_manager: "/sales",
-  customer: "/",
+  customer: "/customer/dashboard",
 };
 
 /** Normalize an arbitrary role string to a known UserRole (or "customer"). */
@@ -67,6 +67,9 @@ export function canAccessNav(itemId: string, user?: UserProfile | null): boolean
 export function canAccessPath(pathname: string, user?: UserProfile | null): boolean {
   const role = roleOf(user);
   if (role === "admin") return true;
+  if (role === "customer") {
+    return pathname.startsWith("/customer");
+  }
   if (role === "sales_manager") {
     return (
       pathname === "/sales" ||
@@ -76,9 +79,9 @@ export function canAccessPath(pathname: string, user?: UserProfile | null): bool
       pathname.startsWith("/admin/orders") ||
       pathname.startsWith("/ecommerce/invoices") ||
       pathname.startsWith("/stock") ||
-      pathname.startsWith("/inventory")
+      pathname.startsWith("/inventory") ||
+      pathname.startsWith("/customer")
     );
   }
-  // customers are not allowed into any part of the admin portal
   return false;
 }

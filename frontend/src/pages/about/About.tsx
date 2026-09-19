@@ -168,7 +168,16 @@ function About() {
       try {
         const teams = await apiGet<{ status: boolean; data: TeamContent[] }>('/api/team');
         if (teams?.status && Array.isArray(teams?.data)) {
-          dbTeam = teams.data;
+          const seenKeys = new Set<string>();
+          const unique: TeamContent[] = [];
+          for (const m of teams.data) {
+            const key = `${(m.name || "").trim().toLowerCase()}|${(m.email || "").trim().toLowerCase()}`;
+            if (!seenKeys.has(key)) {
+              if (key !== "|") seenKeys.add(key);
+              unique.push(m);
+            }
+          }
+          dbTeam = unique;
         }
       } catch (error) {
         console.debug('Failed to load team', error);
