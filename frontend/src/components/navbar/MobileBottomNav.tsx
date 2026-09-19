@@ -9,7 +9,7 @@
  */
 
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Sprout, Truck, ShoppingBag, User, LayoutDashboard } from 'lucide-react';
+import { Home, Sprout, Truck, ShoppingBag, User, Layers } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { isAuthenticated } from '../../api/client';
 import './MobileBottomNav.css';
@@ -92,14 +92,22 @@ export default function MobileBottomNav() {
         {/* Tab 5: Account / Dashboard */}
         <button
           type="button"
-          onClick={() => navigate(loggedIn ? '/dashboard' : '/login')}
+          onClick={() => {
+            if (!loggedIn) {
+              navigate('/login');
+            } else if (location.pathname.startsWith('/customer') || location.pathname.startsWith('/dashboard')) {
+              // Already on dashboard
+            } else {
+              navigate('/customer/dashboard');
+            }
+          }}
           className={`mobile-nav-tab ${
-            location.pathname.startsWith('/dashboard') || location.pathname === '/login' ? 'active' : ''
+            location.pathname.startsWith('/customer') || location.pathname.startsWith('/dashboard') || location.pathname === '/login' ? 'active' : ''
           }`}
           aria-label={loggedIn ? 'Dashboard' : 'Sign In'}
         >
           <div className="tab-icon-wrapper">
-            {loggedIn ? <LayoutDashboard size={20} /> : <User size={20} />}
+            {loggedIn ? <Layers size={20} /> : <User size={20} />}
           </div>
           <span className="tab-label">{loggedIn ? 'Dashboard' : 'Account'}</span>
         </button>

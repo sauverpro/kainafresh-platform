@@ -237,9 +237,24 @@ export default function CustomerList() {
         "/api/customers"
       );
       const data = Array.isArray(res?.data) ? res.data : [];
-      
+
+      // Deduplicate customers by ID and email/phone
+      const seenIds = new Set<string | number>();
+      const seenKeys = new Set<string>();
+      const uniqueRaw: Customer[] = [];
+
+      for (const c of data) {
+        const idKey = c.id;
+        const comboKey = `${(c.email || "").trim().toLowerCase()}|${(c.phone || "").trim().toLowerCase()}`;
+        if ((!idKey || !seenIds.has(idKey)) && (!comboKey || comboKey === "|" || !seenKeys.has(comboKey))) {
+          if (idKey) seenIds.add(idKey);
+          if (comboKey && comboKey !== "|") seenKeys.add(comboKey);
+          uniqueRaw.push(c);
+        }
+      }
+
       // Transform data to include computed fields
-      const transformedData = data.map((c) => ({
+      const transformedData = uniqueRaw.map((c) => ({
         ...c,
         full_name: fullName(c),
         district: extractDistrict(c.address),

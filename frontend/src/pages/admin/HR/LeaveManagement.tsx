@@ -459,20 +459,129 @@ export default function LeaveManagement() {
       </Modal>
 
       {/* Leave Detail Modal */}
-      <Modal open={Boolean(selectedLeave)} onClose={() => setSelectedLeave(null)} size="md" title="Leave Application Details">
-        {selectedLeave && (
-          <div className="space-y-3 text-xs">
-            <div className="p-3 bg-[#F4FAF7] rounded-xl border border-[#076935]/15">
-              <p className="font-bold text-[#076935] text-sm">{selectedLeave.employee_name}</p>
-              <p className="text-gray-500">{selectedLeave.department}</p>
+      <Modal
+        open={Boolean(selectedLeave)}
+        onClose={() => setSelectedLeave(null)}
+        size="md"
+        title={
+          <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg">
+            <div className="p-2 rounded-xl bg-[#076935]/10 text-[#076935]">
+              <CalendarCheck size={20} />
             </div>
-            <div className="space-y-1">
-              <p><strong>Request ID:</strong> {selectedLeave.id}</p>
-              <p><strong>Type:</strong> {selectedLeave.leave_type}</p>
-              <p><strong>Period:</strong> {selectedLeave.start_date} to {selectedLeave.end_date} ({selectedLeave.total_days} Days)</p>
-              <p><strong>Applied On:</strong> {selectedLeave.applied_on}</p>
-              <p><strong>Reason:</strong> {selectedLeave.reason}</p>
-              <p><strong>Status:</strong> {selectedLeave.status}</p>
+            <span>Leave Application Details</span>
+          </div>
+        }
+      >
+        {selectedLeave && (
+          <div className="space-y-5 text-sm pt-1">
+            {/* Employee Profile Header Card */}
+            <div className="p-4 bg-gradient-to-r from-[#F4FAF7] to-emerald-50/40 rounded-2xl border border-[#076935]/20 flex items-center justify-between">
+              <div className="flex items-center gap-3.5">
+                <div className="h-12 w-12 rounded-2xl bg-[#076935] text-white flex items-center justify-center font-bold text-base shadow-sm">
+                  {selectedLeave.employee_name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .substring(0, 2)
+                    .toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-base">{selectedLeave.employee_name}</h3>
+                  <p className="text-xs font-medium text-gray-500">{selectedLeave.department}</p>
+                </div>
+              </div>
+              <span className="font-mono text-xs font-bold px-3 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-700 shadow-2xs">
+                {selectedLeave.id}
+              </span>
+            </div>
+
+            {/* Key Information Bento Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/70 space-y-1">
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Leave Type</span>
+                <span className="inline-flex rounded-md bg-emerald-100/70 px-2.5 py-0.5 text-xs font-bold text-[#076935]">
+                  {selectedLeave.leave_type}
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/70 space-y-1">
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Approval Status</span>
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 text-xs font-bold ${
+                    selectedLeave.status === "Approved"
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                      : selectedLeave.status === "Pending"
+                      ? "bg-amber-50 text-amber-700 border border-amber-200"
+                      : "bg-rose-50 text-rose-700 border border-rose-200"
+                  }`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      selectedLeave.status === "Approved"
+                        ? "bg-emerald-500"
+                        : selectedLeave.status === "Pending"
+                        ? "bg-amber-500"
+                        : "bg-rose-500"
+                    }`}
+                  />
+                  {selectedLeave.status}
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/70 space-y-1">
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Leave Period</span>
+                <p className="font-semibold text-gray-800 text-xs">
+                  {selectedLeave.start_date} <span className="text-gray-400 font-normal">to</span> {selectedLeave.end_date}
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/70 space-y-1">
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Duration</span>
+                <p className="font-bold text-[#076935] text-xs">{selectedLeave.total_days} Working Days</p>
+              </div>
+            </div>
+
+            {/* Application Date & Reason */}
+            <div className="p-4 rounded-2xl border border-gray-200 bg-white space-y-2">
+              <div className="flex items-center justify-between text-xs border-b border-gray-100 pb-2">
+                <span className="font-bold text-gray-500">Applied On</span>
+                <span className="font-medium text-gray-800">{selectedLeave.applied_on}</span>
+              </div>
+              <div>
+                <span className="text-xs font-bold text-gray-500 block mb-1">Reason for Leave:</span>
+                <p className="text-xs text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-xl border border-gray-100 italic">
+                  "{selectedLeave.reason}"
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+              <div className="flex gap-2">
+                {selectedLeave.status === "Pending" && (
+                  <>
+                    <button
+                      onClick={() => handleApprove(selectedLeave.id)}
+                      className="rounded-xl bg-[#076935] px-4 py-2 text-xs font-bold text-white hover:bg-[#055028] shadow-xs transition"
+                    >
+                      Approve Request
+                    </button>
+                    <button
+                      onClick={() => handleReject(selectedLeave.id)}
+                      className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-100 transition"
+                    >
+                      Reject Request
+                    </button>
+                  </>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedLeave(null)}
+                className="rounded-xl border border-gray-300 bg-white px-5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition"
+              >
+                Close
+              </button>
             </div>
           </div>
         )}

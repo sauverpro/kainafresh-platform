@@ -644,21 +644,93 @@ export default function Insurance() {
       </Modal>
 
       {/* Policy Details View Modal */}
-      <Modal open={Boolean(selectedPolicy)} onClose={() => setSelectedPolicy(null)} size="md" title="Insurance Policy Details">
-        {selectedPolicy && (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 bg-[#F4FAF7] rounded-xl border border-[#076935]/15 space-y-1">
-              <p className="font-bold text-[#076935] text-sm">{selectedPolicy.employee_name}</p>
-              <p className="text-gray-600">{selectedPolicy.provider} · {selectedPolicy.type} Policy</p>
+      <Modal
+        open={Boolean(selectedPolicy)}
+        onClose={() => setSelectedPolicy(null)}
+        size="md"
+        title={
+          <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg">
+            <div className="p-2 rounded-xl bg-[#076935]/10 text-[#076935]">
+              <ShieldCheck size={20} />
             </div>
-            <div className="space-y-1 text-gray-700">
-              <p><strong>Policy Number:</strong> {selectedPolicy.policy_number}</p>
-              <p><strong>Start Date:</strong> {selectedPolicy.start_date}</p>
-              <p><strong>Expiry Date:</strong> {selectedPolicy.expiry_date}</p>
-              <p><strong>Premium:</strong> {selectedPolicy.premium_rwf.toLocaleString()} RWF</p>
-              <p><strong>Status:</strong> {selectedPolicy.status}</p>
-              <p><strong>Notify Days:</strong> {selectedPolicy.notify_days} days before expiry</p>
-              {selectedPolicy.coverage_details && <p><strong>Coverage Details:</strong> {selectedPolicy.coverage_details}</p>}
+            <span>Insurance Policy Details</span>
+          </div>
+        }
+      >
+        {selectedPolicy && (
+          <div className="space-y-5 text-sm pt-1">
+            {/* Header Card */}
+            <div className="p-4 bg-gradient-to-r from-[#F4FAF7] to-emerald-50/40 rounded-2xl border border-[#076935]/20 flex items-center justify-between">
+              <div className="flex items-center gap-3.5">
+                <div className="h-12 w-12 rounded-2xl bg-[#076935] text-white flex items-center justify-center font-bold text-base shadow-sm">
+                  {selectedPolicy.employee_name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .substring(0, 2)
+                    .toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-base">{selectedPolicy.employee_name}</h3>
+                  <p className="text-xs font-medium text-gray-500">
+                    {selectedPolicy.provider} · <span className="font-semibold text-[#076935]">{selectedPolicy.type} Policy</span>
+                  </p>
+                </div>
+              </div>
+              <span className="font-mono text-xs font-bold px-3 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-700 shadow-2xs">
+                {selectedPolicy.policy_number}
+              </span>
+            </div>
+
+            {/* Bento Grid Tiles */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/70 space-y-1">
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Policy Type</span>
+                <span className="inline-flex rounded-md bg-cyan-100/70 px-2.5 py-0.5 text-xs font-bold text-cyan-800">
+                  {selectedPolicy.type}
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/70 space-y-1">
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Status</span>
+                <span className="inline-flex rounded-md bg-[#076935] px-3 py-0.5 text-xs font-bold text-white">
+                  {selectedPolicy.status}
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/70 space-y-1">
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Start & Expiry Date</span>
+                <p className="font-semibold text-gray-800 text-xs">
+                  {selectedPolicy.start_date} <span className="text-gray-400 font-normal">to</span>{" "}
+                  <span className="text-emerald-700 font-bold">{selectedPolicy.expiry_date}</span>
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/70 space-y-1">
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Monthly Premium</span>
+                <p className="font-bold text-[#076935] text-xs">{selectedPolicy.premium_rwf.toLocaleString()} RWF</p>
+              </div>
+            </div>
+
+            {/* Coverage Details Card */}
+            {selectedPolicy.coverage_details && (
+              <div className="p-4 rounded-2xl border border-gray-200 bg-white space-y-1">
+                <span className="text-xs font-bold text-gray-500 block mb-1">Coverage Scope & Details:</span>
+                <p className="text-xs text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-xl border border-gray-100">
+                  {selectedPolicy.coverage_details}
+                </p>
+              </div>
+            )}
+
+            {/* Footer */}
+            <div className="flex items-center justify-end border-t border-gray-200 pt-4">
+              <button
+                type="button"
+                onClick={() => setSelectedPolicy(null)}
+                className="rounded-xl border border-gray-300 bg-white px-5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition"
+              >
+                Close
+              </button>
             </div>
           </div>
         )}

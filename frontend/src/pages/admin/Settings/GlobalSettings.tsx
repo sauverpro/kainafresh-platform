@@ -16,8 +16,9 @@ import React, { useState, useEffect } from 'react';
 // Import Lucide vector icons for UI tabs, notifications, and buttons
 import { 
   Globe, Image as ImageIcon, Phone, Share2, 
-  Save, Upload, CheckCircle2, AlertCircle 
+  Save, Upload, CheckCircle2, AlertCircle, Users 
 } from 'lucide-react';
+import UserManagement from '../Users/UserManagement';
 
 // Import HTTP API client utilities for CRUD calls
 import { apiGet, apiPost, apiPostFormData, apiDelete } from '../../../api/client';
@@ -94,7 +95,7 @@ function Toast({ message, type, onClose }: { message: string; type: 'success' | 
  */
 export default function GlobalSettings() {
   // Currently selected active tab identifier state
-  const [activeTab, setActiveTab] = useState<'general' | 'contact' | 'social' | 'navlinks'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'contact' | 'social' | 'navlinks' | 'users'>('general');
 
   // Overall page initial loading state while fetching settings from MariaDB
   const [loading, setLoading] = useState(true);
@@ -335,6 +336,13 @@ export default function GlobalSettings() {
           onClick={() => setActiveTab('navlinks')}
         >
           <Globe size={16} /> Header Navigation Links
+        </button>
+
+        <button 
+          className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
+          onClick={() => setActiveTab('users')}
+        >
+          <Users size={16} /> User Access & Controls
         </button>
       </div>
 
@@ -600,6 +608,13 @@ export default function GlobalSettings() {
           ) : (
             <p style={{ color: '#6B7280', fontSize: '0.85rem', fontStyle: 'italic' }}>No custom navigation links added yet. Default site routes are active.</p>
           )}
+        </div>
+      )}
+
+      {/* Tab Content 5: User Access & Controls */}
+      {activeTab === 'users' && (
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs">
+          <UserManagement />
         </div>
       )}
 

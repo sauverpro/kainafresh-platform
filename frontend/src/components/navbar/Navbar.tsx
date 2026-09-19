@@ -22,7 +22,7 @@ import {
   LogOut,
   ShoppingBag,
   Truck,
-  LayoutGrid,
+  Layers,
   Settings,
   ChevronDown,
 } from "lucide-react";
@@ -274,6 +274,25 @@ function Navbar() {
               {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
             </button>
 
+            {/* Prominent Dashboard Button when logged in */}
+            {loggedIn && (
+              <NavLink
+                to={
+                  user?.role === "admin"
+                    ? "/dashboard"
+                    : user?.role === "sales-manager" || user?.role === "sales_manager"
+                    ? "/sales"
+                    : "/customer/dashboard"
+                }
+                onClick={closeMenu}
+                className="btn-dashboard-nav"
+                title="Go to Dashboard"
+              >
+                <Layers size={18} />
+                <span>Dashboard</span>
+              </NavLink>
+            )}
+
             {loggedIn ? (
               <div className="profile-dropdown-container" ref={profileRef}>
                 <button
@@ -301,19 +320,23 @@ function Navbar() {
                     <div className="profile-menu-divider" />
 
                     <div className="profile-menu-items">
-                      {(user?.role === "admin" || user?.role === "sales-manager") && (
-                        <NavLink
-                          to={user?.role === "sales-manager" ? "/sales" : "/dashboard"}
-                          className="profile-menu-item"
-                          onClick={() => {
-                            setIsProfileOpen(false);
-                            closeMenu();
-                          }}
-                        >
-                          <LayoutGrid size={16} />
-                          <span>Control Dashboard</span>
-                        </NavLink>
-                      )}
+                      <NavLink
+                        to={
+                          user?.role === "admin"
+                            ? "/dashboard"
+                            : user?.role === "sales-manager" || user?.role === "sales_manager"
+                            ? "/sales"
+                            : "/customer/dashboard"
+                        }
+                        className="profile-menu-item"
+                        onClick={() => {
+                          setIsProfileOpen(false);
+                          closeMenu();
+                        }}
+                      >
+                        <Layers size={16} />
+                        <span>Control Dashboard</span>
+                      </NavLink>
 
                       <NavLink
                         to="/track-order"

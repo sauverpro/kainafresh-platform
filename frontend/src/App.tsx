@@ -56,6 +56,10 @@ const TrainingDevelopment = lazy(() => import("./pages/admin/HR/TrainingDevelopm
 const HealthSafety = lazy(() => import("./pages/admin/HR/HealthSafety"));
 const Insurance = lazy(() => import("./pages/admin/HR/Insurance"));
 
+// Customer Portal Pages
+const CustomerLayout = lazy(() => import("./components/layout/CustomerLayout"));
+const CustomerDashboard = lazy(() => import("./pages/customer/CustomerDashboard"));
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
@@ -186,6 +190,18 @@ function App() {
                     element={<Placeholder title={route.label} />}
                   />
                 ))}
+              </Route>
+
+              {/* Customer Portal Protected Routes */}
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <CustomerLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+                <Route path="/customer/*" element={<Navigate to="/customer/dashboard" replace />} />
               </Route>
 
               {/* Catch-All */}

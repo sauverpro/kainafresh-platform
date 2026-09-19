@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -38,6 +38,9 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  .font-space-grotesk {
+    font-family: 'Space Grotesk', sans-serif !important;
+  }
 }
 
 :root {
@@ -49,6 +52,7 @@
   
   --font-heading: 'Plus Jakarta Sans', sans-serif;
   --font-body: 'Google Sans', sans-serif;
+  --font-space-grotesk: 'Space Grotesk', sans-serif;
   
   --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
   --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
