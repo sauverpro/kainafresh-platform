@@ -58,6 +58,9 @@ export interface Employee {
   location: string;
   hire_date: string;
   salary_rwf: number;
+  dob?: string;
+  nid?: string;
+  gender?: string;
   avatar_url?: string;
   // Integrated Contract & Employment Record Fields
   contract_id?: string;
@@ -108,6 +111,9 @@ export default function EmployeeProfiles() {
             hire_date:
               item.date_hired || new Date().toISOString().split("T")[0],
             salary_rwf: Number(item.salary_rwf) || 0,
+            dob: item.dob || item.date_of_birth || "",
+            nid: item.nid || item.national_id || "",
+            gender: item.gender || "Male",
             contract_id: item.contract_ref || undefined,
             contract_end_date: item.contract_end_date || null,
             contract_status: item.contract_end_date
@@ -161,6 +167,9 @@ export default function EmployeeProfiles() {
     last_name: string;
     email: string;
     phone: string;
+    dob: string;
+    nid: string;
+    gender: string;
     department: string;
     job_title: string;
     employment_type: EmploymentType;
@@ -178,6 +187,9 @@ export default function EmployeeProfiles() {
     last_name: "",
     email: "",
     phone: "",
+    dob: "1995-05-15",
+    nid: "",
+    gender: "Male",
     department: "Farm Operations",
     job_title: "",
     employment_type: "Full-Time Permanent",
@@ -289,6 +301,9 @@ export default function EmployeeProfiles() {
         form.email.trim() ||
         `${form.first_name.toLowerCase()}.${form.last_name.toLowerCase()}@kainafresh.rw`,
       phone: form.phone.trim(),
+      dob: form.dob,
+      nid: form.nid.trim(),
+      gender: form.gender,
       department: form.department,
       job_title: form.job_title.trim() || "Operations Staff",
       employment_type: form.employment_type,
@@ -315,6 +330,9 @@ export default function EmployeeProfiles() {
       last_name: "",
       email: "",
       phone: "",
+      dob: "1995-05-15",
+      nid: "",
+      gender: "Male",
       department: "Farm Operations",
       job_title: "",
       employment_type: "Full-Time Permanent",
@@ -1002,7 +1020,7 @@ export default function EmployeeProfiles() {
         <form onSubmit={handleAddEmployee} className="space-y-4 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="font-bold text-gray-700">First Name *</label>
+              <label className="font-bold text-gray-700">First Name <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 required
@@ -1010,12 +1028,12 @@ export default function EmployeeProfiles() {
                 onChange={(e) =>
                   setForm({ ...form, first_name: e.target.value })
                 }
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
                 placeholder="e.g. Jean"
               />
             </div>
             <div>
-              <label className="font-bold text-gray-700">Last Name *</label>
+              <label className="font-bold text-gray-700">Last Name <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 required
@@ -1023,20 +1041,53 @@ export default function EmployeeProfiles() {
                 onChange={(e) =>
                   setForm({ ...form, last_name: e.target.value })
                 }
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
                 placeholder="e.g. Habimana"
               />
             </div>
             <div>
-              <label className="font-bold text-gray-700">Phone Number *</label>
+              <label className="font-bold text-gray-700">Phone Number <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 required
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
                 placeholder="+250 788 000 000"
               />
+            </div>
+            <div>
+              <label className="font-bold text-gray-700">National ID (NID) <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                required
+                value={form.nid}
+                onChange={(e) => setForm({ ...form, nid: e.target.value })}
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+                placeholder="e.g. 1 1995 8 0012345 1 23"
+              />
+            </div>
+            <div>
+              <label className="font-bold text-gray-700">Date of Birth (DOB) <span className="text-red-500">*</span></label>
+              <input
+                type="date"
+                required
+                value={form.dob}
+                onChange={(e) => setForm({ ...form, dob: e.target.value })}
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+              />
+            </div>
+            <div>
+              <label className="font-bold text-gray-700">Gender <span className="text-red-500">*</span></label>
+              <select
+                value={form.gender}
+                onChange={(e) => setForm({ ...form, gender: e.target.value })}
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
             <div>
               <label className="font-bold text-gray-700">Department</label>
@@ -1045,7 +1096,7 @@ export default function EmployeeProfiles() {
                 onChange={(e) =>
                   setForm({ ...form, department: e.target.value })
                 }
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
               >
                 {departments.map((d) => (
                   <option key={d.id} value={d.name}>
@@ -1062,7 +1113,7 @@ export default function EmployeeProfiles() {
                 onChange={(e) =>
                   setForm({ ...form, job_title: e.target.value })
                 }
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
                 placeholder="e.g. Agronomist Lead"
               />
             </div>
@@ -1072,7 +1123,7 @@ export default function EmployeeProfiles() {
                 type="text"
                 value={form.location}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
                 placeholder="e.g. Musanze Plot A"
               />
             </div>

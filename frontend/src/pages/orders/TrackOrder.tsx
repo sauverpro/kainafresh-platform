@@ -444,17 +444,6 @@ export default function TrackOrder() {
     }
   };
 
-  const handleSampleClick = (sample: string) => {
-    setInputVal(sample);
-    setOrder(null);
-    setError(null);
-    lastStatusRef.current = null;
-    setSearchParams({ id: sample });
-    if (sample === initialId) {
-      fetchOrder(sample);
-    }
-  };
-
   const handleCopyLink = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url);
@@ -550,22 +539,6 @@ export default function TrackOrder() {
             </button>
           </form>
 
-          {/* Quick sample chips */}
-          {!inputVal && (
-            <div className="mt-3 flex items-center justify-center gap-2 text-xs text-gray-500 flex-wrap">
-              <span>Quick try:</span>
-              {["KF-0001", "KF-0002", "KF-0003"].map((sample) => (
-                <button
-                  key={sample}
-                  type="button"
-                  onClick={() => handleSampleClick(sample)}
-                  className="px-2.5 py-1 rounded-lg bg-[#076935]/5 text-[#076935] font-semibold hover:bg-[#076935]/15 transition cursor-pointer"
-                >
-                  {sample}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* ── Error Banner ── */}
