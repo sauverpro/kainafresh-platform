@@ -20,22 +20,7 @@ export const sideNavData: NavSection[] = [
         icon: Layers,
         path: "/dashboard",
       },
-      {
-        id: "hr",
-        label: "Human Resources",
-        icon: Users,
-        subItems: [
-          { label: "HR Dashboard", path: "/admin/hr/dashboard" },
-          { label: "Departments", path: "/admin/hr/departments" },
-          { label: "Employee Profiles", path: "/admin/hr/employees" },
-          { label: "Leave Management", path: "/admin/hr/leave" },
-          { label: "Payroll", path: "/admin/hr/payroll" },
-          { label: "Performance", path: "/admin/hr/performance" },
-          { label: "Training & Development", path: "/admin/hr/training" },
-          { label: "Health & Safety", path: "/admin/hr/health-safety" },
-          { label: "Insurance", path: "/admin/hr/insurance" },
-        ],
-      },
+      
       {
         id: "cms",
         label: "CMS",
@@ -62,6 +47,22 @@ export const sideNavData: NavSection[] = [
         path: "/admin/customers",
       },
       { id: "sales", label: "Sales", icon: Wallet, path: "/sales" },
+      {
+        id: "hr",
+        label: "HR Management",
+        icon: Users,
+        subItems: [
+          { label: "Overview", path: "/admin/hr/dashboard" },
+          { label: "Departments", path: "/admin/hr/departments" },
+          { label: "Employee Profiles", path: "/admin/hr/employees" },
+          { label: "Leave Management", path: "/admin/hr/leave" },
+          { label: "Payroll", path: "/admin/hr/payroll" },
+          { label: "Performance", path: "/admin/hr/performance" },
+          { label: "Training & Development", path: "/admin/hr/training" },
+          { label: "Health & Safety", path: "/admin/hr/health-safety" },
+          { label: "Insurance", path: "/admin/hr/insurance" },
+        ],
+      },
       {
         id: "settings",
         label: "Settings",
