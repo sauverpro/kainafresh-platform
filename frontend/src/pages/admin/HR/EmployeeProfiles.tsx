@@ -16,36 +16,18 @@ import {
   FileSpreadsheet,
   Download,
   UserX,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 import { usePageTitle } from "../../../hooks/usePageTitle";
 import Modal from "../../../components/ui/Modal";
 import { toast } from "sonner";
 import { useDepartmentStore } from "../../../store/useDepartmentStore";
-import { apiGet } from "../../../api/client";
-
-/* ------------------------------------------------------------------------
- * Shared union types — single source of truth
- * --------------------------------------------------------------------- */
-export type EmploymentType =
-  | "Full-Time Permanent"
-  | "Part-Time"
-  | "Seasonal Farm Worker"
-  | "Fixed-Term Contract";
-
-export type EmploymentStatus =
-  | "Active"
-  | "On Leave"
-  | "Suspended"
-  | "Terminated";
-
-export type ContractStatus =
-  | "Active"
-  | "Expiring Soon"
-  | "Expired"
-  | "Renewed";
+import { apiGet, apiPost, apiPut, apiDelete } from "../../../api/client";
 
 export interface Employee {
   id: string;
+  db_id?: number;
   code: string;
   first_name: string;
   last_name: string;
@@ -53,20 +35,17 @@ export interface Employee {
   phone: string;
   department: string;
   job_title: string;
-  employment_type: EmploymentType;
-  status: EmploymentStatus;
+  employment_type: "Full-Time Permanent" | "Part-Time" | "Seasonal Farm Worker" | "Fixed-Term Contract";
+  status: "Active" | "On Leave" | "Suspended" | "Terminated";
   location: string;
   hire_date: string;
   salary_rwf: number;
-  dob?: string;
-  nid?: string;
-  gender?: string;
   avatar_url?: string;
   // Integrated Contract & Employment Record Fields
   contract_id?: string;
   contract_start_date?: string;
   contract_end_date?: string | null;
-  contract_status?: ContractStatus;
+  contract_status?: "Active" | "Expiring Soon" | "Expired" | "Renewed";
   emergency_contact: {
     name: string;
     relationship: string;
@@ -74,51 +53,71 @@ export interface Employee {
   };
 }
 
+const EMPLOYMENT_TYPE_TO_BACKEND: Record<string, string> = {
+  "Full-Time Permanent": "full_time",
+  "Part-Time": "part_time",
+  "Seasonal Farm Worker": "casual",
+  "Fixed-Term Contract": "contract",
+};
+
+const BACKEND_TO_EMPLOYMENT_TYPE: Record<string, string> = {
+  full_time: "Full-Time Permanent",
+  part_time: "Part-Time",
+  casual: "Seasonal Farm Worker",
+  contract: "Fixed-Term Contract",
+  internship: "Internship",
+};
+
+const STATUS_TO_BACKEND: Record<string, string> = {
+  Active: "active",
+  "On Leave": "on_leave",
+  Suspended: "suspended",
+  Terminated: "terminated",
+};
+
+const BACKEND_TO_STATUS: Record<string, string> = {
+  active: "Active",
+  on_leave: "On Leave",
+  suspended: "Suspended",
+  terminated: "Terminated",
+  inactive: "Inactive",
+};
+
 const INITIAL_EMPLOYEES: Employee[] = [];
 
 export default function EmployeeProfiles() {
   usePageTitle("employee-profiles", "Employee Profiles & Records");
 
-  const { departments } = useDepartmentStore();
+  const { departments, setDepartments } = useDepartmentStore();
   const [employees, setEmployees] = useState<Employee[]>(INITIAL_EMPLOYEES);
+  const [deptIdMap, setDeptIdMap] = useState<Record<string, number>>({});
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     apiGet<{ success: boolean; data: any[] }>("/api/employees")
       .then((res) => {
-        if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
+        if (res?.success && Array.isArray(res.data)) {
           const mapped: Employee[] = res.data.map((item: any) => ({
             id: `EMP-${item.id}`,
+            db_id: Number(item.id),
             code: item.emp_number || `KF-EMP-${item.id}`,
             first_name: item.fullname ? item.fullname.split(" ")[0] : "Staff",
-            last_name: item.fullname
-              ? item.fullname.split(" ").slice(1).join(" ")
-              : "",
+            last_name: item.fullname ? item.fullname.split(" ").slice(1).join(" ") : "",
             email: item.email || "",
             phone: item.phone || "",
             department: item.department_name || "General",
             job_title: item.job_title || "Staff Member",
             employment_type:
-              item.employment_type === "contract"
-                ? "Fixed-Term Contract"
-                : "Full-Time Permanent",
-            status:
-              item.status === "active"
-                ? "Active"
-                : item.status === "on_leave"
-                  ? "On Leave"
-                  : "Suspended",
+              (BACKEND_TO_EMPLOYMENT_TYPE[item.employment_type] as Employee["employment_type"]) ||
+              "Full-Time Permanent",
+            status: (BACKEND_TO_STATUS[item.status] || "Active") as Employee["status"],
             location: item.address || "Kigali HQ",
-            hire_date:
-              item.date_hired || new Date().toISOString().split("T")[0],
+            hire_date: item.date_hired || new Date().toISOString().split("T")[0],
             salary_rwf: Number(item.salary_rwf) || 0,
-            dob: item.dob || item.date_of_birth || "",
-            nid: item.nid || item.national_id || "",
-            gender: item.gender || "Male",
             contract_id: item.contract_ref || undefined,
             contract_end_date: item.contract_end_date || null,
-            contract_status: item.contract_end_date
-              ? "Expiring Soon"
-              : "Active",
+            contract_status:
+              item.status === "terminated" ? "Expired" : item.contract_end_date ? "Expiring Soon" : "Active",
             emergency_contact: {
               name: item.emergency_person_name || "",
               relationship: "Family",
@@ -132,10 +131,7 @@ export default function EmployeeProfiles() {
                 (t) =>
                   String(t.id) === String(emp.id) ||
                   (t.code && emp.code && t.code === emp.code) ||
-                  (t.email &&
-                    emp.email &&
-                    t.email.trim().toLowerCase() ===
-                      emp.email.trim().toLowerCase()),
+                  (t.email && emp.email && t.email.trim().toLowerCase() === emp.email.trim().toLowerCase()),
               ),
           );
           setEmployees(uniqueEmployees);
@@ -146,8 +142,34 @@ export default function EmployeeProfiles() {
       .catch(() => {
         setEmployees([]);
       });
-  }, []);
 
+    apiGet<{ success: boolean; data: any[] }>("/api/departments")
+      .then((res) => {
+        if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
+          const mappedDepts = res.data.map((d: any) => ({
+            id: String(d.id),
+            code: d.code || `KF-DEP-${d.id}`,
+            name: d.name,
+            lead_name: d.lead_name || "Unassigned",
+            lead_email: d.lead_email || "",
+            staff_count: Number(d.staff_count) || 0,
+            capacity: Number(d.capacity) || 10,
+            monthly_budget_rwf: Number(d.monthly_budget_rwf) || 0,
+            location: d.location || "Kigali HQ",
+            status: d.status || "Active",
+            description: d.description || "",
+          }));
+          setDepartments(mappedDepts);
+          const map: Record<string, number> = {};
+          res.data.forEach((d: any) => {
+            map[String(d.name).trim().toLowerCase()] = Number(d.id);
+          });
+          setDeptIdMap(map);
+        }
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [viewMode, setViewMode] = useState<"table" | "grid">("grid");
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("all");
@@ -162,43 +184,20 @@ export default function EmployeeProfiles() {
   const [editingEmp, setEditingEmp] = useState<Employee | null>(null);
 
   // Registration Form State
-  const [form, setForm] = useState<{
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone: string;
-    dob: string;
-    nid: string;
-    gender: string;
-    department: string;
-    job_title: string;
-    employment_type: EmploymentType;
-    location: string;
-    salary_rwf: number;
-    contract_id: string;
-    contract_start_date: string;
-    contract_end_date: string;
-    contract_status: ContractStatus;
-    emergency_name: string;
-    emergency_relationship: string;
-    emergency_phone: string;
-  }>({
+  const [form, setForm] = useState({
     first_name: "",
     last_name: "",
     email: "",
     phone: "",
-    dob: "1995-05-15",
-    nid: "",
-    gender: "Male",
     department: "Farm Operations",
     job_title: "",
-    employment_type: "Full-Time Permanent",
+    employment_type: "Full-Time Permanent" as Employee["employment_type"],
     location: "Musanze Plot A",
     salary_rwf: 350000,
     contract_id: "",
     contract_start_date: new Date().toISOString().split("T")[0],
     contract_end_date: "",
-    contract_status: "Active",
+    contract_status: "Active" as "Active" | "Expiring Soon" | "Expired" | "Renewed",
     emergency_name: "",
     emergency_relationship: "Spouse",
     emergency_phone: "",
@@ -217,7 +216,7 @@ export default function EmployeeProfiles() {
         emp.id === id
           ? {
               ...emp,
-              contract_status: "Renewed" as ContractStatus,
+              contract_status: "Renewed",
               contract_end_date: newEndDate,
             }
           : emp,
@@ -228,20 +227,17 @@ export default function EmployeeProfiles() {
         prev
           ? {
               ...prev,
-              contract_status: "Renewed" as ContractStatus,
+              contract_status: "Renewed",
               contract_end_date: newEndDate,
             }
           : null,
       );
     }
-    toast.success(
-      `Employment contract for #${id} successfully renewed for 12 months!`,
-    );
+    toast.success(`Employment contract for #${id} successfully renewed for 12 months!`);
   };
 
   const expiringContractsCount = useMemo(
-    () =>
-      employees.filter((e) => e.contract_status === "Expiring Soon").length,
+    () => employees.filter((e) => e.contract_status === "Expiring Soon").length,
     [employees],
   );
 
@@ -249,7 +245,10 @@ export default function EmployeeProfiles() {
     return employees.filter((emp) => {
       if (deptFilter !== "all" && emp.department !== deptFilter) return false;
       if (statusFilter !== "all" && emp.status !== statusFilter) return false;
-      if (contractFilter !== "all" && emp.contract_status !== contractFilter)
+      if (
+        contractFilter !== "all" &&
+        emp.contract_status !== contractFilter
+      )
         return false;
       if (!search.trim()) return true;
 
@@ -281,7 +280,12 @@ export default function EmployeeProfiles() {
     return { total, active, onLeave, totalSalary };
   }, [filteredEmployees]);
 
-  const handleAddEmployee = (e: React.FormEvent) => {
+  const deptIdFor = (name: string): number | null => {
+    const key = name.trim().toLowerCase();
+    return deptIdMap[key] ?? Object.values(deptIdMap)[0] ?? null;
+  };
+
+  const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
       !form.first_name.trim() ||
@@ -292,63 +296,92 @@ export default function EmployeeProfiles() {
       return;
     }
 
-    const newEmp: Employee = {
-      id: `EMP-00${employees.length + 1}`,
-      code: `KF-EMP-10${employees.length + 1}`,
-      first_name: form.first_name.trim(),
-      last_name: form.last_name.trim(),
-      email:
-        form.email.trim() ||
-        `${form.first_name.toLowerCase()}.${form.last_name.toLowerCase()}@kainafresh.rw`,
-      phone: form.phone.trim(),
-      dob: form.dob,
-      nid: form.nid.trim(),
-      gender: form.gender,
-      department: form.department,
-      job_title: form.job_title.trim() || "Operations Staff",
-      employment_type: form.employment_type,
-      status: "Active",
-      location: form.location,
-      hire_date: new Date().toISOString().split("T")[0],
-      salary_rwf: Number(form.salary_rwf),
-      contract_id: form.contract_id.trim() || undefined,
-      contract_start_date:
-        form.contract_start_date || new Date().toISOString().split("T")[0],
-      contract_end_date: form.contract_end_date || null,
-      contract_status: form.contract_status,
-      emergency_contact: {
-        name: form.emergency_name.trim(),
-        relationship: form.emergency_relationship,
-        phone: form.emergency_phone.trim(),
-      },
-    };
+    setSubmitting(true);
+    try {
+      const fullname = `${form.first_name.trim()} ${form.last_name.trim()}`;
+      const deptId = deptIdFor(form.department);
+      const today = new Date().toISOString().split("T")[0];
+      const payload: Record<string, unknown> = {
+        fullname,
+        emp_number: `KF-EMP-${Date.now().toString().slice(-6)}`,
+        phone: form.phone.trim(),
+        email: form.email.trim() || `${form.first_name.trim().toLowerCase()}.${form.last_name.trim().toLowerCase()}@kainafresh.rw`,
+        address: form.location,
+        job_title: form.job_title.trim() || "Operations Staff",
+        employment_type: EMPLOYMENT_TYPE_TO_BACKEND[form.employment_type] || "full_time",
+        status: "active",
+        date_hired: form.contract_start_date || today,
+        contract_ref: form.contract_id.trim() || undefined,
+        contract_end_date: form.contract_end_date || null,
+        emergency_person_name: form.emergency_name.trim() || undefined,
+        emergency_phone_number: form.emergency_phone.trim() || undefined,
+      };
+      if (deptId) {
+        payload.dept_id = deptId;
+      }
 
-    setEmployees([newEmp, ...employees]);
-    setIsAddOpen(false);
-    setForm({
-      first_name: "",
-      last_name: "",
-      email: "",
-      phone: "",
-      dob: "1995-05-15",
-      nid: "",
-      gender: "Male",
-      department: "Farm Operations",
-      job_title: "",
-      employment_type: "Full-Time Permanent",
-      location: "Musanze Plot A",
-      salary_rwf: 350000,
-      contract_id: "",
-      contract_start_date: new Date().toISOString().split("T")[0],
-      contract_end_date: "",
-      contract_status: "Active",
-      emergency_name: "",
-      emergency_relationship: "Spouse",
-      emergency_phone: "",
-    });
-    toast.success(
-      `Employee ${newEmp.first_name} ${newEmp.last_name} registered successfully!`,
-    );
+      const res = await apiPost<{ success: boolean; message?: string; data?: any }>(
+        "/api/employees",
+        payload,
+      );
+      if (!res?.success) {
+        toast.error(res?.message || "Failed to register employee.");
+        return;
+      }
+
+      const created = res.data || {};
+      const newEmp: Employee = {
+        id: `EMP-${created.id ?? Date.now()}`,
+        db_id: Number(created.id),
+        code: created.emp_number || String(payload.emp_number),
+        first_name: form.first_name.trim(),
+        last_name: form.last_name.trim(),
+        email: String(payload.email),
+        phone: form.phone.trim(),
+        department: form.department,
+        job_title: created.job_title || form.job_title.trim() || "Operations Staff",
+        employment_type: form.employment_type,
+        status: "Active",
+        location: form.location,
+        hire_date: today,
+        salary_rwf: Number(form.salary_rwf) || 0,
+        contract_id: form.contract_id.trim() || undefined,
+        contract_start_date: form.contract_start_date || today,
+        contract_end_date: form.contract_end_date || null,
+        contract_status: "Active",
+        emergency_contact: {
+          name: form.emergency_name.trim(),
+          relationship: form.emergency_relationship,
+          phone: form.emergency_phone.trim(),
+        },
+      };
+
+      setEmployees((prev) => [newEmp, ...prev]);
+      setIsAddOpen(false);
+      setForm({
+        first_name: "",
+        last_name: "",
+        email: "",
+        phone: "",
+        department: departments[0]?.name || "Farm Operations",
+        job_title: "",
+        employment_type: "Full-Time Permanent",
+        location: "Musanze Plot A",
+        salary_rwf: 350000,
+        contract_id: "",
+        contract_start_date: today,
+        contract_end_date: "",
+        contract_status: "Active",
+        emergency_name: "",
+        emergency_relationship: "Spouse",
+        emergency_phone: "",
+      });
+      toast.success(`Employee ${newEmp.first_name} ${newEmp.last_name} registered successfully!`);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to register employee.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleStartEdit = (emp: Employee) => {
@@ -356,7 +389,7 @@ export default function EmployeeProfiles() {
     setEditForm(JSON.parse(JSON.stringify(emp)));
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editForm) return;
 
@@ -369,14 +402,78 @@ export default function EmployeeProfiles() {
       return;
     }
 
-    setEmployees(employees.map((e) => (e.id === editForm.id ? editForm : e)));
-    if (selectedEmp?.id === editForm.id) {
-      setSelectedEmp(editForm);
+    setSubmitting(true);
+    try {
+      const fullname = `${editForm.first_name.trim()} ${editForm.last_name.trim()}`;
+      const deptId = deptIdFor(editForm.department);
+      const payload: Record<string, unknown> = {
+        fullname,
+        phone: editForm.phone.trim(),
+        email: editForm.email.trim() || undefined,
+        address: editForm.location,
+        job_title: editForm.job_title || "Operations Staff",
+        employment_type: EMPLOYMENT_TYPE_TO_BACKEND[editForm.employment_type] || "full_time",
+        status: STATUS_TO_BACKEND[editForm.status] || "active",
+        contract_ref: editForm.contract_id?.trim() || undefined,
+        contract_end_date: editForm.contract_end_date || null,
+        emergency_person_name: editForm.emergency_contact?.name?.trim() || undefined,
+        emergency_phone_number: editForm.emergency_contact?.phone?.trim() || undefined,
+      };
+      if (deptId) {
+        payload.dept_id = deptId;
+      }
+
+      if (editForm.db_id) {
+        const res = await apiPut<{ success: boolean; message?: string; data?: any }>(
+          `/api/employees/${editForm.db_id}`,
+          payload,
+        );
+        if (!res?.success) {
+          toast.error(res?.message || "Failed to update employee.");
+          return;
+        }
+      } else {
+        toast.warning("Employee has no backend id; updating local copy only.");
+      }
+
+      setEmployees(employees.map((e) => (e.id === editForm.id ? editForm : e)));
+      if (selectedEmp?.id === editForm.id) {
+        setSelectedEmp(editForm);
+      }
+      setEditingEmp(null);
+      toast.success(`Updated profile for ${editForm.first_name} ${editForm.last_name}!`);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update employee.");
+    } finally {
+      setSubmitting(false);
     }
-    setEditingEmp(null);
-    toast.success(
-      `Updated profile for ${editForm.first_name} ${editForm.last_name}!`,
-    );
+  };
+
+  const handleDeleteEmployee = async (emp: Employee) => {
+    if (!emp.db_id) {
+      toast.error("Cannot delete an employee that was not saved to the backend.");
+      return;
+    }
+    if (!window.confirm(`Delete employee ${emp.first_name} ${emp.last_name} (ID ${emp.code})? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const res = await apiDelete<{ success: boolean; message?: string }>(
+        `/api/employees/${emp.db_id}`,
+      );
+      if (!res?.success) {
+        toast.error(res?.message || "Failed to delete employee.");
+        return;
+      }
+      setEmployees((prev) => prev.filter((p) => p.id !== emp.id));
+      if (selectedEmp?.id === emp.id) {
+        setSelectedEmp(null);
+      }
+      toast.success(res?.message || "Employee deleted successfully!");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete employee.");
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -437,7 +534,6 @@ export default function EmployeeProfiles() {
         location: "Kigali HQ",
         hire_date: new Date().toISOString().split("T")[0],
         salary_rwf: 450000,
-        contract_status: "Active",
         emergency_contact: {
           name: "",
           relationship: "",
@@ -494,9 +590,7 @@ export default function EmployeeProfiles() {
           <div className="flex items-center gap-2.5 font-bold">
             <AlertCircle size={20} className="text-amber-600 shrink-0" />
             <span>
-              {expiringContractsCount} employment contract
-              {expiringContractsCount > 1 ? "s are" : " is"} expiring within the
-              next 30 days!
+              {expiringContractsCount} employment contract{expiringContractsCount > 1 ? "s are" : " is"} expiring within the next 30 days!
             </span>
           </div>
           <button
@@ -648,9 +742,7 @@ export default function EmployeeProfiles() {
                       </td>
                       <td className="px-4 py-3.5 text-gray-600">
                         <p className="font-medium text-gray-800">{emp.phone}</p>
-                        <p className="text-[11px] text-gray-400">
-                          {emp.email}
-                        </p>
+                        <p className="text-[11px] text-gray-400">{emp.email}</p>
                       </td>
                       <td className="px-4 py-3.5 text-gray-600">
                         <p className="font-medium text-gray-800">
@@ -751,8 +843,7 @@ export default function EmployeeProfiles() {
                 No Employee Profiles Recorded
               </h3>
               <p className="mt-1 text-xs text-gray-500 max-w-md mx-auto">
-                There are currently no employee profiles in the database. Click
-                "Add New Employee" or "Import (CSV / Excel)" to register staff.
+                There are currently no employee profiles in the database. Click "Add New Employee" or "Import (CSV / Excel)" to register staff.
               </p>
               <div className="mt-5 flex items-center justify-center gap-3">
                 <button
@@ -795,7 +886,7 @@ export default function EmployeeProfiles() {
                     </span>
                   </div>
 
-                  {/* Profile Header */}
+                  {/* Profile Header: Avatar Photo / Initials + Name + Title */}
                   <div className="mt-4 flex items-center gap-3.5">
                     {emp.avatar_url ? (
                       <img
@@ -819,7 +910,7 @@ export default function EmployeeProfiles() {
                     </div>
                   </div>
 
-                  {/* Metadata */}
+                  {/* 2-Column Metadata: Department & Hire Date */}
                   <div className="mt-4 grid grid-cols-2 gap-2 border-t border-gray-100 pt-3 text-xs">
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
@@ -839,7 +930,7 @@ export default function EmployeeProfiles() {
                     </div>
                   </div>
 
-                  {/* Contact Box */}
+                  {/* Containerized Contact Box */}
                   <div className="mt-3 rounded-xl bg-gray-50/90 p-3 space-y-1.5 border border-gray-100 text-xs">
                     <div className="flex items-center gap-2 text-gray-600 font-medium min-w-0">
                       <Mail size={13} className="text-gray-400 shrink-0" />
@@ -852,7 +943,7 @@ export default function EmployeeProfiles() {
                   </div>
                 </div>
 
-                {/* Actions */}
+                {/* Dual Action Buttons */}
                 <div className="mt-4 flex items-center gap-2 pt-2 border-t border-gray-100">
                   <button
                     type="button"
@@ -907,6 +998,13 @@ export default function EmployeeProfiles() {
               </div>
               <button
                 type="button"
+                onClick={() => handleDeleteEmployee(selectedEmp)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-100"
+              >
+                <Trash2 size={14} /> Delete Profile
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   const emp = selectedEmp;
                   setSelectedEmp(null);
@@ -946,8 +1044,7 @@ export default function EmployeeProfiles() {
                     className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
                       selectedEmp.contract_status === "Expiring Soon"
                         ? "bg-amber-100 text-amber-800 border border-amber-300"
-                        : selectedEmp.contract_status === "Renewed" ||
-                            selectedEmp.contract_status === "Active"
+                        : selectedEmp.contract_status === "Renewed" || selectedEmp.contract_status === "Active"
                           ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
                           : "bg-gray-100 text-gray-700"
                     }`}
@@ -974,9 +1071,6 @@ export default function EmployeeProfiles() {
                     Employment Details
                   </p>
                   <p>
-                    <strong>Work Location:</strong> {selectedEmp.location}
-                  </p>
-                  <p>
                     <strong>Monthly Base Salary:</strong>{" "}
                     {selectedEmp.salary_rwf.toLocaleString()} RWF
                   </p>
@@ -1000,8 +1094,7 @@ export default function EmployeeProfiles() {
                     {selectedEmp.emergency_contact.relationship}
                   </p>
                   <p>
-                    <strong>Phone:</strong>{" "}
-                    {selectedEmp.emergency_contact.phone}
+                    <strong>Phone:</strong> {selectedEmp.emergency_contact.phone}
                   </p>
                 </div>
               </div>
@@ -1020,7 +1113,7 @@ export default function EmployeeProfiles() {
         <form onSubmit={handleAddEmployee} className="space-y-4 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="font-bold text-gray-700">First Name <span className="text-red-500">*</span></label>
+              <label className="font-bold text-gray-700">First Name *</label>
               <input
                 type="text"
                 required
@@ -1028,12 +1121,12 @@ export default function EmployeeProfiles() {
                 onChange={(e) =>
                   setForm({ ...form, first_name: e.target.value })
                 }
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
                 placeholder="e.g. Jean"
               />
             </div>
             <div>
-              <label className="font-bold text-gray-700">Last Name <span className="text-red-500">*</span></label>
+              <label className="font-bold text-gray-700">Last Name *</label>
               <input
                 type="text"
                 required
@@ -1041,53 +1134,20 @@ export default function EmployeeProfiles() {
                 onChange={(e) =>
                   setForm({ ...form, last_name: e.target.value })
                 }
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
                 placeholder="e.g. Habimana"
               />
             </div>
             <div>
-              <label className="font-bold text-gray-700">Phone Number <span className="text-red-500">*</span></label>
+              <label className="font-bold text-gray-700">Phone Number *</label>
               <input
                 type="text"
                 required
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
                 placeholder="+250 788 000 000"
               />
-            </div>
-            <div>
-              <label className="font-bold text-gray-700">National ID (NID) <span className="text-red-500">*</span></label>
-              <input
-                type="text"
-                required
-                value={form.nid}
-                onChange={(e) => setForm({ ...form, nid: e.target.value })}
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-                placeholder="e.g. 1 1995 8 0012345 1 23"
-              />
-            </div>
-            <div>
-              <label className="font-bold text-gray-700">Date of Birth (DOB) <span className="text-red-500">*</span></label>
-              <input
-                type="date"
-                required
-                value={form.dob}
-                onChange={(e) => setForm({ ...form, dob: e.target.value })}
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-              />
-            </div>
-            <div>
-              <label className="font-bold text-gray-700">Gender <span className="text-red-500">*</span></label>
-              <select
-                value={form.gender}
-                onChange={(e) => setForm({ ...form, gender: e.target.value })}
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-              >
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
             </div>
             <div>
               <label className="font-bold text-gray-700">Department</label>
@@ -1096,7 +1156,7 @@ export default function EmployeeProfiles() {
                 onChange={(e) =>
                   setForm({ ...form, department: e.target.value })
                 }
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
               >
                 {departments.map((d) => (
                   <option key={d.id} value={d.name}>
@@ -1113,18 +1173,8 @@ export default function EmployeeProfiles() {
                 onChange={(e) =>
                   setForm({ ...form, job_title: e.target.value })
                 }
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
                 placeholder="e.g. Agronomist Lead"
-              />
-            </div>
-            <div>
-              <label className="font-bold text-gray-700">Work Location</label>
-              <input
-                type="text"
-                value={form.location}
-                onChange={(e) => setForm({ ...form, location: e.target.value })}
-                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-                placeholder="e.g. Musanze Plot A"
               />
             </div>
           </div>
@@ -1136,9 +1186,7 @@ export default function EmployeeProfiles() {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="font-semibold text-gray-700">
-                  Contract ID / Reference
-                </label>
+                <label className="font-semibold text-gray-700">Contract ID / Reference</label>
                 <input
                   type="text"
                   value={form.contract_id}
@@ -1151,36 +1199,26 @@ export default function EmployeeProfiles() {
               </div>
 
               <div>
-                <label className="font-semibold text-gray-700">
-                  Contract / Employment Type
-                </label>
+                <label className="font-semibold text-gray-700">Contract / Employment Type</label>
                 <select
                   value={form.employment_type}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      employment_type: e.target.value as EmploymentType,
+                      employment_type: e.target.value as Employee["employment_type"],
                     })
                   }
                   className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2.5 outline-none focus:border-[#076935]"
                 >
-                  <option value="Full-Time Permanent">
-                    Full-Time Permanent
-                  </option>
-                  <option value="Fixed-Term Contract">
-                    Fixed-Term Contract
-                  </option>
-                  <option value="Seasonal Farm Worker">
-                    Seasonal Farm Worker
-                  </option>
+                  <option value="Full-Time Permanent">Full-Time Permanent</option>
+                  <option value="Fixed-Term Contract">Fixed-Term Contract</option>
+                  <option value="Seasonal Farm Worker">Seasonal Farm Worker</option>
                   <option value="Part-Time">Part-Time</option>
                 </select>
               </div>
 
               <div>
-                <label className="font-semibold text-gray-700">
-                  Contract Start Date
-                </label>
+                <label className="font-semibold text-gray-700">Contract Start Date</label>
                 <input
                   type="date"
                   value={form.contract_start_date}
@@ -1192,9 +1230,7 @@ export default function EmployeeProfiles() {
               </div>
 
               <div>
-                <label className="font-semibold text-gray-700">
-                  Contract End Date (Leave empty for permanent)
-                </label>
+                <label className="font-semibold text-gray-700">Contract End Date (Leave empty for permanent)</label>
                 <input
                   type="date"
                   value={form.contract_end_date}
@@ -1206,15 +1242,15 @@ export default function EmployeeProfiles() {
               </div>
 
               <div>
-                <label className="font-semibold text-gray-700">
-                  Contract Agreement Status
-                </label>
+                <label className="font-semibold text-gray-700">Contract Agreement Status</label>
                 <select
                   value={form.contract_status}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      contract_status: e.target.value as ContractStatus,
+                      contract_status: e.target.value as NonNullable<
+                        Employee["contract_status"]
+                      >,
                     })
                   }
                   className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2.5 outline-none focus:border-[#076935]"
@@ -1227,9 +1263,7 @@ export default function EmployeeProfiles() {
               </div>
 
               <div>
-                <label className="font-semibold text-gray-700">
-                  Monthly Base Salary (RWF)
-                </label>
+                <label className="font-semibold text-gray-700">Monthly Base Salary (RWF)</label>
                 <input
                   type="number"
                   value={form.salary_rwf}
@@ -1245,14 +1279,11 @@ export default function EmployeeProfiles() {
           {/* Emergency Contact Information Section */}
           <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3 space-y-3">
             <p className="font-bold text-gray-800 uppercase tracking-wide flex items-center gap-1.5">
-              <Phone size={14} className="text-[#076935]" /> Emergency Contact
-              Information (Optional)
+              <Phone size={14} className="text-[#076935]" /> Emergency Contact Information (Optional)
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="font-semibold text-gray-700">
-                  Contact Full Name
-                </label>
+                <label className="font-semibold text-gray-700">Contact Full Name</label>
                 <input
                   type="text"
                   value={form.emergency_name}
@@ -1265,9 +1296,7 @@ export default function EmployeeProfiles() {
               </div>
 
               <div>
-                <label className="font-semibold text-gray-700">
-                  Relationship
-                </label>
+                <label className="font-semibold text-gray-700">Relationship</label>
                 <select
                   value={form.emergency_relationship}
                   onChange={(e) =>
@@ -1285,9 +1314,7 @@ export default function EmployeeProfiles() {
               </div>
 
               <div>
-                <label className="font-semibold text-gray-700">
-                  Emergency Phone Number
-                </label>
+                <label className="font-semibold text-gray-700">Emergency Phone Number</label>
                 <input
                   type="text"
                   value={form.emergency_phone}
@@ -1309,12 +1336,16 @@ export default function EmployeeProfiles() {
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="rounded-md bg-[#076935] px-4 py-2 font-bold text-white hover:bg-[#055028]"
-            >
-              Register Staff & Record
-            </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="inline-flex items-center justify-center gap-1 rounded-md bg-[#076935] px-4 py-2 font-bold text-white hover:bg-[#055028] disabled:opacity-60"
+                >
+                  {submitting ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : null}
+                  Register Staff & Record
+                </button>
           </div>
         </form>
       </Modal>
@@ -1423,7 +1454,7 @@ export default function EmployeeProfiles() {
                   onChange={(e) =>
                     setEditForm({
                       ...editForm,
-                      status: e.target.value as EmploymentStatus,
+                      status: e.target.value as Employee["status"],
                     })
                   }
                   className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
@@ -1434,18 +1465,6 @@ export default function EmployeeProfiles() {
                   <option value="Terminated">Terminated</option>
                 </select>
               </div>
-
-              <div>
-                <label className="font-bold text-gray-700">Work Location</label>
-                <input
-                  type="text"
-                  value={editForm.location}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, location: e.target.value })
-                  }
-                  className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
-                />
-              </div>
             </div>
 
             {/* Contract Record Edit Section */}
@@ -1455,9 +1474,7 @@ export default function EmployeeProfiles() {
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-gray-700">
-                    Contract ID / Reference
-                  </label>
+                  <label className="font-semibold text-gray-700">Contract ID / Reference</label>
                   <input
                     type="text"
                     value={editForm.contract_id || ""}
@@ -1469,78 +1486,58 @@ export default function EmployeeProfiles() {
                 </div>
 
                 <div>
-                  <label className="font-semibold text-gray-700">
-                    Contract Type
-                  </label>
+                  <label className="font-semibold text-gray-700">Contract Type</label>
                   <select
                     value={editForm.employment_type}
                     onChange={(e) =>
                       setEditForm({
                         ...editForm,
-                        employment_type: e.target.value as EmploymentType,
+                        employment_type: e.target.value as Employee["employment_type"],
                       })
                     }
                     className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2.5 outline-none focus:border-[#076935]"
                   >
-                    <option value="Full-Time Permanent">
-                      Full-Time Permanent
-                    </option>
-                    <option value="Fixed-Term Contract">
-                      Fixed-Term Contract
-                    </option>
-                    <option value="Seasonal Farm Worker">
-                      Seasonal Farm Worker
-                    </option>
+                    <option value="Full-Time Permanent">Full-Time Permanent</option>
+                    <option value="Fixed-Term Contract">Fixed-Term Contract</option>
+                    <option value="Seasonal Farm Worker">Seasonal Farm Worker</option>
                     <option value="Part-Time">Part-Time</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="font-semibold text-gray-700">
-                    Contract Start Date
-                  </label>
+                  <label className="font-semibold text-gray-700">Contract Start Date</label>
                   <input
                     type="date"
-                    value={
-                      editForm.contract_start_date || editForm.hire_date || ""
-                    }
+                    value={editForm.contract_start_date || editForm.hire_date || ""}
                     onChange={(e) =>
-                      setEditForm({
-                        ...editForm,
-                        contract_start_date: e.target.value,
-                      })
+                      setEditForm({ ...editForm, contract_start_date: e.target.value })
                     }
                     className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2.5 outline-none focus:border-[#076935]"
                   />
                 </div>
 
                 <div>
-                  <label className="font-semibold text-gray-700">
-                    Contract End Date (Optional)
-                  </label>
+                  <label className="font-semibold text-gray-700">Contract End Date (Optional)</label>
                   <input
                     type="date"
                     value={editForm.contract_end_date || ""}
                     onChange={(e) =>
-                      setEditForm({
-                        ...editForm,
-                        contract_end_date: e.target.value || null,
-                      })
+                      setEditForm({ ...editForm, contract_end_date: e.target.value || null })
                     }
                     className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2.5 outline-none focus:border-[#076935]"
                   />
                 </div>
 
                 <div>
-                  <label className="font-semibold text-gray-700">
-                    Contract Status
-                  </label>
+                  <label className="font-semibold text-gray-700">Contract Status</label>
                   <select
                     value={editForm.contract_status || "Active"}
                     onChange={(e) =>
                       setEditForm({
                         ...editForm,
-                        contract_status: e.target.value as ContractStatus,
+                      contract_status: e.target.value as NonNullable<
+                        Employee["contract_status"]
+                      >,
                       })
                     }
                     className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2.5 outline-none focus:border-[#076935]"
@@ -1553,9 +1550,7 @@ export default function EmployeeProfiles() {
                 </div>
 
                 <div>
-                  <label className="font-semibold text-gray-700">
-                    Monthly Base Salary (RWF)
-                  </label>
+                  <label className="font-semibold text-gray-700">Monthly Base Salary (RWF)</label>
                   <input
                     type="number"
                     value={editForm.salary_rwf}
@@ -1645,12 +1640,14 @@ export default function EmployeeProfiles() {
               >
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="rounded-md bg-[#076935] px-4 py-2 font-bold text-white hover:bg-[#055028]"
-              >
-                Save Changes
-              </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#076935] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#055028] disabled:opacity-60"
+            >
+              {submitting ? <Loader2 size={15} className="animate-spin" /> : null}
+              Save
+            </button>
             </div>
           </form>
         )}
