@@ -2,14 +2,17 @@
 
 class OrderController extends BaseController
 {
+    
     private $orderModel;
     private $userModel;
     private $customerModel;
+    protected $orderItemModel;
     public function __construct()
     {
         $this->orderModel = new Order();
         $this->userModel = new User();
         $this->customerModel = new Customer();
+        $this->orderItemModel = new OrderItem();
     }
 
     /**
@@ -242,6 +245,7 @@ class OrderController extends BaseController
         $order = $this->orderModel->create($data);
 
         if (!$order) {
+
             $this->jsonResponse([
                 'success' => false,
                 'message' => 'Failed to create order'
@@ -251,7 +255,42 @@ class OrderController extends BaseController
         }
 
         $order = $this->orderModel->findWithRelations($order['id']);
+ // ---- Send emails (best effort) ----
+        try {
+            require_once __DIR__ . '/../services/MailTemplates.php';
 
+            $orderItems = $this->orderItemModel->findByOrder($order['id']);
+
+              $customer = !empty($order['customer_id'])
+                ? $this->customerModel->findCustomer($order['customer_id'])
+                : null;
+
+            $orderForEmail = array_merge($order, [
+                'customer_first_name' => $customer['first_name'] ?? '',
+                'customer_last_name'  => $customer['last_name']  ?? '',
+                'customer_phone'      => $customer['phone']      ?? '',
+                'customer_email'      => $customer['email']      ?? '',
+                'customer_address'    => $customer['address']    ?? '',
+            ]);
+
+            $config = require __DIR__ . '/../config/mail.php';
+            $mailer = new MailTemplates($config);
+
+            if (!empty($orderForEmail['customer_email'])) {
+                $mailer->sendOrderConfirmationToCustomer(
+                    $orderForEmail, $orderItems, $orderForEmail['customer_email']
+                );
+            }
+
+            $mailer->sendOrderConfirmationToAdmin(
+                $orderForEmail,
+                $orderItems,
+                ['orders@kainafresh.rw' => 'Kaina Fresh Team']
+            );
+        } catch (Throwable $e) {
+            error_log('[Order email dispatch] ' . $e->getMessage());
+        }
+        // ---- end email block ----
         $this->jsonResponse([
             'success' => true,
             'message' => 'Order created successfully',
