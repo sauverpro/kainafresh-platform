@@ -235,6 +235,12 @@ $router->addRoute(
 );
 
 $router->addRoute(
+    'GET',
+    '/api/customer',
+    'CustomerController@showcustomer','auth'
+);
+
+$router->addRoute(
     'POST',
     '/api/customers',
     'CustomerController@store','auth'
@@ -461,7 +467,8 @@ $router->addRoute('POST','/api/insurance/create','InsuranceController@store','au
 $router->addRoute('DELETE','/api/insurance/delete/{id}','InsuranceController@deleteInsurance','auth');
 $router->addRoute('GET','/api/insurance','InsuranceController@index','auth');
 $router->addRoute('PUT','/api/insurance/update/{id}','InsuranceController@updateInsurance','auth');
-
+$router->addRoute('GET','/api/customer/orders','OrderController@CustomerOrder','auth');
+$router->addRoute('POST','/api/customer/order/cancel/{id}','OrderController@CustomerOrderCancel','auth');
 /*"   ,  HR - Training Management
 |--------------------------------------------------------------------------
 */
@@ -551,3 +558,7 @@ $router->addRoute(
     'IncidentController@delete',
     'auth'
 );
+//get customer's order
+
+
+

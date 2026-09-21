@@ -69,7 +69,7 @@ class MailTemplates
 
         return $this->mailer->send(
             $customerEmail,
-            "Order {$ref} confirmed – KainaFresh",
+            "Order {$ref} confirmed – Kaina Fresh Ltd",
             $html
         );
     }
@@ -80,7 +80,7 @@ class MailTemplates
     public function sendOrderConfirmationToAdmin(
         array $order,
         array $items,
-        array $adminRecipients   // ["ops@kainafresh.rw" => "Ops", ...]
+        array $adminRecipients  
     ): bool {
         $ref = $order['order_reference']
             ?? ('KF-' . str_pad((string) $order['id'], 4, '0', STR_PAD_LEFT));
@@ -123,17 +123,38 @@ class MailTemplates
             'receivedAt'    => date('D, d M Y H:i'),
         ]);
 
-        // We use the Mailer as-is, but Reply-To should point to the customer.
-        // Since our Mailer sets Reply-To globally, we temporarily override it here
-        // by rebuilding via a fresh Mailer instance is overkill — instead, patch
-        // the config before constructing.
-        // Simpler: add a dedicated sendWithReplyTo() — see note below.
-        // For now we reuse the global Reply-To (support@). If you want the customer's
-        // email as Reply-To, use the optional 4th argument on Mailer::sendWithReplyTo().
+       
 
         return $this->mailer->send(
             $supportRecipients,
             "Contact form: " . ($form['subject'] ?? 'New message'),
+            $html
+        );
+    }
+
+    /* ---------------------------------------------------------------
+     * 3. Inquiry form notification
+     * --------------------------------------------------------------- */
+    public function sendInquiryNotification(
+        array $form,             // name, email, phone, subject, message
+        array $supportRecipients 
+    ): bool {
+        $html = $this->render('inquiry_notification', [
+            'senderName'    => htmlspecialchars($form['companyName'] ?? '—'),
+            'senderEmail'   => htmlspecialchars($form['email'] ?? '—'),
+            'senderPhone'   => htmlspecialchars($form['phone'] ?? '—'),
+            'subjectLine'   => htmlspecialchars($form['productInterest'] ?? '-'),
+            'country'   => htmlspecialchars($form['country'] ?? '-'),
+            'estimatedQuantity'   => htmlspecialchars($form['estimatedQuantity'] ?? '-'),
+            'messageBody'   => nl2br(htmlspecialchars($form['message'] ?? '')),
+            'receivedAt'    => date('D, d M Y H:i'),
+        ]);
+
+       
+
+        return $this->mailer->send(
+            $supportRecipients,
+            "Inquiry form: " . ($form['productInterest'] ?? 'New message'),
             $html
         );
     }

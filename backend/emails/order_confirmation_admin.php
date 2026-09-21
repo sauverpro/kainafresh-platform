@@ -41,14 +41,7 @@ $content = <<<HTML
 
 <table width="100%" cellpadding="0" cellspacing="0"
        style="border-collapse:collapse;font-size:14px;">
-  <thead>
-    <tr style="background:#f4faf7;">
-      <th align="left"  style="padding:10px;">Item</th>
-      <th align="center" style="padding:10px;">Qty</th>
-      <th align="right" style="padding:10px;">Subtotal</th>
-    </tr>
-  </thead>
-  <tbody>{$itemsHtml}</tbody>
+ 
   <tfoot>
     <tr>
       <td colspan="2" align="right" style="padding:12px 10px;font-weight:bold;">Total</td>

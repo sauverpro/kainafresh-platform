@@ -95,7 +95,36 @@ class CustomerController extends BaseController
             'data' => $customer
         ]);
     }
+public function showcustomer()
+    {
+         // get user id
+     $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
 
+        $customer = $this->customerModel->findCustomerByUserId($userid);
+
+        if (!$customer) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Customer not found'
+            ], 404);
+
+            return;
+        }
+
+        $this->jsonResponse([
+            'success' => true,
+            'data' => $customer
+        ]);
+    }
     /**
      * POST /api/customers
      */

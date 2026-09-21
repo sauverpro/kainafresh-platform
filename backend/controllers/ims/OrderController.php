@@ -3,9 +3,9 @@
 class OrderController extends BaseController
 {
     
-    private $orderModel;
-    private $userModel;
-    private $customerModel;
+    protected $orderModel;
+    protected $userModel;
+    protected $customerModel;
     protected $orderItemModel;
     public function __construct()
     {
@@ -257,9 +257,9 @@ class OrderController extends BaseController
         $order = $this->orderModel->findWithRelations($order['id']);
  // ---- Send emails (best effort) ----
         try {
-            require_once __DIR__ . '/../services/MailTemplates.php';
+            require_once __DIR__ . '/../../services/MailTemplates.php';
 
-            $orderItems = $this->orderItemModel->findByOrder($order['id']);
+              $orderItems = $this->orderItemModel->findByOrder($order['id']);
 
               $customer = !empty($order['customer_id'])
                 ? $this->customerModel->findCustomer($order['customer_id'])
@@ -273,7 +273,7 @@ class OrderController extends BaseController
                 'customer_address'    => $customer['address']    ?? '',
             ]);
 
-            $config = require __DIR__ . '/../config/mail.php';
+            $config = require __DIR__ . '/../../config/mail.php';
             $mailer = new MailTemplates($config);
 
             if (!empty($orderForEmail['customer_email'])) {
@@ -507,5 +507,57 @@ class OrderController extends BaseController
             'success' => true,
             'message' => 'Order deleted successfully'
         ]);
+    }
+
+    // get customer order
+    public function CustomerOrder(){
+           // get user id
+           
+      $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+      $orders = $this->orderModel->findWithRelationsOrderCustomer($userid);
+
+      if($orders){
+        $this->jsonResponse([
+                'success' => true,
+                'message' => 'Order retrieved!',
+                'data'=>$orders
+            ], 200);
+
+      }
+      else{
+        $this->jsonResponse([
+                'success' => false,
+                'message' => 'Failed to retrieve order'
+            ], 500);
+
+      }
+    }
+
+    public function CustomerOrderCancel($id){
+        $userid = $this->getAuthenticatedUserId();
+      $user = $this->userModel->findByUserId($userid);
+      if (!$user) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'You must be logged in'
+            ]);
+            return;
+      }
+      if($this->orderModel->CancelOrder($id)){
+      $this->jsonResponse(['status'=>true,'message'=>'Order Cancelled'],200);
+      }
+      else{
+        $this->jsonResponse(['status'=>false,'message'=>'Something went wrong'],500);
+      }
     }
 }

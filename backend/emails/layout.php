@@ -4,7 +4,7 @@
  * @var string $content  rendered inner HTML
  * @var string|null $preheader
  */
-$appName = 'KainaFresh';
+$appName = 'Kaina Fresh Ltd';
 $appUrl  = 'https://kainafresh.rw';
 $year    = date('Y');
 ?>

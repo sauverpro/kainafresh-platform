@@ -1,7 +1,7 @@
 <?php
 return [
     'host'         => getenv('MAIL_HOST') ?: 'smtp.kainafresh.rw',
-    'port'         => getenv('MAIL_PORT') ?: 465,
+    'port'         => getenv('MAIL_PORT') ?: 587,
     'username'     => getenv('MAIL_USERNAME') ?: 'orders@kainafresh.rw',
     'password'     => getenv('MAIL_PASSWORD') ?: 'Myhandle12@!',
     'encryption'   => getenv('MAIL_ENCRYPTION') ?: 'tls',

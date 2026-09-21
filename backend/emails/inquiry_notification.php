@@ -5,7 +5,8 @@
  * @var string $senderEmail
  * @var string $senderPhone
  * @var string $subjectLine
- * @var string $messageBody   (already nl2br'd or escaped)
+ * @var string $messageBody  
+ * @var string $estimatedQuantity  
  * @var string $receivedAt
  */
 
@@ -31,6 +32,10 @@ $content = <<<HTML
   <tr>
     <td style="padding:6px 0;color:#64748b;">Subject</td>
     <td style="padding:6px 0;">{$subjectLine}</td>
+  </tr>
+   <tr>
+    <td style="padding:6px 0;color:#64748b;">Needed Quantity: </td>
+    <td style="padding:6px 0;">{$estimatedQuantity}</td>
   </tr>
   <tr>
     <td style="padding:6px 0;color:#64748b;">Received</td>

@@ -23,7 +23,34 @@ $data = $this->getRequestData();
             ], 422);
     }
  $createddata = $this->inquiry_model->create( $data );
+
  if($createddata){
+     try {
+            require_once __DIR__ . '/../../services/MailTemplates.php';
+
+              
+
+            $orderForEmail = array_merge($createddata, [
+                'senderName' => $createddata['companyName'] ?? '',
+                'subjectLine'  => $createddata['productInterest']  ?? '',
+                'senderPhone'      => $createddata['phone']      ?? '',
+                'senderEmail'      => $createddata['email']      ?? '',
+                'messageBody'    => $createddata['message']    ?? '',
+                'estimatedQuantity'    => $createddata['estimatedQuantity']    ?? '',
+            ]);
+
+            $config = require __DIR__ . '/../../config/mail.php';
+            $mailer = new MailTemplates($config);
+
+            
+
+            $mailer->sendInquiryNotification(
+                $orderForEmail,
+                ['orders@kainafresh.rw' => 'Kaina Fresh Team']
+            );
+        } catch (Throwable $e) {
+            error_log('[Order email dispatch] ' . $e->getMessage());
+        }
     $this->jsonResponse([
         'success'=> true,
         'data'=>$data
@@ -50,11 +77,36 @@ $data = $this->getRequestData();
     }
  $createddata = $this->contact_model->create( $data );
  if($createddata){
+     try {
+            require_once __DIR__ . '/../../services/MailTemplates.php';
+
+              
+
+            $orderForEmail = array_merge($createddata, [
+                'senderName' => $createddata['name'] ?? '',
+                'subjectLine'  => $createddata['subject']  ?? '',
+                'senderPhone'      => $createddata['phone']      ?? '',
+                'senderEmail'      => $createddata['email']      ?? '',
+                'messageBody'    => $createddata['message']    ?? '',
+            ]);
+
+            $config = require __DIR__ . '/../../config/mail.php';
+            $mailer = new MailTemplates($config);
+
+            
+
+            $mailer->sendContactNotification(
+                $orderForEmail,
+                ['orders@kainafresh.rw' => 'Kaina Fresh Team']
+            );
+        } catch (Throwable $e) {
+            error_log('[Order email dispatch] ' . $e->getMessage());
+        }
     $this->jsonResponse([
         'success'=> true,
         'data'=>$data
     ],201);
- }
+ }      
  else
     {
             $this->jsonResponse(['message'=> 'Something went wrong!'],500);
