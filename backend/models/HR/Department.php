@@ -8,6 +8,10 @@ class Department extends Model
 
     protected $fillable = [
         'name',
+        'dept_code',
+        'HOD_name',
+        'HOD_email',
+        'Dep_description',
     ];
 
     /**
@@ -50,46 +54,40 @@ class Department extends Model
     }
 
     /**
-     * Create a department.
+     * Check whether a dept_code is already in use.
      */
-public function createDepartment($data)
-{
-    $sql = "INSERT INTO `{$this->table}` (`name`)
-            VALUES (?)";
+    public function codeExists($code)
+    {
+        $sql = "SELECT `id`
+                FROM `{$this->table}`
+                WHERE `dept_code` = ?
+                LIMIT 1";
 
-    $stmt = $this->db->prepare($sql);
+        $stmt = $this->db->prepare($sql);
 
-    $stmt->bind_param(
-        "s",
-        $data['name']
-    );
+        $stmt->bind_param("s", $code);
 
-    if ($stmt->execute()) {
-        return $this->db->getConnection()->insert_id;
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        return $result->num_rows > 0;
     }
 
-    return false;
-}
-
+    /**
+     * Create a department.
+     */
+    public function createDepartment($data)
+    {
+        return $this->create($data);
+    }
 
     /**
      * Update a department.
      */
     public function updateDepartment($id, $data)
     {
-        $sql = "UPDATE `{$this->table}`
-                SET `name` = ?
-                WHERE id = ?";
-
-        $stmt = $this->db->prepare($sql);
-
-        $stmt->bind_param(
-            "si",
-            $data['name'],
-            $id
-        );
-
-        return $stmt->execute();
+        return $this->update($id, $data);
     }
 
     /**
@@ -97,13 +95,6 @@ public function createDepartment($data)
      */
     public function deleteDepartment($id)
     {
-        $sql = "DELETE FROM `{$this->table}`
-                WHERE id = ?";
-
-        $stmt = $this->db->prepare($sql);
-
-        $stmt->bind_param("i", $id);
-
-        return $stmt->execute();
+        return $this->delete($id);
     }
 }
