@@ -31,6 +31,7 @@ export interface Employee {
   code: string;
   first_name: string;
   last_name: string;
+  nid:string;
   email: string;
   phone: string;
   department: string;
@@ -103,6 +104,7 @@ export default function EmployeeProfiles() {
             code: item.emp_number || `KF-EMP-${item.id}`,
             first_name: item.fullname ? item.fullname.split(" ")[0] : "Staff",
             last_name: item.fullname ? item.fullname.split(" ").slice(1).join(" ") : "",
+            nid:item.nid,
             email: item.email || "",
             phone: item.phone || "",
             department: item.department_name || "General",
@@ -189,6 +191,7 @@ export default function EmployeeProfiles() {
     last_name: "",
     email: "",
     phone: "",
+    nid:"",
     department: "Farm Operations",
     job_title: "",
     employment_type: "Full-Time Permanent" as Employee["employment_type"],
@@ -339,6 +342,7 @@ export default function EmployeeProfiles() {
         email: String(payload.email),
         phone: form.phone.trim(),
         department: form.department,
+        nid: form.nid,
         job_title: created.job_title || form.job_title.trim() || "Operations Staff",
         employment_type: form.employment_type,
         status: "Active",
@@ -363,6 +367,7 @@ export default function EmployeeProfiles() {
         last_name: "",
         email: "",
         phone: "",
+        nid: "",
         department: departments[0]?.name || "Farm Operations",
         job_title: "",
         employment_type: "Full-Time Permanent",
@@ -528,6 +533,7 @@ export default function EmployeeProfiles() {
           idx === 0 ? "c.makuza@kainafresh.rw" : `staff.${idx}@kainafresh.rw`,
         phone: `+250 788 ${100 + idx} ${200 + idx}`,
         department: "Farm Operations",
+        nid:"22020203",
         job_title: idx === 0 ? "Field Specialist" : "Operations Assistant",
         employment_type: "Full-Time Permanent",
         status: "Active",
@@ -693,6 +699,7 @@ export default function EmployeeProfiles() {
                   <th className="px-5 py-3.5">Employee Name & Code</th>
                   <th className="px-4 py-3.5">Department & Job Title</th>
                   <th className="px-4 py-3.5">Contact Details</th>
+                  <th className="px-4 py-3.5">National Id</th>
                   <th className="px-4 py-3.5">Location & Hire Date</th>
                   <th className="px-4 py-3.5">Employment Type</th>
                   <th className="px-4 py-3.5">Base Salary</th>
@@ -742,6 +749,7 @@ export default function EmployeeProfiles() {
                       </td>
                       <td className="px-4 py-3.5 text-gray-600">
                         <p className="font-medium text-gray-800">{emp.phone}</p>
+                        <p className="font-medium text-gray-800">{emp.nid}</p>
                         <p className="text-[11px] text-gray-400">{emp.email}</p>
                       </td>
                       <td className="px-4 py-3.5 text-gray-600">
@@ -940,6 +948,10 @@ export default function EmployeeProfiles() {
                       <Phone size={13} className="text-gray-400 shrink-0" />
                       <span>{emp.phone}</span>
                     </div>
+                    <div className="flex items-center gap-2 text-gray-600 font-medium">
+                      <Phone size={13} className="text-gray-400 shrink-0" />
+                      <span>{emp.nid}</span>
+                    </div>
                   </div>
                 </div>
 
@@ -988,6 +1000,9 @@ export default function EmployeeProfiles() {
                   >
                     {selectedEmp.first_name} {selectedEmp.last_name}
                   </h2>
+                  <p className="text-xs font-semibold text-[#076935]">
+                    {selectedEmp.nid} • {selectedEmp.nid}
+                  </p>
                   <p className="text-xs font-semibold text-[#076935]">
                     {selectedEmp.job_title} • {selectedEmp.department}
                   </p>
@@ -1147,6 +1162,17 @@ export default function EmployeeProfiles() {
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
                 placeholder="+250 788 000 000"
+              />
+            </div>
+            <div>
+              <label className="font-bold text-gray-700">National Id *</label>
+              <input
+                type="text"
+                required
+                value={form.nid}
+                onChange={(e) => setForm({ ...form, nid: e.target.value })}
+                className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
+                placeholder="6555 588 000 000"
               />
             </div>
             <div>
@@ -1411,6 +1437,20 @@ export default function EmployeeProfiles() {
                   value={editForm.phone}
                   onChange={(e) =>
                     setEditForm({ ...editForm, phone: e.target.value })
+                  }
+                  className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
+                />
+              </div>
+              <div>
+                <label className="font-bold text-gray-700">
+                  National ID *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editForm.nid}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, nid: e.target.value })
                   }
                   className="mt-1 w-full rounded-md border border-gray-300 p-2.5 outline-none focus:border-[#076935]"
                 />
