@@ -45,7 +45,7 @@ function ProductsList() {
         open={formOpen}
         onClose={closeForm}
         title={editing ? "Edit Product" : "Add New Product"}
-        size="md"
+        size="lg"
       >
         <ProductForm
           initial={editing}
