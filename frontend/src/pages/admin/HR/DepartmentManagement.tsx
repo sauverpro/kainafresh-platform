@@ -11,7 +11,7 @@ import {
   Briefcase,
   User,
   Landmark,
-  Trash2,
+
   Loader2,
 } from "lucide-react";
 import { usePageTitle } from "../../../hooks/usePageTitle";
