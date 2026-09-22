@@ -20,7 +20,7 @@ import {
   Trash2,
   AlertCircle,
   XCircle,
-  Mail,
+  
 } from "lucide-react";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { useAuth } from "../../auth/AuthContext";
@@ -29,7 +29,7 @@ import Modal from "../../components/ui/Modal";
 import MetricCard from "../../components/ui/MetricCard";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { apiGet, apiPost, apiPut } from "../../api/client";
+import { apiGet, apiPost } from "../../api/client";
 
 /* ────────────────────────────────────────────────────────────
  * Backend API shapes (matching your JSON response)
@@ -480,7 +480,7 @@ export default function CustomerDashboard() {
     }
 
     // The customer id comes from the first order (it's in the payload)
-    const customerId = orders[0]?.backendId ? undefined : undefined; // Replace if you expose customer_id from the order payload
+   // const customerId = orders[0]?.backendId ? undefined : undefined; // Replace if you expose customer_id from the order payload
 
     const newAddr: CustomerAddress = {
       id: `ADDR-${Date.now()}`,
