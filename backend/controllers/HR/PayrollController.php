@@ -55,7 +55,10 @@ class PayrollController extends BaseController
         }
         // validate the data before creating the payroll record
         $data = $this->getRequestData();
-        $validation = $this->validateRequired($data, ['employee_id', 'base_salary', 'pay_date', 'payment_start_date', 'bank_account_number', 'bank_name', 'payment_ref','allowances','overtime','bonus','tax_deductions','pension_deductions']);
+        // Optional payroll amounts are treated as zero when omitted.
+        $data['bonus'] = $data['bonus'] ?? 0;
+        $data['other_deductions'] = $data['other_deductions'] ?? 0;
+        $validation = $this->validateRequired($data, ['employee_id', 'base_salary', 'pay_date', 'payment_start_date', 'bank_account_number', 'bank_name', 'payment_ref','allowances','overtime','tax_deductions','pension_deductions']);
         if ($validation) {
             $this->jsonResponse(['error' => $validation], 400);
         }
@@ -89,7 +92,10 @@ class PayrollController extends BaseController
         }
         // validate the data before updating the payroll record
         $data = $this->getRequestData();
-        $validation = $this->validateRequired($data, ['employee_id', 'base_salary', 'pay_date', 'payment_start_date', 'bank_account_number', 'bank_name', 'payment_ref','other_deductions','allowances','overtime','bonus','tax_deductions','pension_deductions']);
+        // Bonus and other deductions are optional amounts, not required fields.
+        $data['bonus'] = $data['bonus'] ?? 0;
+        $data['other_deductions'] = $data['other_deductions'] ?? 0;
+        $validation = $this->validateRequired($data, ['employee_id', 'base_salary', 'pay_date', 'payment_start_date', 'bank_account_number', 'bank_name', 'payment_ref','allowances','overtime','tax_deductions','pension_deductions']);
         if($validation){
             $this->jsonResponse(['status'=>false,'error'=>$validation]);
         }

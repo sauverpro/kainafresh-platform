@@ -1,254 +1,231 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CalendarCheck,
   CheckCircle,
   Clock,
   Eye,
   FileText,
+  Loader2,
   Plus,
+  Trash2,
+  XCircle,
 } from "lucide-react";
-import { usePageTitle } from "../../../hooks/usePageTitle";
-import Modal from "../../../components/ui/Modal";
 import { toast } from "sonner";
-import MetricCard from "../../../components/ui/MetricCard";
 import { apiGet } from "../../../api/client";
+import Modal from "../../../components/ui/Modal";
+import MetricCard from "../../../components/ui/MetricCard";
+import { usePageTitle } from "../../../hooks/usePageTitle";
+import { type LeaveRequest, useLeaveStore } from "../../../store/useLeaveStore";
 
-export interface LeaveRequest {
-  id: string;
-  employee_name: string;
+interface EmployeeOption {
+  id: number;
+  name: string;
   department: string;
-  leave_type: "Annual Leave" | "Sick Leave" | "Maternity/Paternity" | "Emergency Unpaid";
-  start_date: string;
-  end_date: string;
-  total_days: number;
-  reason: string;
-  status: "Pending" | "Approved" | "Rejected";
-  applied_on: string;
 }
-
-const DEFAULT_EMPLOYEES: Array<{ name: string; department: string }> = [
-  { name: "Jean-Baptiste Musafiri", department: "Farm Operations" },
-  { name: "Aline Uwase", department: "Quality Control" },
-  { name: "Emmanuel Habimana", department: "Logistics & Fleet" },
-  { name: "Claude Makuza", department: "Farm Operations" },
-  { name: "Divine Uwineza", department: "Quality Assurance" },
-  { name: "Fulgence Iradukunda", department: "Finance & Admin" },
-];
-
-const INITIAL_LEAVES: LeaveRequest[] = [
-  {
-    id: "LV-2026-001",
-    employee_name: "Jean-Baptiste Musafiri",
-    department: "Farm Operations",
-    leave_type: "Annual Leave",
-    start_date: "2026-09-22",
-    end_date: "2026-09-29",
-    total_days: 6,
-    reason: "Annual family harvest rest & personal leave",
-    status: "Pending",
-    applied_on: "2026-09-18",
-  },
-  {
-    id: "LV-2026-002",
-    employee_name: "Aline Uwase",
-    department: "Quality Control",
-    leave_type: "Sick Leave",
-    start_date: "2026-09-15",
-    end_date: "2026-09-17",
-    total_days: 3,
-    reason: "Medical treatment & recovery (Doctor certified)",
-    status: "Approved",
-    applied_on: "2026-09-14",
-  },
-  {
-    id: "LV-2026-003",
-    employee_name: "Emmanuel Habimana",
-    department: "Logistics & Fleet",
-    leave_type: "Emergency Unpaid",
-    start_date: "2026-10-01",
-    end_date: "2026-10-03",
-    total_days: 3,
-    reason: "Urgent family event in Northern Province",
-    status: "Pending",
-    applied_on: "2026-09-19",
-  },
-];
+const emptyForm = {
+  employee_id: "",
+  leave_type: "annual",
+  start_date: "",
+  end_date: "",
+  leave_reason: "",
+};
+const titleCase = (value: string) =>
+  value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+const formatDate = (value?: string) => (value ? value.slice(0, 10) : "—");
 
 export default function LeaveManagement() {
   usePageTitle("leave-management", "Leave Management");
-
-  const [leaves, setLeaves] = useState<LeaveRequest[]>(INITIAL_LEAVES);
+  const {
+    leaves,
+    loading,
+    creating,
+    processingId,
+    error,
+    fetchLeaves,
+    createLeave,
+    acceptLeave,
+    rejectLeave,
+    deleteLeave,
+    clearError,
+  } = useLeaveStore();
+  const [employees, setEmployees] = useState<EmployeeOption[]>([]);
   const [selectedLeave, setSelectedLeave] = useState<LeaveRequest | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [employeeOptions, setEmployeeOptions] = useState<Array<{ name: string; department: string }>>(DEFAULT_EMPLOYEES);
-
-  const [form, setForm] = useState({
-    employee_name: "",
-    department: "Farm Operations",
-    leave_type: "Annual Leave" as LeaveRequest["leave_type"],
-    start_date: "",
-    end_date: "",
-    total_days: 1,
-    reason: "",
-    status: "Pending" as LeaveRequest["status"],
-  });
-
-  const calculateDays = (start: string, end: string) => {
-    if (!start || !end) return 1;
-    const s = new Date(start);
-    const e = new Date(end);
-    const diff = e.getTime() - s.getTime();
-    if (isNaN(diff) || diff < 0) return 1;
-    return Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1);
-  };
+  const [isRejectOpen, setIsRejectOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
-    apiGet<{ success: boolean; data: any[] }>("/api/employees")
-      .then((res) => {
-        if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
-          const fetched = res.data.map((emp) => ({
-            name: emp.fullname || `${emp.first_name || ""} ${emp.last_name || ""}`.trim() || "Employee",
-            department: emp.department_name || "Farm Operations",
-          }));
-          const combined = [...fetched, ...DEFAULT_EMPLOYEES];
-          const unique = combined.filter(
-            (e, idx, self) => idx === self.findIndex((t) => t.name.trim().toLowerCase() === e.name.trim().toLowerCase())
-          );
-          setEmployeeOptions(unique);
-        }
-      })
-      .catch(() => {});
+    void fetchLeaves();
+  }, [fetchLeaves]);
+  useEffect(() => {
+    apiGet<{ data?: Array<Record<string, unknown>> }>("/api/employees")
+      .then((response) =>
+        setEmployees(
+          (response.data ?? [])
+            .map((employee) => ({
+              id: Number(employee.id),
+              name: String(
+                employee.fullname ||
+                  `${employee.first_name || ""} ${employee.last_name || ""}`.trim() ||
+                  "Employee",
+              ),
+              department: String(employee.department_name || "General"),
+            }))
+            .filter((employee) => Number.isFinite(employee.id)),
+        ),
+      )
+      .catch(() => setEmployees([]));
   }, []);
-
-  const pendingCount = leaves.filter((l) => l.status === "Pending").length;
-  const approvedCount = leaves.filter((l) => l.status === "Approved").length;
-
-  const handleApprove = (id: string) => {
-    setLeaves((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, status: "Approved" } : l))
-    );
-    setSelectedLeave(null);
-    toast.success(`Leave request #${id} approved successfully!`);
-  };
-
-  const handleReject = (id: string) => {
-    setLeaves((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, status: "Rejected" } : l))
-    );
-    setSelectedLeave(null);
-    toast.error(`Leave request #${id} rejected.`);
-  };
-
-  const handleCreateLeave = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.employee_name.trim()) {
-      toast.error("Please select an employee.");
-      return;
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      clearError();
     }
-    if (!form.start_date || !form.end_date) {
-      toast.error("Start Date and End Date are mandatory.");
-      return;
-    }
+  }, [error, clearError]);
+  useEffect(() => {
+    if (selectedLeave)
+      setSelectedLeave(
+        leaves.find((leave) => leave.id === selectedLeave.id) ?? null,
+      );
+  }, [leaves, selectedLeave?.id]);
 
-    const computedDays = calculateDays(form.start_date, form.end_date);
+  const counts = useMemo(
+    () => ({
+      pending: leaves.filter((leave) => leave.status === "pending").length,
+      approved: leaves.filter((leave) => leave.status === "approved").length,
+      active: leaves.filter(
+        (leave) =>
+          leave.status === "approved" &&
+          new Date(leave.start_date) <= new Date() &&
+          new Date(leave.end_date) >= new Date(),
+      ).length,
+    }),
+    [leaves],
+  );
+  const duration = useMemo(() => {
+    if (!form.start_date || !form.end_date) return 1;
+    const difference =
+      new Date(form.end_date).getTime() - new Date(form.start_date).getTime();
+    return difference < 0 ? 1 : Math.floor(difference / 86_400_000) + 1;
+  }, [form.start_date, form.end_date]);
+  const busy = (id: number) => processingId === id;
+  const statusClass = (status: LeaveRequest["status"]) =>
+    status === "approved"
+      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+      : status === "pending"
+        ? "bg-amber-50 text-amber-700 border-amber-200"
+        : "bg-rose-50 text-rose-700 border-rose-200";
 
-    const newReq: LeaveRequest = {
-      id: `LV-2026-00${leaves.length + 1}`,
-      employee_name: form.employee_name.trim(),
-      department: form.department,
-      leave_type: form.leave_type,
-      start_date: form.start_date,
-      end_date: form.end_date,
-      total_days: computedDays,
-      reason: form.reason.trim() || "Standard Leave Request",
-      status: form.status,
-      applied_on: new Date().toISOString().split("T")[0],
-    };
-
-    setLeaves([newReq, ...leaves]);
-    setIsAddOpen(false);
-    setForm({
-      employee_name: "",
-      department: "Farm Operations",
-      leave_type: "Annual Leave",
-      start_date: "",
-      end_date: "",
-      total_days: 1,
-      reason: "",
-      status: "Pending",
+  const submitCreate = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!form.employee_id || !form.leave_reason.trim())
+      return toast.error(
+        "Select an employee and enter a reason for the request.",
+      );
+    if (form.end_date < form.start_date)
+      return toast.error("The end date cannot be earlier than the start date.");
+    const created = await createLeave({
+      ...form,
+      employee_id: Number(form.employee_id),
+      leave_reason: form.leave_reason.trim(),
+      leave_duration: duration,
     });
-    toast.success(`Leave request #${newReq.id} created successfully for ${newReq.employee_name}!`);
+    if (created) {
+      setIsAddOpen(false);
+      setForm(emptyForm);
+      toast.success("Leave request created successfully.");
+      void fetchLeaves();
+    }
+  };
+  const approve = async (leave: LeaveRequest) => {
+    if (await acceptLeave(leave.id)) toast.success("Leave request approved.");
+  };
+  const submitReject = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!selectedLeave || !rejectReason.trim())
+      return toast.error("A rejection reason is required.");
+    if (await rejectLeave(selectedLeave.id, rejectReason.trim())) {
+      toast.success("Leave request rejected.");
+      setRejectReason("");
+      setIsRejectOpen(false);
+    }
+  };
+  const remove = async (leave: LeaveRequest) => {
+    if (
+      !window.confirm(
+        `Delete leave request #${leave.id}? This cannot be undone.`,
+      )
+    )
+      return;
+    if (await deleteLeave(leave.id)) {
+      toast.success("Leave request deleted.");
+      setSelectedLeave(null);
+    }
   };
 
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-8 space-y-6">
-      {/* Top Banner */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: "var(--font-heading)" }}>
+          <h1 className="text-2xl font-bold text-gray-900">
             Leave Management & Approvals
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            Review annual leaves, medical time-off, emergency requests, and balance tracking.
+            Create, review, approve, reject, and remove staff leave requests.
           </p>
         </div>
         <button
           onClick={() => setIsAddOpen(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#076935] px-4 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-[#055028]"
+          disabled={creating}
+          className="inline-flex items-center gap-2 rounded-xl bg-[#076935] px-4 py-2.5 text-xs font-bold text-white disabled:opacity-60"
         >
           <Plus size={16} /> Create Leave Request
         </button>
       </div>
-
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           label="Pending Approvals"
-          value={`${pendingCount}`}
-          subtext={pendingCount > 0 ? "Awaiting HR & team lead review" : "No pending leave requests"}
+          value={String(counts.pending)}
+          subtext="Awaiting review"
           icon={<Clock size={22} className="text-amber-600" />}
           iconBg="bg-amber-50"
-          badgeText="Pending Review"
+          badgeText="Pending"
           badgeColor="bg-amber-50 text-amber-700 border-amber-200"
         />
-
         <MetricCard
           label="Approved Leaves"
-          value={`${approvedCount}`}
-          subtext={approvedCount > 0 ? "Processed annual & sick leaves" : "No approved leave records"}
+          value={String(counts.approved)}
+          subtext="Processed leave requests"
           icon={<CheckCircle size={22} className="text-[#076935]" />}
           iconBg="bg-[#076935]/10"
           badgeText="Approved"
           badgeColor="bg-emerald-50 text-emerald-700 border-emerald-200"
         />
-
         <MetricCard
           label="Staff Currently On Leave"
-          value={`${approvedCount}`}
-          subtext="Active staff away today"
+          value={String(counts.active)}
+          subtext="Approved requests active today"
           icon={<CalendarCheck size={22} className="text-blue-600" />}
           iconBg="bg-blue-50"
-          badgeText="Active Absence"
+          badgeText="Active"
           badgeColor="bg-blue-50 text-blue-700 border-blue-200"
         />
-
         <MetricCard
           label="Total Leave Applications"
-          value={`${leaves.length}`}
-          subtext={leaves.length > 0 ? "Total time-off applications" : "No leave requests submitted"}
+          value={String(leaves.length)}
+          subtext="All submitted requests"
           icon={<FileText size={22} className="text-purple-600" />}
           iconBg="bg-purple-50"
-          badgeText="Total Submitted"
+          badgeText="Total"
           badgeColor="bg-purple-50 text-purple-700 border-purple-200"
         />
       </div>
-
-      {/* Table */}
       <div className="overflow-hidden rounded-2xl border border-[#076935]/10 bg-white">
         <table className="w-full text-left text-xs border-collapse">
           <thead className="bg-[#F4FAF7] border-b border-[#076935]/10 text-gray-500 font-bold uppercase tracking-wider">
             <tr>
-              <th className="px-4 py-3">Request ID</th>
+              <th className="px-4 py-3">ID</th>
               <th className="px-4 py-3">Employee</th>
               <th className="px-4 py-3">Leave Type</th>
               <th className="px-4 py-3">Dates & Duration</th>
@@ -258,67 +235,102 @@ export default function LeaveManagement() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {leaves.length === 0 ? (
+            {loading ? (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
-                  <div className="flex flex-col items-center justify-center space-y-2">
-                    <CalendarCheck size={28} className="text-gray-300" />
-                    <p className="text-sm font-semibold text-gray-700">No current leave requests</p>
-                    <p className="text-xs text-gray-400">Employee leave applications will appear here when submitted.</p>
-                  </div>
+                <td colSpan={7} className="px-4 py-12 text-center">
+                  <Loader2
+                    className="inline animate-spin text-[#076935]"
+                    size={24}
+                  />
+                  <p className="mt-2 text-gray-500">Loading leave requests…</p>
+                </td>
+              </tr>
+            ) : leaves.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={7}
+                  className="px-4 py-12 text-center text-gray-500"
+                >
+                  No leave requests found.
                 </td>
               </tr>
             ) : (
-              leaves.map((req) => (
-                <tr key={req.id} className="hover:bg-[#F4FAF7]/50 transition">
-                  <td className="px-4 py-3 font-bold font-mono text-gray-900">{req.id}</td>
+              leaves.map((leave) => (
+                <tr key={leave.id} className="hover:bg-[#F4FAF7]/50">
+                  <td className="px-4 py-3 font-bold font-mono">#{leave.id}</td>
                   <td className="px-4 py-3">
-                    <p className="font-semibold text-gray-900">{req.employee_name}</p>
-                    <p className="text-[11px] text-gray-400">{req.department}</p>
+                    <p className="font-semibold text-gray-900">
+                      {leave.employee_name || `Employee #${leave.employee_id}`}
+                    </p>
                   </td>
-                  <td className="px-4 py-3 font-semibold text-[#076935]">{req.leave_type}</td>
+                  <td className="px-4 py-3 font-semibold text-[#076935]">
+                    {titleCase(leave.leave_type)}
+                  </td>
                   <td className="px-4 py-3 text-gray-600">
-                    <p>{req.start_date} to {req.end_date}</p>
-                    <p className="text-[11px] font-bold text-gray-500">{req.total_days} Working Days</p>
+                    <p>
+                      {formatDate(leave.start_date)} to{" "}
+                      {formatDate(leave.end_date)}
+                    </p>
+                    <p className="text-[11px] font-bold text-gray-500">
+                      {leave.leave_duration} day(s)
+                    </p>
                   </td>
-                  <td className="px-4 py-3 text-gray-600 max-w-[200px] truncate">{req.reason}</td>
+                  <td className="px-4 py-3 text-gray-600 max-w-[200px] truncate">
+                    {leave.leave_reason}
+                  </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                        req.status === "Approved"
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                          : req.status === "Pending"
-                          ? "bg-amber-50 text-amber-700 border border-amber-200"
-                          : "bg-rose-50 text-rose-700 border border-rose-200"
-                      }`}
+                      className={`inline-flex rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${statusClass(leave.status)}`}
                     >
-                      {req.status}
+                      {titleCase(leave.status)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right space-x-1">
                     <button
-                      onClick={() => setSelectedLeave(req)}
-                      className="p-1 text-[#076935] hover:bg-[#076935]/10 rounded-lg inline-flex items-center"
-                      title="View Request Details"
+                      onClick={() => setSelectedLeave(leave)}
+                      disabled={busy(leave.id)}
+                      className="p-1 text-[#076935] hover:bg-[#076935]/10 rounded-lg"
+                      title="View request"
                     >
                       <Eye size={15} />
                     </button>
-                    {req.status === "Pending" && (
+                    {leave.status === "pending" && (
                       <>
                         <button
-                          onClick={() => handleApprove(req.id)}
-                          className="rounded-lg bg-[#076935] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-[#055028]"
+                          onClick={() => void approve(leave)}
+                          disabled={busy(leave.id)}
+                          className="rounded-lg bg-[#076935] px-2.5 py-1 text-[11px] font-bold text-white disabled:opacity-60"
                         >
-                          Approve
+                          {busy(leave.id) ? (
+                            <Loader2 className="animate-spin" size={13} />
+                          ) : (
+                            "Approve"
+                          )}
                         </button>
                         <button
-                          onClick={() => handleReject(req.id)}
-                          className="rounded-lg bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 text-[11px] font-bold hover:bg-rose-100"
+                          onClick={() => {
+                            setSelectedLeave(leave);
+                            setIsRejectOpen(true);
+                          }}
+                          disabled={busy(leave.id)}
+                          className="rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-[11px] font-bold text-rose-600 disabled:opacity-60"
                         >
                           Reject
                         </button>
                       </>
                     )}
+                    <button
+                      onClick={() => void remove(leave)}
+                      disabled={busy(leave.id)}
+                      className="p-1 text-rose-600 hover:bg-rose-50 rounded-lg disabled:opacity-60"
+                      title="Delete request"
+                    >
+                      {busy(leave.id) ? (
+                        <Loader2 className="animate-spin" size={15} />
+                      ) : (
+                        <Trash2 size={15} />
+                      )}
+                    </button>
                   </td>
                 </tr>
               ))
@@ -326,261 +338,243 @@ export default function LeaveManagement() {
           </tbody>
         </table>
       </div>
-
-      {/* Create Leave Modal */}
-      <Modal open={isAddOpen} onClose={() => setIsAddOpen(false)} size="lg" title={<div className="text-gray-900 font-bold text-lg bg-[#FFC107] -m-5 p-4 rounded-t-xl flex items-center gap-2"><CalendarCheck size={20} /> New Leave Request</div>}>
-        <form onSubmit={handleCreateLeave} className="space-y-4 pt-4 text-sm">
-          {/* Row 1: Employee & Leave Type */}
+      <Modal
+        open={isAddOpen}
+        onClose={() => !creating && setIsAddOpen(false)}
+        size="lg"
+        title={<div className="font-bold text-lg">New Leave Request</div>}
+      >
+        <form
+          onSubmit={(event) => void submitCreate(event)}
+          className="space-y-4 pt-3 text-sm"
+        >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Employee <span className="text-red-500">*</span></label>
+            <label className="font-bold text-gray-800">
+              Employee
               <select
                 required
-                value={form.employee_name}
-                onChange={(e) => {
-                  const selectedName = e.target.value;
-                  const matched = employeeOptions.find((emp) => emp.name === selectedName);
-                  setForm({
-                    ...form,
-                    employee_name: selectedName,
-                    department: matched ? matched.department : form.department,
-                  });
-                }}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+                value={form.employee_id}
+                onChange={(event) =>
+                  setForm({ ...form, employee_id: event.target.value })
+                }
+                disabled={creating}
+                className="mt-1 w-full rounded-xl border border-gray-300 p-2.5 font-medium"
               >
-                <option value="">Select...</option>
-                {employeeOptions.map((emp) => (
-                  <option key={emp.name} value={emp.name}>
-                    {emp.name} ({emp.department})
+                <option value="">Select employee…</option>
+                {employees.map((employee) => (
+                  <option key={employee.id} value={employee.id}>
+                    {employee.name} ({employee.department})
                   </option>
                 ))}
               </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Leave Type <span className="text-red-500">*</span></label>
+            </label>
+            <label className="font-bold text-gray-800">
+              Leave Type
               <select
                 value={form.leave_type}
-                onChange={(e) => setForm({ ...form, leave_type: e.target.value as LeaveRequest["leave_type"] })}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+                onChange={(event) =>
+                  setForm({ ...form, leave_type: event.target.value })
+                }
+                disabled={creating}
+                className="mt-1 w-full rounded-xl border border-gray-300 p-2.5 font-medium"
               >
-                <option value="Annual Leave">Annual Leave</option>
-                <option value="Sick Leave">Sick Leave</option>
-                <option value="Maternity/Paternity">Maternity/Paternity</option>
-                <option value="Emergency Unpaid">Emergency Unpaid</option>
+                <option value="annual">Annual Leave</option>
+                <option value="sick">Sick Leave</option>
+                <option value="maternity">Maternity/Paternity</option>
+                <option value="emergency_unpaid">Emergency Unpaid</option>
               </select>
-            </div>
+            </label>
           </div>
-
-          {/* Row 2: Start Date, End Date, Days Requested (Auto-calculated) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Start Date <span className="text-red-500">*</span></label>
+            <label className="font-bold text-gray-800">
+              Start Date
               <input
                 type="date"
                 required
                 value={form.start_date}
-                onChange={(e) => {
-                  const nextStart = e.target.value;
-                  const nextDays = calculateDays(nextStart, form.end_date);
-                  setForm({ ...form, start_date: nextStart, total_days: nextDays });
-                }}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+                onChange={(event) =>
+                  setForm({ ...form, start_date: event.target.value })
+                }
+                disabled={creating}
+                className="mt-1 w-full rounded-xl border border-gray-300 p-2.5"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">End Date <span className="text-red-500">*</span></label>
+            </label>
+            <label className="font-bold text-gray-800">
+              End Date
               <input
                 type="date"
                 required
+                min={form.start_date || undefined}
                 value={form.end_date}
-                onChange={(e) => {
-                  const nextEnd = e.target.value;
-                  const nextDays = calculateDays(form.start_date, nextEnd);
-                  setForm({ ...form, end_date: nextEnd, total_days: nextDays });
-                }}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+                onChange={(event) =>
+                  setForm({ ...form, end_date: event.target.value })
+                }
+                disabled={creating}
+                className="mt-1 w-full rounded-xl border border-gray-300 p-2.5"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Days Requested <span className="text-red-500">*</span></label>
-              <input
-                type="text"
-                readOnly
-                value={`${calculateDays(form.start_date, form.end_date)} Day(s)`}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-sm font-bold text-[#076935] outline-none"
-              />
-            </div>
+            </label>
           </div>
-
-          {/* Row 3: Reason */}
-          <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Reason</label>
+          <label className="block font-bold text-gray-800">
+            Reason
             <textarea
+              required
               rows={3}
-              value={form.reason}
-              onChange={(e) => setForm({ ...form, reason: e.target.value })}
-              className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-              placeholder="Reason for time-off request..."
+              value={form.leave_reason}
+              onChange={(event) =>
+                setForm({ ...form, leave_reason: event.target.value })
+              }
+              disabled={creating}
+              className="mt-1 w-full rounded-xl border border-gray-300 p-2.5 font-medium"
+              placeholder="Reason for time off…"
             />
-          </div>
-
-          {/* Row 4: Status */}
-          <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Status</label>
-            <select
-              value={form.status}
-              onChange={(e) => setForm({ ...form, status: e.target.value as any })}
-              className="w-full sm:w-1/2 rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-            >
-              <option value="Pending">Pending</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-          </div>
-
-          {/* Footer Actions */}
-          <div className="flex justify-end gap-3 border-t border-gray-200 pt-4">
+          </label>
+          <div className="flex justify-end gap-3 border-t pt-4">
             <button
               type="button"
               onClick={() => setIsAddOpen(false)}
-              className="rounded-xl border border-gray-300 bg-gray-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-gray-700"
+              disabled={creating}
+              className="rounded-xl border border-gray-300 px-5 py-2.5 font-bold disabled:opacity-60"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-xl bg-[#FFC107] px-6 py-2.5 text-sm font-bold text-gray-900 hover:bg-[#e0a800] shadow-sm"
+              disabled={creating}
+              className="inline-flex items-center rounded-xl bg-[#FFC107] px-6 py-2.5 font-bold text-gray-900 disabled:opacity-60"
             >
-              Submit Request
+              {creating && <Loader2 className="mr-2 animate-spin" size={16} />}
+              {creating ? "Submitting…" : "Submit Request"}
             </button>
           </div>
         </form>
       </Modal>
-
-      {/* Leave Detail Modal */}
       <Modal
-        open={Boolean(selectedLeave)}
-        onClose={() => setSelectedLeave(null)}
-        size="md"
+        open={isRejectOpen}
+        onClose={() => !processingId && setIsRejectOpen(false)}
+        size="sm"
         title={
-          <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg">
-            <div className="p-2 rounded-xl bg-[#076935]/10 text-[#076935]">
-              <CalendarCheck size={20} />
-            </div>
-            <span>Leave Application Details</span>
+          <div className="flex gap-2 font-bold text-lg">
+            <XCircle className="text-rose-600" /> Reject Leave Request
           </div>
         }
       >
+        <form
+          onSubmit={(event) => void submitReject(event)}
+          className="space-y-4 pt-3"
+        >
+          <p className="text-sm text-gray-600">
+            Provide a reason for rejecting this request.
+          </p>
+          <textarea
+            required
+            rows={4}
+            value={rejectReason}
+            onChange={(event) => setRejectReason(event.target.value)}
+            disabled={processingId !== null}
+            className="w-full rounded-xl border border-gray-300 p-2.5 text-sm"
+            placeholder="Rejection reason…"
+          />
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setIsRejectOpen(false)}
+              disabled={processingId !== null}
+              className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-bold"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={processingId !== null}
+              className="inline-flex items-center rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+            >
+              {processingId !== null && (
+                <Loader2 className="mr-2 animate-spin" size={16} />
+              )}
+              Reject
+            </button>
+          </div>
+        </form>
+      </Modal>
+      <Modal
+        open={Boolean(selectedLeave) && !isRejectOpen}
+        onClose={() => !processingId && setSelectedLeave(null)}
+        size="md"
+        title={
+          <div className="font-bold text-lg">Leave Application Details</div>
+        }
+      >
         {selectedLeave && (
-          <div className="space-y-5 text-sm pt-1">
-            {/* Employee Profile Header Card */}
-            <div className="p-4 bg-gradient-to-r from-[#F4FAF7] to-emerald-50/40 rounded-2xl border border-[#076935]/20 flex items-center justify-between">
-              <div className="flex items-center gap-3.5">
-                <div className="h-12 w-12 rounded-2xl bg-[#076935] text-white flex items-center justify-center font-bold text-base shadow-sm">
-                  {selectedLeave.employee_name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .substring(0, 2)
-                    .toUpperCase()}
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 text-base">{selectedLeave.employee_name}</h3>
-                  <p className="text-xs font-medium text-gray-500">{selectedLeave.department}</p>
-                </div>
-              </div>
-              <span className="font-mono text-xs font-bold px-3 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-700 shadow-2xs">
-                {selectedLeave.id}
-              </span>
+          <div className="space-y-4 text-sm">
+            <div className="rounded-xl border bg-gray-50 p-4">
+              <p className="font-bold text-gray-900">
+                {selectedLeave.employee_name ||
+                  `Employee #${selectedLeave.employee_id}`}
+              </p>
+              <p className="mt-1 text-[#076935] font-semibold">
+                {titleCase(selectedLeave.leave_type)}
+              </p>
             </div>
-
-            {/* Key Information Bento Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/70 space-y-1">
-                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Leave Type</span>
-                <span className="inline-flex rounded-md bg-emerald-100/70 px-2.5 py-0.5 text-xs font-bold text-[#076935]">
-                  {selectedLeave.leave_type}
-                </span>
-              </div>
-
-              <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/70 space-y-1">
-                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Approval Status</span>
-                <span
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 text-xs font-bold ${
-                    selectedLeave.status === "Approved"
-                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                      : selectedLeave.status === "Pending"
-                      ? "bg-amber-50 text-amber-700 border border-amber-200"
-                      : "bg-rose-50 text-rose-700 border border-rose-200"
-                  }`}
-                >
-                  <span
-                    className={`h-1.5 w-1.5 rounded-full ${
-                      selectedLeave.status === "Approved"
-                        ? "bg-emerald-500"
-                        : selectedLeave.status === "Pending"
-                        ? "bg-amber-500"
-                        : "bg-rose-500"
-                    }`}
-                  />
-                  {selectedLeave.status}
-                </span>
-              </div>
-
-              <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/70 space-y-1">
-                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Leave Period</span>
-                <p className="font-semibold text-gray-800 text-xs">
-                  {selectedLeave.start_date} <span className="text-gray-400 font-normal">to</span> {selectedLeave.end_date}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-xs font-bold text-gray-400">PERIOD</p>
+                <p>
+                  {formatDate(selectedLeave.start_date)} to{" "}
+                  {formatDate(selectedLeave.end_date)}
                 </p>
-              </div>
-
-              <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/70 space-y-1">
-                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Duration</span>
-                <p className="font-bold text-[#076935] text-xs">{selectedLeave.total_days} Working Days</p>
-              </div>
-            </div>
-
-            {/* Application Date & Reason */}
-            <div className="p-4 rounded-2xl border border-gray-200 bg-white space-y-2">
-              <div className="flex items-center justify-between text-xs border-b border-gray-100 pb-2">
-                <span className="font-bold text-gray-500">Applied On</span>
-                <span className="font-medium text-gray-800">{selectedLeave.applied_on}</span>
               </div>
               <div>
-                <span className="text-xs font-bold text-gray-500 block mb-1">Reason for Leave:</span>
-                <p className="text-xs text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-xl border border-gray-100 italic">
-                  "{selectedLeave.reason}"
-                </p>
+                <p className="text-xs font-bold text-gray-400">STATUS</p>
+                <span
+                  className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-bold ${statusClass(selectedLeave.status)}`}
+                >
+                  {titleCase(selectedLeave.status)}
+                </span>
               </div>
             </div>
-
-            {/* Modal Actions */}
-            <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+            <div>
+              <p className="text-xs font-bold text-gray-400">REASON</p>
+              <p className="mt-1 rounded-xl bg-gray-50 p-3">
+                {selectedLeave.leave_reason}
+              </p>
+            </div>
+            {selectedLeave.reject_reason && (
+              <div>
+                <p className="text-xs font-bold text-rose-500">
+                  REJECTION REASON
+                </p>
+                <p className="mt-1 rounded-xl bg-rose-50 p-3 text-rose-700">
+                  {selectedLeave.reject_reason}
+                </p>
+              </div>
+            )}
+            <div className="flex justify-between border-t pt-4">
               <div className="flex gap-2">
-                {selectedLeave.status === "Pending" && (
+                {selectedLeave.status === "pending" && (
                   <>
                     <button
-                      onClick={() => handleApprove(selectedLeave.id)}
-                      className="rounded-xl bg-[#076935] px-4 py-2 text-xs font-bold text-white hover:bg-[#055028] shadow-xs transition"
+                      onClick={() => void approve(selectedLeave)}
+                      disabled={busy(selectedLeave.id)}
+                      className="rounded-xl bg-[#076935] px-4 py-2 text-xs font-bold text-white disabled:opacity-60"
                     >
-                      Approve Request
+                      Approve
                     </button>
                     <button
-                      onClick={() => handleReject(selectedLeave.id)}
-                      className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-100 transition"
+                      onClick={() => setIsRejectOpen(true)}
+                      disabled={busy(selectedLeave.id)}
+                      className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-600"
                     >
-                      Reject Request
+                      Reject
                     </button>
                   </>
                 )}
               </div>
               <button
-                type="button"
-                onClick={() => setSelectedLeave(null)}
-                className="rounded-xl border border-gray-300 bg-white px-5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition"
+                onClick={() => void remove(selectedLeave)}
+                disabled={busy(selectedLeave.id)}
+                className="rounded-xl border border-rose-200 px-4 py-2 text-xs font-bold text-rose-600 disabled:opacity-60"
               >
-                Close
+                Delete
               </button>
             </div>
           </div>
@@ -589,5 +583,3 @@ export default function LeaveManagement() {
     </div>
   );
 }
-
-

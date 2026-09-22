@@ -1,389 +1,283 @@
-import { useEffect, useState } from "react";
-import {
-  Eye,
-  Printer,
-  Send,
-  Banknote,
-  Landmark,
-  Users,
-  CreditCard,
-  Plus,
-} from "lucide-react";
-import { usePageTitle } from "../../../hooks/usePageTitle";
-import Modal from "../../../components/ui/Modal";
+import { useEffect, useMemo, useState } from "react";
+import { Banknote, Eye, Loader2, Plus, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import MetricCard from "../../../components/ui/MetricCard";
 import { apiGet } from "../../../api/client";
+import ConfirmDeleteModal from "../../../components/ui/ConfirmDeleteModal";
+import Modal from "../../../components/ui/Modal";
+import MetricCard from "../../../components/ui/MetricCard";
+import { usePageTitle } from "../../../hooks/usePageTitle";
+import {
+  type PayrollInput,
+  type PayrollRecord,
+  usePayrollStore,
+} from "../../../store/usePayrollStore";
 
-export interface PayrollRecord {
-  id: string;
-  employee_name: string;
-  employee_code: string;
-  job_title: string;
-  department: string;
-  base_salary_rwf: number;
-  allowances_rwf: number;
-  bonuses_rwf?: number;
-  overtime_rwf?: number;
-  paye_tax_rwf: number;
-  rssb_pension_rwf: number;
-  other_deductions_rwf?: number;
-  net_salary_rwf: number;
-  bank_name?: string;
-  bank_account?: string;
-  payment_method: "MTN MoMo Bulk" | "Bank Transfer" | "Airtel Money";
-  payment_status: "Paid" | "Processing" | "Pending" | "Draft";
-  payment_date?: string;
-  payslip_ref?: string;
-  notes?: string;
-  cycle_month: string;
-}
-
-const DEFAULT_EMPLOYEES: Array<{ name: string; code: string; department: string; job_title: string; salary_rwf: number }> = [
-  { name: "Jean-Baptiste Musafiri", code: "EMP-001", department: "Farm Operations", job_title: "Farm Manager", salary_rwf: 450000 },
-  { name: "Aline Uwase", code: "EMP-002", department: "Quality Assurance", job_title: "Quality Control Officer", salary_rwf: 380000 },
-  { name: "Emmanuel Habimana", code: "EMP-003", department: "Logistics & Fleet", job_title: "Cold-Chain Logistics Supervisor", salary_rwf: 320000 },
-  { name: "Claude Makuza", code: "EMP-004", department: "Farm Operations", job_title: "Agronomist", salary_rwf: 550000 },
-  { name: "Divine Uwineza", code: "EMP-005", department: "Quality Assurance", job_title: "Quality Inspector", salary_rwf: 480000 },
-  { name: "Fulgence Iradukunda", code: "EMP-006", department: "Finance & Admin", job_title: "Finance Manager", salary_rwf: 600000 },
-];
-
-const INITIAL_PAYROLL: PayrollRecord[] = [
-  {
-    id: "PAY-2026-0901",
-    employee_name: "Jean-Baptiste Musafiri",
-    employee_code: "EMP-001",
-    job_title: "Farm Manager",
-    department: "Farm Operations",
-    base_salary_rwf: 450000,
-    allowances_rwf: 50000,
-    bonuses_rwf: 20000,
-    overtime_rwf: 0,
-    paye_tax_rwf: 65000,
-    rssb_pension_rwf: 13500,
-    other_deductions_rwf: 0,
-    net_salary_rwf: 441500,
-    bank_name: "Bank of Kigali",
-    bank_account: "00049-082914-01",
-    payment_method: "Bank Transfer",
-    payment_status: "Paid",
-    payment_date: "2026-09-01",
-    payslip_ref: "PAY-2026-0901",
-    notes: "September monthly salary payout",
-    cycle_month: "September 2026",
-  },
-  {
-    id: "PAY-2026-0902",
-    employee_name: "Aline Uwase",
-    employee_code: "EMP-002",
-    job_title: "Quality Control Officer",
-    department: "Quality Assurance",
-    base_salary_rwf: 380000,
-    allowances_rwf: 30000,
-    bonuses_rwf: 15000,
-    overtime_rwf: 10000,
-    paye_tax_rwf: 52000,
-    rssb_pension_rwf: 11400,
-    other_deductions_rwf: 0,
-    net_salary_rwf: 381600,
-    bank_name: "Equity Bank",
-    bank_account: "40092-102934-02",
-    payment_method: "MTN MoMo Bulk",
-    payment_status: "Paid",
-    payment_date: "2026-09-01",
-    payslip_ref: "PAY-2026-0902",
-    notes: "Regular salary + weekend QA overtime",
-    cycle_month: "September 2026",
-  },
-  {
-    id: "PAY-2026-0903",
-    employee_name: "Emmanuel Habimana",
-    employee_code: "EMP-003",
-    job_title: "Cold-Chain Logistics Supervisor",
-    department: "Logistics & Fleet",
-    base_salary_rwf: 320000,
-    allowances_rwf: 25000,
-    bonuses_rwf: 0,
-    overtime_rwf: 15000,
-    paye_tax_rwf: 41000,
-    rssb_pension_rwf: 9600,
-    other_deductions_rwf: 0,
-    net_salary_rwf: 309400,
-    bank_name: "I&M Bank",
-    bank_account: "20019-391824-03",
-    payment_method: "MTN MoMo Bulk",
-    payment_status: "Processing",
-    payment_date: "2026-09-02",
-    payslip_ref: "PAY-2026-0903",
-    notes: "Cold-chain night shift allowance included",
-    cycle_month: "September 2026",
-  },
-];
+type Employee = { id: number; name: string; salary: number };
+const today = new Date().toISOString().slice(0, 10);
+const initialForm = {
+  employee_id: "",
+  base_salary: 0,
+  allowances: 0,
+  overtime: 0,
+  bonus: 0,
+  tax_deductions: 0,
+  pension_deductions: 0,
+  other_deductions: 0,
+  pay_date: today,
+  payment_start_date: today,
+  bank_account_number: "",
+  bank_name: "",
+  payment_ref: "",
+  note: "",
+  payment_status: "unpaid" as const,
+};
+const amount = (value: number | string) => Number(value) || 0;
 
 export default function Payroll() {
   usePageTitle("payroll-management", "Payroll & Salary Processing");
-
-  const [records, setRecords] = useState<PayrollRecord[]>(INITIAL_PAYROLL);
-  const [selectedPayslip, setSelectedPayslip] = useState<PayrollRecord | null>(null);
+  const {
+    records,
+    loading,
+    saving,
+    processingId,
+    error,
+    fetchPayroll,
+    createPayroll,
+    updatePayroll,
+    deletePayroll,
+    clearError,
+  } = usePayrollStore();
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [form, setForm] = useState(initialForm);
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [employeeOptions, setEmployeeOptions] = useState(DEFAULT_EMPLOYEES);
-
-  const [form, setForm] = useState({
-    employee_name: "",
-    employee_code: "",
-    job_title: "Field Supervisor",
-    department: "Farm Operations",
-    pay_period_start: "2026-09-01",
-    base_salary_rwf: 0,
-    allowances_rwf: 0,
-    bonuses_rwf: 0,
-    overtime_rwf: 0,
-    tax_deduction_rwf: 0,
-    pension_deduction_rwf: 0,
-    other_deductions_rwf: 0,
-    bank_name: "",
-    bank_account: "",
-    payment_method: "MTN MoMo Bulk" as PayrollRecord["payment_method"],
-    payment_status: "Pending" as PayrollRecord["payment_status"],
-    payment_date: "",
-    payslip_ref: "",
-    notes: "",
-  });
-
+  const [selected, setSelected] = useState<PayrollRecord | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PayrollRecord | null>(null);
   useEffect(() => {
-    apiGet<{ success: boolean; data: any[] }>("/api/employees")
+    void fetchPayroll();
+  }, [fetchPayroll]);
+  useEffect(() => {
+    apiGet<{ data?: Array<Record<string, unknown>> }>("/api/employees")
       .then((res) => {
-        if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
-          const fetched = res.data.map((emp) => ({
-            name: emp.fullname || `${emp.first_name || ""} ${emp.last_name || ""}`.trim() || "Employee",
-            code: emp.emp_number || `EMP-00${emp.id}`,
-            department: emp.department_name || "Farm Operations",
-            job_title: emp.job_title || "Staff Member",
-            salary_rwf: Number(emp.salary_rwf) || 300000,
-          }));
-          const combined = [...fetched, ...DEFAULT_EMPLOYEES];
-          const unique = combined.filter(
-            (e, idx, self) => idx === self.findIndex((t) => t.name.trim().toLowerCase() === e.name.trim().toLowerCase())
-          );
-          setEmployeeOptions(unique);
-        }
+        setEmployees(
+          (res.data || [])
+            .map((e) => ({
+              id: Number(e.id),
+              name: String(e.fullname || "Employee"),
+              salary: Number(e.salary_rwf) || 0,
+            }))
+            .filter((e) => e.id),
+        );
       })
-      .catch(() => {});
+      .catch(() => setEmployees([]));
   }, []);
-
-  const totalNet = records.reduce((acc, r) => acc + r.net_salary_rwf, 0);
-  const totalTax = records.reduce((acc, r) => acc + r.paye_tax_rwf + r.rssb_pension_rwf, 0);
-
-  const handleDisbursePayroll = () => {
-    if (records.length === 0) {
-      toast.info("No payroll records present to disburse.");
-      return;
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      clearError();
     }
-    setRecords((prev) => prev.map((r) => ({ ...r, payment_status: "Paid" })));
-    toast.success("Bulk MoMo & Bank Payroll disbursement sent successfully!");
-  };
-
-  const handleAddPayroll = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.employee_name.trim()) {
-      toast.error("Please select an employee.");
-      return;
-    }
-
-    const base = Number(form.base_salary_rwf) || 0;
-    const allow = Number(form.allowances_rwf) || 0;
-    const bonus = Number(form.bonuses_rwf) || 0;
-    const overtime = Number(form.overtime_rwf) || 0;
-    const tax = Number(form.tax_deduction_rwf) || 0;
-    const pension = Number(form.pension_deduction_rwf) || 0;
-    const other = Number(form.other_deductions_rwf) || 0;
-
-    const net = base + allow + bonus + overtime - tax - pension - other;
-
-    const newRecord: PayrollRecord = {
-      id: form.payslip_ref.trim() || `PAY-2026-${String(records.length + 904).padStart(4, "0")}`,
-      employee_name: form.employee_name.trim(),
-      employee_code: form.employee_code.trim() || `EMP-00${records.length + 1}`,
-      job_title: form.job_title,
-      department: form.department,
-      base_salary_rwf: base,
-      allowances_rwf: allow,
-      bonuses_rwf: bonus,
-      overtime_rwf: overtime,
-      paye_tax_rwf: tax,
-      rssb_pension_rwf: pension,
-      other_deductions_rwf: other,
-      net_salary_rwf: net,
-      bank_name: form.bank_name || "Bank of Kigali",
-      bank_account: form.bank_account || "00000-000000-00",
-      payment_method: form.payment_method,
-      payment_status: form.payment_status,
-      payment_date: form.payment_date || new Date().toISOString().split("T")[0],
-      payslip_ref: form.payslip_ref || `PAY-2026-${String(records.length + 904).padStart(4, "0")}`,
-      notes: form.notes,
-      cycle_month: "September 2026",
+  }, [error, clearError]);
+  const netPay = useMemo(
+    () =>
+      form.base_salary +
+      form.allowances +
+      form.overtime +
+      form.bonus -
+      form.tax_deductions -
+      form.pension_deductions -
+      form.other_deductions,
+    [form],
+  );
+  const totalNet = records.reduce(
+    (sum, record) => sum + amount(record.net_pay),
+    0,
+  );
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (
+      !form.employee_id ||
+      !form.bank_name.trim() ||
+      !form.bank_account_number.trim() ||
+      !form.payment_ref.trim()
+    )
+      return toast.error(
+        "Employee, bank details, and payment reference are required.",
+      );
+    const input: PayrollInput = {
+      ...form,
+      employee_id: Number(form.employee_id),
     };
-
-    setRecords([newRecord, ...records]);
-    setIsAddOpen(false);
-    setForm({
-      employee_name: "",
-      employee_code: "",
-      job_title: "Field Supervisor",
-      department: "Farm Operations",
-      pay_period_start: "2026-09-01",
-      base_salary_rwf: 0,
-      allowances_rwf: 0,
-      bonuses_rwf: 0,
-      overtime_rwf: 0,
-      tax_deduction_rwf: 0,
-      pension_deduction_rwf: 0,
-      other_deductions_rwf: 0,
-      bank_name: "",
-      bank_account: "",
-      payment_method: "MTN MoMo Bulk",
-      payment_status: "Pending",
-      payment_date: "",
-      payslip_ref: "",
-      notes: "",
-    });
-    toast.success(`Payroll record saved for ${newRecord.employee_name}!`);
+    if (await createPayroll(input)) {
+      toast.success("Payroll record created.");
+      setIsAddOpen(false);
+      setForm(initialForm);
+      void fetchPayroll();
+    }
   };
-
+  const markPaid = async (record: PayrollRecord) => {
+    const input: PayrollInput = {
+      employee_id: Number(record.employee_id),
+      base_salary: amount(record.base_salary),
+      allowances: amount(record.allowances),
+      overtime: amount(record.overtime),
+      bonus: amount(record.bonus),
+      tax_deductions: amount(record.tax_deductions),
+      pension_deductions: amount(record.pension_deductions),
+      other_deductions: amount(record.other_deductions),
+      pay_date: record.pay_date,
+      payment_start_date: record.payment_start_date,
+      bank_account_number: record.bank_account_number,
+      bank_name: record.bank_name,
+      payment_ref: record.payment_ref,
+      note: record.note || "",
+      payment_status: "paid",
+    };
+    if (await updatePayroll(record.id, input)) {
+      toast.success("Payroll marked as paid.");
+      void fetchPayroll();
+    }
+  };
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    if (await deletePayroll(deleteTarget.id)) {
+      toast.success("Payroll record deleted.");
+      setSelected(null);
+      setDeleteTarget(null);
+    }
+  };
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-8 space-y-6">
-      {/* Top Banner */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: "var(--font-heading)" }}>
+          <h1 className="text-2xl font-bold text-gray-900">
             Payroll & Salary Processing
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            Monthly gross salaries, RSSB statutory pension & PAYE tax deductions, pay slips.
+            Create, review, pay, and delete payroll records.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setIsAddOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#076935] px-4 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-[#055028]"
-          >
-            <Plus size={15} /> Add Payroll Entry
-          </button>
-          <button
-            type="button"
-            onClick={handleDisbursePayroll}
-            className="inline-flex items-center gap-2 rounded-xl border border-[#076935] bg-emerald-50 px-4 py-2.5 text-xs font-bold text-[#076935] shadow-xs transition hover:bg-emerald-100"
-          >
-            <Send size={15} /> Disburse Current Payroll
-          </button>
-        </div>
+        <button
+          onClick={() => setIsAddOpen(true)}
+          className="inline-flex items-center gap-2 rounded-xl bg-[#076935] px-4 py-2.5 text-xs font-bold text-white"
+        >
+          <Plus size={16} /> Add Payroll Entry
+        </button>
       </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
         <MetricCard
           label="Total Net Disbursement"
-          value={totalNet > 0 ? totalNet.toLocaleString() : "0"}
+          value={totalNet.toLocaleString()}
           unit="RWF"
-          subtext={totalNet > 0 ? "Current Net Salary Cycle" : "No current net payroll data"}
+          subtext="All payroll records"
           icon={<Banknote size={22} className="text-[#076935]" />}
           iconBg="bg-[#076935]/10"
-          badgeText="Salary Cycle"
+          badgeText="Net Pay"
           badgeColor="bg-emerald-50 text-emerald-700 border-emerald-200"
         />
-
-        <MetricCard
-          label="RSSB & PAYE Tax Total"
-          value={totalTax > 0 ? totalTax.toLocaleString() : "0"}
-          unit="RWF"
-          subtext={totalTax > 0 ? "Remitted to RRA / RSSB" : "No tax deductions recorded"}
-          icon={<Landmark size={22} className="text-amber-600" />}
-          iconBg="bg-amber-50"
-          badgeText="Statutory Tax"
-          badgeColor="bg-amber-50 text-amber-700 border-amber-200"
-        />
-
         <MetricCard
           label="Processed Employees"
-          value={`${records.length}`}
-          subtext={records.length > 0 ? "Active salary profiles" : "No active payroll records"}
-          icon={<Users size={22} className="text-blue-600" />}
+          value={String(records.length)}
+          subtext="Payroll entries"
+          icon={<Banknote size={22} className="text-blue-600" />}
           iconBg="bg-blue-50"
-          badgeText="Staff Payroll"
+          badgeText="Records"
           badgeColor="bg-blue-50 text-blue-700 border-blue-200"
         />
-
         <MetricCard
-          label="Payment Channels"
-          value={records.length > 0 ? "MoMo / Bank" : "Inactive"}
-          subtext="Mobile Money & Direct Bank Deposit"
-          icon={<CreditCard size={22} className="text-purple-600" />}
-          iconBg="bg-purple-50"
-          badgeText="Channels"
-          badgeColor="bg-purple-50 text-purple-700 border-purple-200"
+          label="Paid Records"
+          value={String(
+            records.filter((record) => record.payment_status === "paid").length,
+          )}
+          subtext="Completed payments"
+          icon={<Send size={22} className="text-amber-600" />}
+          iconBg="bg-amber-50"
+          badgeText="Paid"
+          badgeColor="bg-amber-50 text-amber-700 border-amber-200"
         />
       </div>
-
-      {/* Table */}
       <div className="overflow-hidden rounded-2xl border border-[#076935]/10 bg-white">
-        <table className="w-full text-left text-xs border-collapse">
-          <thead className="bg-[#F4FAF7] border-b border-[#076935]/10 text-gray-500 font-bold uppercase tracking-wider">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-[#F4FAF7] text-gray-500 uppercase">
             <tr>
-              <th className="px-4 py-3">Pay Ref</th>
-              <th className="px-4 py-3">Employee</th>
-              <th className="px-4 py-3">Department</th>
-              <th className="px-4 py-3">Base Salary</th>
-              <th className="px-4 py-3">Deductions (PAYE/RSSB)</th>
-              <th className="px-4 py-3">Net Salary</th>
-              <th className="px-4 py-3">Channel</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Actions</th>
+              <th className="p-4">Reference</th>
+              <th className="p-4">Employee</th>
+              <th className="p-4">Base Salary</th>
+              <th className="p-4">Net Pay</th>
+              <th className="p-4">Status</th>
+              <th className="p-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
-            {records.length === 0 ? (
+          <tbody>
+            {loading ? (
               <tr>
-                <td colSpan={9} className="px-4 py-12 text-center text-gray-500">
-                  <div className="flex flex-col items-center justify-center space-y-2">
-                    <p className="text-sm font-semibold text-gray-700">No current payroll records</p>
-                    <p className="text-xs text-gray-400">Payroll disbursements and slips will be listed here once generated.</p>
-                  </div>
+                <td colSpan={6} className="p-10 text-center">
+                  <Loader2 className="inline animate-spin text-[#076935]" />{" "}
+                  <span className="ml-2">Loading payroll…</span>
+                </td>
+              </tr>
+            ) : records.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="p-10 text-center text-gray-500">
+                  No payroll records found.
                 </td>
               </tr>
             ) : (
-              records.map((rec) => (
-                <tr key={rec.id} className="hover:bg-[#F4FAF7]/50 transition">
-                  <td className="px-4 py-3 font-bold font-mono text-gray-900">{rec.id}</td>
-                  <td className="px-4 py-3">
-                    <p className="font-semibold text-gray-900">{rec.employee_name}</p>
-                    <p className="text-[10px] text-gray-400 font-mono">{rec.employee_code}</p>
+              records.map((record) => (
+                <tr key={record.id} className="border-t">
+                  <td className="p-4 font-mono font-bold">
+                    {record.payment_ref}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{rec.department}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{rec.base_salary_rwf.toLocaleString()} RWF</td>
-                  <td className="px-4 py-3 text-rose-600 font-medium">
-                    -{(rec.paye_tax_rwf + rec.rssb_pension_rwf).toLocaleString()} RWF
+                  <td className="p-4">
+                    <p className="font-semibold">
+                      {record.employee_name ||
+                        `Employee #${record.employee_id}`}
+                    </p>
+                    <p className="text-gray-400">{record.bank_name}</p>
                   </td>
-                  <td className="px-4 py-3 font-bold text-[#076935]">{rec.net_salary_rwf.toLocaleString()} RWF</td>
-                  <td className="px-4 py-3 text-gray-600">{rec.payment_method}</td>
-                  <td className="px-4 py-3">
+                  <td className="p-4">
+                    {amount(record.base_salary).toLocaleString()} RWF
+                  </td>
+                  <td className="p-4 font-bold text-[#076935]">
+                    {amount(record.net_pay).toLocaleString()} RWF
+                  </td>
+                  <td className="p-4">
                     <span
-                      className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                        rec.payment_status === "Paid"
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                          : "bg-amber-50 text-amber-700 border border-amber-200"
-                      }`}
+                      className={`rounded-full border px-2 py-1 font-bold ${record.payment_status === "paid" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}
                     >
-                      {rec.payment_status}
+                      {record.payment_status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="p-4 text-right space-x-2">
                     <button
-                      onClick={() => setSelectedPayslip(rec)}
-                      className="p-1.5 text-[#076935] hover:bg-[#076935]/10 rounded-lg transition"
-                      title="View Payslip"
+                      onClick={() => setSelected(record)}
+                      className="text-[#076935]"
+                      title="View payroll"
                     >
                       <Eye size={16} />
+                    </button>
+                    {record.payment_status !== "paid" && (
+                      <button
+                        disabled={processingId === record.id}
+                        onClick={() => void markPaid(record)}
+                        className="inline-flex rounded-lg bg-[#076935] px-2 py-1 text-white disabled:opacity-60"
+                      >
+                        {processingId === record.id ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          "Mark paid"
+                        )}
+                      </button>
+                    )}
+                    <button
+                      disabled={processingId === record.id}
+                      onClick={() => setDeleteTarget(record)}
+                      className="text-rose-600 disabled:opacity-60"
+                      title="Delete payroll"
+                    >
+                      {processingId === record.id ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Trash2 size={16} />
+                      )}
                     </button>
                   </td>
                 </tr>
@@ -392,291 +286,201 @@ export default function Payroll() {
           </tbody>
         </table>
       </div>
-
-      {/* Add Payroll Modal */}
-      <Modal open={isAddOpen} onClose={() => setIsAddOpen(false)} size="xl" title={<div className="text-white font-bold text-lg bg-[#076935] -m-5 p-4 rounded-t-xl">Add Payroll Record</div>}>
-        <form onSubmit={handleAddPayroll} className="space-y-4 pt-4 text-sm">
-          {/* Row 1: Employee & Pay Period Start */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Employee *</label>
+      <Modal
+        open={isAddOpen}
+        onClose={() => !saving && setIsAddOpen(false)}
+        size="xl"
+        title="Add Payroll Record"
+      >
+        <form
+          onSubmit={(event) => void submit(event)}
+          className="space-y-4 text-sm"
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label>
+              Employee
               <select
                 required
-                value={form.employee_name}
+                value={form.employee_id}
                 onChange={(e) => {
-                  const selectedName = e.target.value;
-                  const matched = employeeOptions.find((emp) => emp.name === selectedName);
+                  const employee = employees.find(
+                    (item) => item.id === Number(e.target.value),
+                  );
                   setForm({
                     ...form,
-                    employee_name: selectedName,
-                    employee_code: matched ? matched.code : form.employee_code,
-                    department: matched ? matched.department : form.department,
-                    job_title: matched ? matched.job_title : form.job_title,
-                    base_salary_rwf: matched ? matched.salary_rwf : form.base_salary_rwf,
+                    employee_id: e.target.value,
+                    base_salary: employee?.salary || 0,
                   });
                 }}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+                className="mt-1 w-full rounded-xl border p-2.5"
               >
-                <option value="">Select employee...</option>
-                {employeeOptions.map((emp) => (
-                  <option key={emp.name} value={emp.name}>
-                    {emp.name} ({emp.code} · {emp.department})
+                <option value="">Select employee…</option>
+                {employees.map((employee) => (
+                  <option key={employee.id} value={employee.id}>
+                    {employee.name}
                   </option>
                 ))}
               </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Pay Period Start *</label>
+            </label>
+            <label>
+              Payment reference (Transaction id)
+              <input
+                required
+                value={form.payment_ref}
+                onChange={(e) =>
+                  setForm({ ...form, payment_ref: e.target.value })
+                }
+                className="mt-1 w-full rounded-xl border p-2.5"
+              />
+            </label>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-4">
+            {(
+              [
+                "base_salary",
+                "allowances",
+                "overtime",
+                "bonus",
+                "tax_deductions",
+                "pension_deductions",
+                "other_deductions",
+              ] as const
+            ).map((field) => (
+              <label key={field}>
+                {field.replace(/_/g, " ")}
+                <input
+                  type="number"
+                  min="0"
+                  value={form[field]}
+                  onChange={(e) =>
+                    setForm({ ...form, [field]: Number(e.target.value) })
+                  }
+                  className="mt-1 w-full rounded-xl border p-2.5"
+                />
+              </label>
+            ))}
+            <label>
+              Net pay
+              <input
+                readOnly
+                value={netPay.toLocaleString()}
+                className="mt-1 w-full rounded-xl border bg-gray-50 p-2.5 font-bold text-[#076935]"
+              />
+            </label>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label>
+              Period start
               <input
                 type="date"
                 required
-                value={form.pay_period_start}
-                onChange={(e) => setForm({ ...form, pay_period_start: e.target.value })}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+                value={form.payment_start_date}
+                onChange={(e) =>
+                  setForm({ ...form, payment_start_date: e.target.value })
+                }
+                className="mt-1 w-full rounded-xl border p-2.5"
               />
-            </div>
-          </div>
-
-          {/* Row 2: Basic Salary, Allowances, Bonuses, Overtime Pay */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Basic Salary (RWF)</label>
-              <input
-                type="number"
-                min="0"
-                value={form.base_salary_rwf}
-                onChange={(e) => setForm({ ...form, base_salary_rwf: Number(e.target.value) })}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Allowances (RWF)</label>
-              <input
-                type="number"
-                min="0"
-                value={form.allowances_rwf}
-                onChange={(e) => setForm({ ...form, allowances_rwf: Number(e.target.value) })}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Bonuses (RWF)</label>
-              <input
-                type="number"
-                min="0"
-                value={form.bonuses_rwf}
-                onChange={(e) => setForm({ ...form, bonuses_rwf: Number(e.target.value) })}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Overtime Pay (RWF)</label>
-              <input
-                type="number"
-                min="0"
-                value={form.overtime_rwf}
-                onChange={(e) => setForm({ ...form, overtime_rwf: Number(e.target.value) })}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-              />
-            </div>
-          </div>
-
-          {/* Row 3: Tax Deduction, Pension Deduction, Other Deductions, Net Pay */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Tax Deduction (RWF)</label>
-              <input
-                type="number"
-                min="0"
-                value={form.tax_deduction_rwf}
-                onChange={(e) => setForm({ ...form, tax_deduction_rwf: Number(e.target.value) })}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Pension Deduction (RWF)</label>
-              <input
-                type="number"
-                min="0"
-                value={form.pension_deduction_rwf}
-                onChange={(e) => setForm({ ...form, pension_deduction_rwf: Number(e.target.value) })}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Other Deductions (RWF)</label>
-              <input
-                type="number"
-                min="0"
-                value={form.other_deductions_rwf}
-                onChange={(e) => setForm({ ...form, other_deductions_rwf: Number(e.target.value) })}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Net Pay (RWF)</label>
-              <input
-                type="text"
-                readOnly
-                value={(
-                  form.base_salary_rwf +
-                  form.allowances_rwf +
-                  form.bonuses_rwf +
-                  form.overtime_rwf -
-                  form.tax_deduction_rwf -
-                  form.pension_deduction_rwf -
-                  form.other_deductions_rwf
-                ).toLocaleString()}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-sm font-bold text-[#076935] outline-none"
-              />
-            </div>
-          </div>
-
-          {/* Row 4: Bank Name & Bank Account */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Bank Name</label>
-              <input
-                type="text"
-                placeholder="e.g. Bank of Kigali / Equity Bank"
-                value={form.bank_name}
-                onChange={(e) => setForm({ ...form, bank_name: e.target.value })}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Bank Account</label>
-              <input
-                type="text"
-                placeholder="e.g. 00049-082914-01"
-                value={form.bank_account}
-                onChange={(e) => setForm({ ...form, bank_account: e.target.value })}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-              />
-            </div>
-          </div>
-
-          {/* Row 5: Payment Status, Payment Date, Payslip Ref */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Payment Status</label>
-              <select
-                value={form.payment_status}
-                onChange={(e) => setForm({ ...form, payment_status: e.target.value as any })}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
-              >
-                <option value="Pending">Pending</option>
-                <option value="Paid">Paid</option>
-                <option value="Processing">Processing</option>
-                <option value="Draft">Draft</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Payment Date</label>
+            </label>
+            <label>
+              Pay date
               <input
                 type="date"
-                value={form.payment_date}
-                onChange={(e) => setForm({ ...form, payment_date: e.target.value })}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+                required
+                value={form.pay_date}
+                onChange={(e) => setForm({ ...form, pay_date: e.target.value })}
+                className="mt-1 w-full rounded-xl border p-2.5"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Payslip Ref</label>
+            </label>
+            <label>
+              Bank name
               <input
-                type="text"
-                placeholder="e.g. PAY-2026-0904"
-                value={form.payslip_ref}
-                onChange={(e) => setForm({ ...form, payslip_ref: e.target.value })}
-                className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+                required
+                value={form.bank_name}
+                onChange={(e) =>
+                  setForm({ ...form, bank_name: e.target.value })
+                }
+                className="mt-1 w-full rounded-xl border p-2.5"
               />
-            </div>
+            </label>
+            <label>
+              Bank account
+              <input
+                required
+                value={form.bank_account_number}
+                onChange={(e) =>
+                  setForm({ ...form, bank_account_number: e.target.value })
+                }
+                className="mt-1 w-full rounded-xl border p-2.5"
+              />
+            </label>
           </div>
-
-          {/* Row 6: Notes */}
-          <div>
-            <label className="block text-sm font-bold text-gray-800 mb-1">Notes</label>
+          <label>
+            Note
             <textarea
-              rows={3}
-              placeholder="Additional payroll comments or notes..."
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              className="w-full rounded-xl border border-gray-300 p-2.5 text-sm font-medium outline-none focus:border-[#076935]"
+              value={form.note}
+              onChange={(e) => setForm({ ...form, note: e.target.value })}
+              className="mt-1 w-full rounded-xl border p-2.5"
             />
-          </div>
-
-          {/* Footer Actions */}
-          <div className="flex justify-end gap-3 border-t border-gray-200 pt-4">
+          </label>
+          <div className="flex justify-end gap-3">
             <button
               type="button"
               onClick={() => setIsAddOpen(false)}
-              className="rounded-xl border border-gray-300 bg-gray-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-gray-700"
+              disabled={saving}
+              className="rounded-xl border px-5 py-2 font-bold"
             >
               Cancel
             </button>
             <button
-              type="submit"
-              className="rounded-xl bg-[#076935] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#055028] shadow-sm"
+              disabled={saving}
+              className="inline-flex items-center rounded-xl bg-[#076935] px-5 py-2 font-bold text-white"
             >
-              Save Record
+              {saving && <Loader2 size={16} className="mr-2 animate-spin" />}
+              {saving ? "Saving…" : "Save Payroll"}
             </button>
           </div>
         </form>
       </Modal>
-
-      {/* Payslip Modal */}
-      <Modal open={Boolean(selectedPayslip)} onClose={() => setSelectedPayslip(null)} size="md" title="Official KainaFresh Pay Slip">
-        {selectedPayslip && (
-          <div className="space-y-4 text-xs">
-            <div className="flex items-center justify-between bg-[#F4FAF7] p-3 rounded-xl border border-[#076935]/15">
-              <div>
-                <p className="font-bold text-[#076935] text-sm">KainaFresh Produce Ltd</p>
-                <p className="text-gray-500">Kigali, Rwanda • TIN: 102-491-002</p>
-              </div>
-              <span className="font-mono text-xs font-bold text-gray-700">{selectedPayslip.cycle_month}</span>
-            </div>
-
-            <div className="border-t border-b py-2 space-y-1">
-              <p><strong>Employee:</strong> {selectedPayslip.employee_name} ({selectedPayslip.employee_code})</p>
-              <p><strong>Title:</strong> {selectedPayslip.job_title}</p>
-              <p><strong>Department:</strong> {selectedPayslip.department}</p>
-            </div>
-
-            <div className="space-y-1.5 bg-gray-50 p-3 rounded-xl">
-              <div className="flex justify-between">
-                <span>Base Salary:</span>
-                <span className="font-bold">{selectedPayslip.base_salary_rwf.toLocaleString()} RWF</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Allowances / Bonuses:</span>
-                <span className="font-bold text-emerald-600">+{selectedPayslip.allowances_rwf.toLocaleString()} RWF</span>
-              </div>
-              <div className="flex justify-between text-rose-600">
-                <span>PAYE Income Tax:</span>
-                <span>-{selectedPayslip.paye_tax_rwf.toLocaleString()} RWF</span>
-              </div>
-              <div className="flex justify-between text-rose-600">
-                <span>RSSB Pension (3%):</span>
-                <span>-{selectedPayslip.rssb_pension_rwf.toLocaleString()} RWF</span>
-              </div>
-              <div className="flex justify-between border-t pt-2 text-sm font-extrabold text-[#076935]">
-                <span>Net Payable:</span>
-                <span>{selectedPayslip.net_salary_rwf.toLocaleString()} RWF</span>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => window.print()}
-                className="inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50"
-              >
-                <Printer size={14} /> Print Payslip
-              </button>
-            </div>
+      <Modal
+        open={Boolean(selected)}
+        onClose={() => setSelected(null)}
+        size="md"
+        title="Payroll Details"
+      >
+        {selected && (
+          <div className="space-y-3 text-sm">
+            <p>
+              <b>Employee:</b>{" "}
+              {selected.employee_name || `Employee #${selected.employee_id}`}
+            </p>
+            <p>
+              <b>Payment reference (Transactin Id):</b> {selected.payment_ref}
+            </p>
+            <p>
+              <b>Pay period:</b> {selected.payment_start_date} —{" "}
+              {selected.pay_date}
+            </p>
+            <p>
+              <b>Bank:</b> {selected.bank_name} ({selected.bank_account_number})
+            </p>
+            <p>
+              <b>Net pay:</b> {amount(selected.net_pay).toLocaleString()} RWF
+            </p>
+            <p>
+              <b>Note:</b> {selected.note || "—"}
+            </p>
           </div>
         )}
       </Modal>
+      <ConfirmDeleteModal
+        open={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        itemName={deleteTarget?.payment_ref}
+        resourceType="payroll record"
+        title="Delete Payroll Record"
+        loading={processingId === deleteTarget?.id}
+      />
     </div>
   );
 }
-
