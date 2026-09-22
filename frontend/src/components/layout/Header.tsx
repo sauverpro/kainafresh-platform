@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useSidebar } from "../../context/SidebarContext";
 import { useAuth } from "../../auth/AuthContext";
 import { toast } from "sonner";
-import NotificationDropdown from "../notifications/NotificationDropdown";
+// import NotificationDropdown from "../notifications/NotificationDropdown";
 
 interface HeaderProps {
   onOpenProfile?: () => void;
