@@ -10,11 +10,12 @@ class Incident extends Model
         'emp_id',
         'incident_date',
         'incident_type',
-        'duration_days',
+        'action_taken',
         'severity',
         'description',
         'location',
         'reported_by',
+        'status'
     ];
 
     /**

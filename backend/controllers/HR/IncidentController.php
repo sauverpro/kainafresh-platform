@@ -107,7 +107,7 @@ class IncidentController extends BaseController
         }
 
         // The reporter is always the authenticated user, never a client-supplied value.
-        $data['reported_by'] = $userId;
+        
 
         $incident = $this->incidentModel->create($data);
 

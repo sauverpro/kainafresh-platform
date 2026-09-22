@@ -16,6 +16,7 @@ class Training extends Model
         'cost',
         'certification_ref',
         'skills_gained',
+        'provider',
         'status',
         'notes',
     ];
@@ -122,15 +123,16 @@ class Training extends Model
                     `cost`,
                     `certification_ref`,
                     `skills_gained`,
+                    `provider`,
                     `status`,
                     `notes`
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = $this->db->prepare($sql);
 
         $stmt->bind_param(
-            "issssidssss",
+            "issssidsssss",
             $data['emp_id'],
             $data['training_name'],
             $data['training_type'],
@@ -140,6 +142,7 @@ class Training extends Model
             $data['cost'],
             $data['certification_ref'],
             $data['skills_gained'],
+            $data['provider'],
             $data['status'],
             $data['notes']
         );

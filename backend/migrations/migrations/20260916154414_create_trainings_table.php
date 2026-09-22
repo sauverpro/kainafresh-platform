@@ -16,6 +16,7 @@ class CreateTrainingsTable extends Migration
             ['name' => 'duration_days', 'type' => 'INT', 'length' => 11],
             ['name' => 'cost', 'type' => 'DECIMAL', 'length' => '10,2'],
             ['name' => 'certification_ref', 'type' => 'VARCHAR', 'length' => 255],
+            ['name' => 'provider', 'type' => 'VARCHAR', 'length' => 255],
             ['name' => 'skills_gained', 'type' => 'TEXT'],
             ['name' => 'status', 'type' => 'VARCHAR', 'length' => 20, 'default' => 'active'],
             ['name' => 'notes', 'type' => 'TEXT'],
