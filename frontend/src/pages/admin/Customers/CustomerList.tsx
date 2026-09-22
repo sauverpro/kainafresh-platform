@@ -402,7 +402,7 @@ export default function CustomerList() {
     if (!deleting) return;
     setDeleteSubmitting(true);
     try {
-      await apiDelete(`/api/customers/delete/${deleting.id}`);
+      await apiDelete(`/api/customers/${deleting.id}`);
       toast.success(`Customer "${fullName(deleting)}" deleted`);
       setDeleting(null);
       await loadCustomers();
