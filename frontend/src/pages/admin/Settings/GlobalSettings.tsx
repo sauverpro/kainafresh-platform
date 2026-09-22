@@ -21,7 +21,7 @@ import {
 import UserManagement from '../Users/UserManagement';
 
 // Import HTTP API client utilities for CRUD calls
-import { apiGet, apiPost, apiPostFormData, apiDelete } from '../../../api/client';
+import { apiGet, apiPost, apiPostFormData, apiPut } from '../../../api/client';
 
 import DashboardSkeleton from '../../../components/skeletons/DashboardSkeleton';
 
@@ -112,11 +112,10 @@ export default function GlobalSettings() {
   // Dynamic Navigation Links list state fetched from database
   const [navItems, setNavItems] = useState<NavItem[]>([]);
 
-  // Form state for creating a new custom navigation link
-  const [newNavLink, setNewNavLink] = useState({ link_name: '', link: '', link_type: 'nav' });
-
-  // Adding navigation link loading state
-  const [addingNav, setAddingNav] = useState(false);
+  // Editing navigation link state
+  const [editingNavLink, setEditingNavLink] = useState<NavItem | null>(null);
+  const [editNavForm, setEditNavForm] = useState({ link_name: '', link: '', link_type: 'nav' });
+  const [savingNavEdit, setSavingNavEdit] = useState(false);
 
   // Main global settings form state holding all site configurations
   const [form, setForm] = useState({
@@ -193,36 +192,39 @@ export default function GlobalSettings() {
     return () => { isMounted = false; };
   }, []);
 
-  /**
-   * Form handler for adding a new dynamic navigation link to MariaDB.
-   */
-  const handleAddNavLink = async () => {
-    // Validate inputs
-    if (!newNavLink.link_name || !newNavLink.link) {
+  const openEditNavLink = (item: NavItem) => {
+    setEditingNavLink(item);
+    setEditNavForm({
+      link_name: item.link_name,
+      link: item.link,
+      link_type: item.link_type,
+    });
+  };
+
+  const handleEditNavLink = async () => {
+    if (!editingNavLink || !editNavForm.link_name || !editNavForm.link) {
       setToast({ type: 'error', message: 'Please provide both link name and URL path.' });
       return;
     }
 
-    setAddingNav(true);
+    setSavingNavEdit(true);
     try {
-      // Submit POST payload to /api/navlinks/create
-      const res = await apiPost<ApiResponse>('/api/navlinks/create', newNavLink);
-      if (res.success) {
-        setToast({ type: 'success', message: 'Navigation link added successfully!' });
-        
-        // Reset form inputs
-        setNewNavLink({ link_name: '', link: '', link_type: 'nav' });
-
-        // Refresh navigation items table
-        fetchNavLinks();
-      } else {
-        setToast({ type: 'error', message: res.message || 'Failed to add link.' });
+      const res = await apiPut<ApiResponse>(
+        `/api/navlinks/update/${editingNavLink.id}`,
+        editNavForm,
+      );
+      if (!res.success) {
+        throw new Error(res.message || 'Failed to update link.');
       }
+
+      setToast({ type: 'success', message: 'Navigation link updated successfully!' });
+      setEditingNavLink(null);
+      await fetchNavLinks();
     } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : 'Error adding nav link.';
+      const errorMsg = err instanceof Error ? err.message : 'Error updating nav link.';
       setToast({ type: 'error', message: errorMsg });
     } finally {
-      setAddingNav(false);
+      setSavingNavEdit(false);
     }
   };
 
@@ -529,42 +531,6 @@ export default function GlobalSettings() {
             <p>Add and manage custom links displayed across the main site navigation bar.</p>
           </div>
 
-          {/* Add New Link Box */}
-          <div className="settings-grid-2" style={{ background: '#F9FAFB', padding: '1rem', borderRadius: '10px', marginBottom: '1.5rem' }}>
-            <div className="settings-field">
-              <label className="settings-label">Link Label / Title</label>
-              <input 
-                type="text" 
-                className="settings-input" 
-                placeholder="e.g. Bulk Catalog"
-                value={newNavLink.link_name}
-                onChange={e => setNewNavLink(prev => ({ ...prev, link_name: e.target.value }))}
-              />
-            </div>
-
-            <div className="settings-field">
-              <label className="settings-label">URL Path</label>
-              <input 
-                type="text" 
-                className="settings-input" 
-                placeholder="e.g. /wholesale"
-                value={newNavLink.link}
-                onChange={e => setNewNavLink(prev => ({ ...prev, link: e.target.value }))}
-              />
-            </div>
-
-            <div className="settings-field full-width" style={{ marginTop: '0.5rem' }}>
-              <button 
-                className="btn-upload" 
-                onClick={handleAddNavLink}
-                disabled={addingNav}
-                style={{ width: 'fit-content' }}
-              >
-                + {addingNav ? 'Adding Link...' : 'Add Navigation Link'}
-              </button>
-            </div>
-          </div>
-
           {/* NavLinks List */}
           <h4 style={{ margin: '1rem 0 0.5rem 0', fontSize: '0.9rem' }}>Active Navigation Items</h4>
           {navItems.length > 0 ? (
@@ -584,7 +550,14 @@ export default function GlobalSettings() {
                     <td style={{ color: '#6B7280' }}>{item.link}</td>
                     <td><span style={{ fontSize: '0.75rem', background: '#E0F2FE', color: '#0284C7', padding: '0.15rem 0.5rem', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 600 }}>{item.link_type}</span></td>
                     <td style={{ textAlign: 'right' }}>
-                      <button 
+                      <button
+                        className="btn-icon"
+                        onClick={() => openEditNavLink(item)}
+                        style={{ marginRight: '0.5rem' }}
+                      >
+                        Edit
+                      </button>
+                      {/* <button 
                         className="btn-icon btn-danger" 
                         onClick={async () => {
                           try {
@@ -599,7 +572,7 @@ export default function GlobalSettings() {
                         }}
                       >
                         Delete
-                      </button>
+                      </button> */}
                     </td>
                   </tr>
                 ))}
@@ -608,6 +581,83 @@ export default function GlobalSettings() {
           ) : (
             <p style={{ color: '#6B7280', fontSize: '0.85rem', fontStyle: 'italic' }}>No custom navigation links added yet. Default site routes are active.</p>
           )}
+        </div>
+      )}
+
+      {editingNavLink && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-nav-link-title"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            background: 'rgba(17, 24, 39, 0.45)',
+          }}
+          onClick={() => !savingNavEdit && setEditingNavLink(null)}
+        >
+          <div
+            className="settings-card"
+            style={{ width: 'min(100%, 520px)', margin: 0 }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="settings-card-header">
+              <h3 id="edit-nav-link-title">Edit Navigation Link</h3>
+              <p>Update the label and destination for this navigation item.</p>
+            </div>
+
+            <div className="settings-field" style={{ marginBottom: '1rem' }}>
+              <label className="settings-label">Link Label / Title</label>
+              <input
+                type="text"
+                className="settings-input"
+                value={editNavForm.link_name}
+                onChange={e => setEditNavForm(prev => ({ ...prev, link_name: e.target.value }))}
+              />
+            </div>
+
+            <div className="settings-field" style={{ marginBottom: '1rem' }}>
+              <label className="settings-label">URL Path</label>
+              <input
+                type="text"
+                className="settings-input"
+                value={editNavForm.link}
+                onChange={e => setEditNavForm(prev => ({ ...prev, link: e.target.value }))}
+              />
+            </div>
+
+            <div className="settings-field" style={{ marginBottom: '1.25rem' }}>
+              <label className="settings-label">Link Type</label>
+              <input
+                type="text"
+                className="settings-input"
+                value={editNavForm.link_type}
+                onChange={e => setEditNavForm(prev => ({ ...prev, link_type: e.target.value }))}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button
+                className="btn-icon"
+                onClick={() => setEditingNavLink(null)}
+                disabled={savingNavEdit}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-upload"
+                onClick={handleEditNavLink}
+                disabled={savingNavEdit}
+              >
+                {savingNavEdit ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
