@@ -44,6 +44,9 @@ const GlobalSettings = lazy(
 );
 const UserManagement = lazy(() => import("./pages/admin/Users/UserManagement"));
 const TeamManagement = lazy(() => import("./pages/admin/Team/TeamManagement"));
+const NotificationsPage = lazy(
+  () => import("./pages/admin/Notifications/NotificationsPage"),
+);
 
 // Lazy load HR pages
 const HRDashboard = lazy(() => import("./pages/admin/HR/HRDashboard"));
@@ -112,6 +115,7 @@ const routes = sideNavData
       !route.path.startsWith("/cms/") &&
       !route.path.startsWith("/admin/hr/") &&
       route.path !== "/settings" &&
+      route.path !== "/notifications" &&
       route.path !== "/admin/users" &&
       route.path !== "/admin/products" &&
       route.path !== "/admin/orders" &&
@@ -155,6 +159,7 @@ function App() {
                 }
               >
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/settings" element={<GlobalSettings />} />
                 <Route path="/admin/users" element={<UserManagement />} />
                 <Route path="/admin/team" element={<TeamManagement />} />

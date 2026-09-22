@@ -110,8 +110,6 @@ export default function DepartmentManagement() {
   const {
     departments,
     setDepartments,
-    addDepartment,
-    updateDepartment,
     deleteDepartment,
   } = useDepartmentStore();
 
@@ -276,7 +274,7 @@ export default function DepartmentManagement() {
     setIsSaving(true);
 
     try {
-      const response = await apiPost("/api/departments", payload);
+      await apiPost("/api/departments", payload);
 
       await loadDepartments();
 
@@ -337,7 +335,7 @@ export default function DepartmentManagement() {
     setIsSaving(true);
 
     try {
-      const response = await apiPut(`/api/departments/${rawId}`, payload);
+      await apiPut(`/api/departments/${rawId}`, payload);
 
       await loadDepartments();
 

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Menu, Search, Bell, ChevronDown, X, LogOut, UserRoundPen } from "lucide-react";
+import { Menu, Search, ChevronDown, X, LogOut, UserRoundPen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSidebar } from "../../context/SidebarContext";
 import { useAuth } from "../../auth/AuthContext";
 import { toast } from "sonner";
+import NotificationDropdown from "../notifications/NotificationDropdown";
 
 interface HeaderProps {
   onOpenProfile?: () => void;
@@ -83,14 +84,7 @@ export default function Header({ onOpenProfile }: HeaderProps) {
         </button> */}
 
         {/* Notifications */}
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative flex h-11 w-11 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
-        >
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-orange-400 ring-2 ring-white dark:ring-gray-900" />
-        </button>
+        <NotificationDropdown />
 
         {/* Profile */}
         <div className="relative" ref={profileRef}>

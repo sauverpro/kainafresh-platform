@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import type { NavItem } from "../../assets/data/sideNavData.types";
 import { useSidebar } from "../../context/SidebarContext";
+import { useNotificationStore } from "../../store/useNotificationStore";
 
 interface Props {
   item: NavItem;
@@ -18,6 +19,15 @@ export default function SidebarNavItem({ item }: Props) {
 
   const isOpen = openSubmenu === item.id;
   const hasSubItems = Boolean(item.subItems?.length);
+
+  const { notifications } = useNotificationStore();
+  const unreadCount = notifications.filter((n) => !n.read).length;
+  const totalCount = notifications.length;
+  const countToShow = unreadCount > 0 ? unreadCount : totalCount;
+
+  const hasNotificationChild = item.subItems?.some(
+    (s) => s.path === "/notifications",
+  );
 
   const isChildActive = item.subItems?.some(
     (s) =>
@@ -98,6 +108,11 @@ export default function SidebarNavItem({ item }: Props) {
           {isRailExpanded && (
             <span className="flex items-center gap-2">
               {badge}
+              {hasNotificationChild && countToShow > 0 && !isOpen && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-extrabold text-white shadow-xs">
+                  {countToShow}
+                </span>
+              )}
               <ChevronDown
                 className={[
                   "h-4 w-4 shrink-0 transition-transform duration-200",
@@ -175,15 +190,16 @@ export default function SidebarNavItem({ item }: Props) {
                 );
               }
               if (!sub.path) return null;
+              const isNotificationLink = sub.path === "/notifications";
               return (
                 <li key={sub.path}>
                   <NavLink
                     to={sub.path}
                     className={({ isActive }) =>
                       [
-                        "block rounded-lg px-3.5 py-2 text-sm font-normal transition-all duration-150",
+                        "flex items-center justify-between rounded-lg px-3.5 py-2 text-sm font-normal transition-all duration-150",
                         isActive
-                          ? "bg-white/25 text-white backdrop-blur-md border-l-4 border-[#F39927] shadow-xs"
+                          ? "bg-white/25 text-white backdrop-blur-md border-l-4 border-[#F39927] shadow-xs font-bold"
                           : "text-white/80 hover:text-white hover:bg-white/10",
                       ].join(" ")
                     }
@@ -192,7 +208,12 @@ export default function SidebarNavItem({ item }: Props) {
                       color: isActive ? '#ffffff' : undefined,
                     })}
                   >
-                    {sub.label}
+                    <span>{sub.label}</span>
+                    {isNotificationLink && countToShow > 0 && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-extrabold text-white shadow-xs">
+                        {countToShow}
+                      </span>
+                    )}
                   </NavLink>
                 </li>
               );
@@ -242,7 +263,14 @@ export default function SidebarNavItem({ item }: Props) {
             >
               {item.label}
             </span>
-            {isRailExpanded && badge}
+            {isRailExpanded &&
+              (item.path === "/notifications" && countToShow > 0 ? (
+                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-extrabold text-white shadow-xs">
+                  {countToShow}
+                </span>
+              ) : (
+                badge
+              ))}
           </>
         )}
       </NavLink>
