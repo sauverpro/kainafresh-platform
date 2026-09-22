@@ -84,7 +84,7 @@ export default function Header({ onOpenProfile }: HeaderProps) {
         </button> */}
 
         {/* Notifications */}
-        <NotificationDropdown />
+        {/* <NotificationDropdown /> */}
 
         {/* Profile */}
         <div className="relative" ref={profileRef}>

@@ -68,7 +68,7 @@ export const sideNavData: NavSection[] = [
         label: "Settings",
         icon: Settings,
         subItems: [
-          { label: "Notifications", path: "/notifications" },
+          // { label: "Notifications", path: "/notifications" },
           { label: "Global Settings", path: "/settings" },
           { label: "User Access & Controls", path: "/admin/users" },
           { label: "Team Management", path: "/admin/team" },
