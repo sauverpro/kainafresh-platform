@@ -5,7 +5,7 @@ import {
   CheckCheck,
   Trash2,
   Search,
-  SlidersHorizontal,
+
   Settings,
   ShoppingCart,
   Package,
@@ -13,12 +13,12 @@ import {
   ShieldCheck,
   AlertTriangle,
   ExternalLink,
-  CheckCircle2,
+  
   Mail,
   Volume2,
   Smartphone,
   Plus,
-  ArrowUpDown,
+  
   Filter,
 } from "lucide-react";
 import { usePageTitle } from "../../../hooks/usePageTitle";
