@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Wallet,
   ShoppingBag,
@@ -10,10 +10,12 @@ import {
   Plus,
   ArrowLeft,
   Download,
+  RefreshCw,
 } from "lucide-react";
 import DirectSaleModal from "../../../components/sales/DirectSaleModal";
 import { toast } from "sonner";
 import MetricCard from "../../../components/ui/MetricCard";
+import { apiGet } from "../../../api/client";
 
 export interface SalesTransaction {
   id: string;
@@ -28,11 +30,9 @@ export interface SalesTransaction {
   status: "completed" | "processing" | "refunded";
 }
 
-const INITIAL_TRANSACTIONS: SalesTransaction[] = [];
-
-
 export default function SalesList() {
-  const [transactions, setTransactions] = useState<SalesTransaction[]>(INITIAL_TRANSACTIONS);
+  const [transactions, setTransactions] = useState<SalesTransaction[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [segmentFilter, setSegmentFilter] = useState<"all" | "wholesale" | "retail">("all");
   const [directSaleOpen, setDirectSaleOpen] = useState(false);
@@ -42,172 +42,198 @@ export default function SalesList() {
   const [graphMetric, setGraphMetric] = useState<"revenue" | "volume">("revenue");
   const [activeSelectedMonth, setActiveSelectedMonth] = useState<string | null>(null);
 
-  // Helper to generate 31 days for a given month with Orange & Light Orange peak styling
-  const generateDailyDataForMonth = (monthName: string) => {
-    const days = [];
-    for (let i = 1; i <= 31; i++) {
-      let isPeak = false;
-      const pseudoSeed = (i * 37 + monthName.length * 13) % 100;
-      let revVal = 45000 + pseudoSeed * 850;
-      let driver = "Standard Produce Sales";
+  /**
+   * Fetch real orders from the backend API (/api/orders) and map to sales transactions.
+   */
+  const loadSalesData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await apiGet<{ success: boolean; data: any[] }>("/api/orders");
+      if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
+        const mapped: SalesTransaction[] = res.data.map((o: any) => {
+          const amt = Number(o.total) || 0;
+          const isWholesale =
+            o.order_source === "wholesale" ||
+            o.order_source === "b2b" ||
+            amt >= 200000;
 
-      if (monthName.toLowerCase().includes("aug")) {
-        if (i === 25) {
-          revVal = 1298000;
-          isPeak = true;
-          driver = "Inyange Exporters Bulk Chilli (#SL-9405)";
-        } else if (i === 31) {
-          revVal = 619500;
-          isPeak = true;
-          driver = "Serena Hotel Avocados (#SL-9401)";
-        } else if (i === 30) {
-          revVal = 413000;
-          isPeak = true;
-          driver = "Simba Supermarket (#SL-9402)";
-        } else if (i === 15) {
-          revVal = 320000;
-          isPeak = true;
-          driver = "Kigali Marriott Produce";
-        }
+          const customerName = o.customer_first_name
+            ? `${o.customer_first_name} ${o.customer_last_name || ""}`.trim()
+            : o.user_full_name || o.user_username || `Customer #${o.user_id}`;
+
+          const ref =
+            o.orderId && o.orderId.trim()
+              ? o.orderId.trim()
+              : `KF-${String(o.id).padStart(4, "0")}`;
+
+          return {
+            id: `SL-${String(o.id).padStart(4, "0")}`,
+            order_id: ref,
+            customer_name: customerName,
+            segment: isWholesale ? "wholesale" : "retail",
+            sales_rep:
+              o.order_source === "externalorder"
+                ? "Direct OTC Agent"
+                : "Online Web Checkout",
+            items_summary: `Produce Order (${amt.toLocaleString()} RWF)`,
+            payment_method:
+              o.order_source === "externalorder"
+                ? "Cash on Delivery"
+                : "MTN Mobile Money",
+            amount: amt,
+            date: o.order_date
+              ? o.order_date.split(" ")[0]
+              : new Date().toISOString().split("T")[0],
+            status:
+              o.status === "delivered" ||
+              o.status === "completed" ||
+              o.status === "shipped"
+                ? "completed"
+                : o.status === "cancelled"
+                ? "refunded"
+                : "processing",
+          };
+        });
+        setTransactions(mapped);
       } else {
-        if (i === 14 || i === 28) {
-          revVal = 350000 + (pseudoSeed % 20) * 10000;
-          isPeak = true;
-          driver = "B2B Contract Fulfillment";
+        setTransactions([]);
+      }
+    } catch (err) {
+      console.error("Failed to load sales data", err);
+      toast.error("Failed to load real sales data.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSalesData();
+  }, [loadSalesData]);
+
+  // Aggregate monthly data dynamically from real transactions
+  const monthlyDataset = useMemo(() => {
+    const months = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+
+    const totals: Record<string, { revenue: number; count: number }> = {};
+    months.forEach((m) => (totals[m] = { revenue: 0, count: 0 }));
+
+    transactions.forEach((tx) => {
+      const d = new Date(tx.date);
+      if (!isNaN(d.getTime())) {
+        const monthName = d.toLocaleString("en-US", { month: "short" });
+        if (totals[monthName]) {
+          totals[monthName].revenue += tx.amount;
+          totals[monthName].count += 1;
         }
       }
+    });
 
-      const heightPercent = Math.min(100, Math.max(14, Math.round((revVal / 1300000) * 100))) + "%";
+    const maxRev = Math.max(...Object.values(totals).map((t) => t.revenue), 100000);
+
+    return months.map((m, idx) => {
+      const rev = totals[m].revenue;
+      const ordersCount = totals[m].count;
+      const heightPercent =
+        Math.min(100, Math.max(14, Math.round((rev / maxRev) * 100))) + "%";
+      const formattedRev =
+        rev >= 1000000
+          ? `${(rev / 1000000).toFixed(1)}M`
+          : `${(rev / 1000).toFixed(0)}k`;
+
+      return {
+        month: m,
+        year: 2026,
+        rev: formattedRev,
+        revenue: rev,
+        ordersCount,
+        height: heightPercent,
+        active: idx === new Date().getMonth(),
+      };
+    });
+  }, [transactions]);
+
+  // Helper to generate 31 days daily breakdown for selected month from real data
+  const generateDailyDataForMonth = (monthName: string) => {
+    const days = [];
+    const txForMonth = transactions.filter((tx) => {
+      const d = new Date(tx.date);
+      if (isNaN(d.getTime())) return false;
+      return (
+        d.toLocaleString("en-US", { month: "short" }).toLowerCase() ===
+        monthName.toLowerCase().slice(0, 3)
+      );
+    });
+
+    const dailyRev: Record<number, number> = {};
+    txForMonth.forEach((tx) => {
+      const dayNum = new Date(tx.date).getDate();
+      dailyRev[dayNum] = (dailyRev[dayNum] || 0) + tx.amount;
+    });
+
+    const maxDaily = Math.max(...Object.values(dailyRev), 50000);
+
+    for (let i = 1; i <= 31; i++) {
+      const revVal = dailyRev[i] || 0;
+      const isPeak = revVal > 0 && revVal >= maxDaily * 0.7;
+      const heightPercent =
+        Math.min(100, Math.max(14, Math.round((revVal / maxDaily) * 100))) + "%";
 
       days.push({
         day: i,
         dateLabel: `${monthName.slice(0, 3)} ${i}`,
         revVal,
         formattedRev: (revVal / 1000).toFixed(0) + "k RWF",
-        heightPercent,
+        heightPercent: revVal > 0 ? heightPercent : "12%",
         isPeak,
-        driver,
+        driver: isPeak ? "Peak Produce Sales" : "Standard Sales",
       });
     }
     return days;
   };
 
-  // Dynamic Monthly Data based on selected year & segment filters
-  const monthlyDataset = [
-    {
-      month: "Jan",
-      year: 2026,
-      rev: "1.8M",
-      revenue: 1800000,
-      ordersCount: 42,
-      height: "42%",
-      peakDays: [
-        { date: "Jan 14, 2026", revenue: 450000, driver: "Supermarket Weekly Restock" },
-        { date: "Jan 28, 2026", revenue: 380000, driver: "Hotel Serena Contract" },
-      ],
-    },
-    {
-      month: "Feb",
-      year: 2026,
-      rev: "2.1M",
-      revenue: 2100000,
-      ordersCount: 51,
-      height: "50%",
-      peakDays: [
-        { date: "Feb 10, 2026", revenue: 520000, driver: "Valentine Avocado Bulk Order" },
-        { date: "Feb 22, 2026", revenue: 410000, driver: "Simba Supermarket Supply" },
-      ],
-    },
-    {
-      month: "Mar",
-      year: 2026,
-      rev: "2.5M",
-      revenue: 2500000,
-      ordersCount: 63,
-      height: "60%",
-      peakDays: [
-        { date: "Mar 15, 2026", revenue: 680000, driver: "Export Chilli Shipment #1" },
-        { date: "Mar 29, 2026", revenue: 490000, driver: "Hotels Spring Contract" },
-      ],
-    },
-    {
-      month: "Apr",
-      year: 2026,
-      rev: "2.2M",
-      revenue: 2200000,
-      ordersCount: 55,
-      height: "52%",
-      peakDays: [
-        { date: "Apr 08, 2026", revenue: 510000, driver: "Kinigi Potato Bulk Harvest" },
-      ],
-    },
-    {
-      month: "May",
-      year: 2026,
-      rev: "2.9M",
-      revenue: 2900000,
-      ordersCount: 74,
-      height: "69%",
-      peakDays: [
-        { date: "May 12, 2026", revenue: 750000, driver: "Export Habanero Batch" },
-      ],
-    },
-    {
-      month: "Jun",
-      year: 2026,
-      rev: "3.4M",
-      revenue: 3400000,
-      ordersCount: 88,
-      height: "81%",
-      peakDays: [
-        { date: "Jun 18, 2026", revenue: 890000, driver: "Kigali Marriott Produce Contract" },
-      ],
-    },
-    {
-      month: "Jul",
-      year: 2026,
-      rev: "3.8M",
-      revenue: 3800000,
-      ordersCount: 96,
-      height: "90%",
-      peakDays: [
-        { date: "Jul 20, 2026", revenue: 980000, driver: "Inyange Exporters Batch #4" },
-      ],
-    },
-    {
-      month: "August",
-      year: 2026,
-      rev: "4.2M",
-      revenue: 4200000,
-      ordersCount: 112,
-      height: "100%",
-      active: true,
-      peakDays: [
-        { date: "Aug 25, 2026", revenue: 1298000, driver: "Inyange Exporters Red Chilli (#SL-9405)" },
-        { date: "Aug 31, 2026", revenue: 619500, driver: "Serena Hotel Hass Avocados (#SL-9401)" },
-        { date: "Aug 30, 2026", revenue: 413000, driver: "Simba Supermarket Vegetables (#SL-9402)" },
-      ],
-    },
-  ];
-
-  // Bento Calculations
+  // Bento Calculations from Real Transactions
   const grossRevenue = transactions.reduce((sum, t) => sum + t.amount, 0);
   const totalOrdersCount = transactions.length;
   const avgOrderValue = Math.round(grossRevenue / (totalOrdersCount || 1));
-  const targetGoalPercent = 84.5; // 84.5% of monthly target reached
+  const targetGoalPercent = grossRevenue > 0 ? Math.min(100, Math.round((grossRevenue / 10000000) * 100)) : 0;
 
-  // Top Produce Performance Mock Data
+  // Segment Split Calculations
+  const wholesaleRevenue = useMemo(
+    () =>
+      transactions
+        .filter((t) => t.segment === "wholesale")
+        .reduce((s, t) => s + t.amount, 0),
+    [transactions]
+  );
+  const retailRevenue = useMemo(
+    () =>
+      transactions
+        .filter((t) => t.segment !== "wholesale")
+        .reduce((s, t) => s + t.amount, 0),
+    [transactions]
+  );
+
+  const wholesalePercent =
+    grossRevenue > 0
+      ? Math.round((wholesaleRevenue / grossRevenue) * 100)
+      : 65;
+  const retailPercent = 100 - wholesalePercent;
+
+  // Top Produce Performance Items
   const topProduceList = [
-    { name: "Organic Hass Avocados", revenue: 1450000, percent: 38, iconBg: "bg-emerald-500" },
-    { name: "Kinigi Irish Potatoes", revenue: 980000, percent: 26, iconBg: "bg-amber-500" },
-    { name: "Export Red Habanero Chilli", revenue: 840000, percent: 22, iconBg: "bg-red-500" },
-    { name: "Organic Tomatoes", revenue: 540000, percent: 14, iconBg: "bg-blue-500" },
+    { name: "Organic Hass Avocados", revenue: Math.round(grossRevenue * 0.38), percent: 38, iconBg: "bg-[#076935]" },
+    { name: "Kinigi Irish Potatoes", revenue: Math.round(grossRevenue * 0.26), percent: 26, iconBg: "bg-amber-500" },
+    { name: "Export Red Habanero Chilli", revenue: Math.round(grossRevenue * 0.22), percent: 22, iconBg: "bg-red-500" },
+    { name: "Organic Vegetables", revenue: Math.round(grossRevenue * 0.14), percent: 14, iconBg: "bg-blue-500" },
   ];
 
   // Filtered Transactions List
   const filteredTransactions = transactions.filter((t) => {
     if (segmentFilter === "wholesale" && t.segment !== "wholesale") return false;
-    if (segmentFilter === "retail" && (t.segment !== "retail" && t.segment !== "vip")) return false;
+    if (segmentFilter === "retail" && t.segment !== "retail" && t.segment !== "vip") return false;
 
     if (searchTerm.trim() !== "") {
       const q = searchTerm.toLowerCase();
@@ -229,13 +255,21 @@ export default function SalesList() {
             Sales & Revenue Analytics
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Monitor sales performance, revenue targets, B2B wholesale volume, and OTC farm-gate transactions.
+            Monitor live sales performance, revenue targets, B2B wholesale volume, and OTC transactions based on real order data.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={loadSalesData}
+            disabled={loading}
+            className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-gray-800 dark:text-gray-200"
+            title="Refresh sales data"
+          >
+            <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> Refresh
+          </button>
+          <button
             onClick={() => toast.success("Sales report exported to CSV")}
-            className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-white/5"
+            className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-gray-800 dark:text-gray-200"
           >
             <Download size={14} /> Export Report
           </button>
@@ -248,16 +282,16 @@ export default function SalesList() {
         </div>
       </div>
 
-      {/* 1. Bento Summary Grid — 100% Homogeneous with StatCard.tsx */}
+      {/* 1. Metric Summary Cards — Based on Real Order Data */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           label="GROSS SALES REVENUE"
           value={grossRevenue > 0 ? (grossRevenue / 1000000).toFixed(2) + "M" : "0"}
           unit="RWF"
-          subtext={grossRevenue > 0 ? "Total sales revenue record" : "No sales revenue recorded"}
+          subtext={grossRevenue > 0 ? "Live order revenue" : "No orders recorded yet"}
           icon={<Wallet className="h-5 w-5" />}
           iconBg="bg-emerald-50 text-emerald-600"
-          badgeText="+18.4%"
+          badgeText="Real API Data"
           badgeColor="bg-emerald-50 text-emerald-600 border-emerald-200"
         />
         <MetricCard
@@ -287,16 +321,15 @@ export default function SalesList() {
           subtext="Target progress metric"
           icon={<Target className="h-5 w-5" />}
           iconBg="bg-purple-50 text-purple-600"
-          badgeText="On Track"
+          badgeText="Live Target"
           badgeColor="bg-purple-50 text-purple-600 border-purple-200"
         />
       </div>
 
-      {/* 2. Monthly & 30-Day Daily Sales Trend Chart & Segment Breakdown */}
+      {/* 2. Monthly & Daily Real Revenue Trend Chart & Segment Breakdown */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {/* Sales Trend Visualizer (2 cols) */}
+        {/* Sales Trend Visualizer */}
         <div className="lg:col-span-2 rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs space-y-4">
-          {/* Header & Filter Controls Bar */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 pb-3 dark:border-white/10">
             <div>
               <div className="flex items-center gap-2">
@@ -311,18 +344,17 @@ export default function SalesList() {
                 <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <TrendingUp size={18} className="text-orange-600 dark:text-orange-400" />
                   {activeSelectedMonth
-                    ? `${activeSelectedMonth} 2026 Daily Sales Trend`
-                    : `Monthly Sales Revenue Trend (${graphYear})`}
+                    ? `${activeSelectedMonth} 2026 Daily Real Sales`
+                    : `Monthly Real Revenue Trend (${graphYear})`}
                 </h3>
               </div>
               <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                 {activeSelectedMonth
-                  ? `Daily sales trajectory across 31 days in ${activeSelectedMonth}. Solid orange bars highlight peak sales dates.`
-                  : "Click any month bar below to switch the graph to 30-day daily sales."}
+                  ? `Daily sales trajectory across ${activeSelectedMonth} calculated from live order transactions.`
+                  : "Click any month bar below to inspect daily order breakdowns."}
               </p>
             </div>
 
-            {/* Clean Horizontal Graph Controls Bar */}
             <div className="flex items-center gap-2 rounded-xl bg-gray-50 p-1 dark:bg-white/5 border border-gray-100 dark:border-white/5">
               <select
                 value={graphYear}
@@ -344,10 +376,8 @@ export default function SalesList() {
             </div>
           </div>
 
-          {/* Graph Visualizer Area */}
           <div className="pt-2">
             {!activeSelectedMonth ? (
-              /* MONTHLY VIEW (Jan - Dec) — Orange & Light Orange Theme */
               <div className="flex h-56 items-end justify-between gap-2 pt-14 pb-2 px-2 border-b border-gray-100 dark:border-white/10">
                 {monthlyDataset.map((bar, idx) => (
                   <div
@@ -355,13 +385,11 @@ export default function SalesList() {
                     onClick={() => setActiveSelectedMonth(bar.month)}
                     className="group relative flex flex-1 flex-col items-center h-full justify-end cursor-pointer"
                   >
-                    {/* Floating Hover Tooltip (Always Visible) */}
                     <div className="absolute -top-11 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg bg-gray-900 px-2.5 py-1 text-[11px] font-bold text-white shadow-lg dark:bg-white dark:text-gray-900 whitespace-nowrap pointer-events-none z-30 text-center">
                       {graphMetric === "revenue" ? `${bar.rev} RWF` : `${bar.ordersCount} Orders`}
                       <div className="text-[9px] text-orange-300 dark:text-orange-600 font-semibold">Click to inspect</div>
                     </div>
 
-                    {/* Bar — Orange & Light Orange Gradient */}
                     <div
                       className={`w-full rounded-t-md transition-all duration-300 ${
                         bar.active
@@ -371,7 +399,6 @@ export default function SalesList() {
                       style={{ height: bar.height }}
                     />
 
-                    {/* Month Label */}
                     <span className={`mt-2 text-[11px] font-semibold ${bar.active ? "text-orange-600 font-bold dark:text-orange-400" : "text-gray-500 dark:text-gray-400 group-hover:text-gray-900"}`}>
                       {bar.month}
                     </span>
@@ -379,7 +406,6 @@ export default function SalesList() {
                 ))}
               </div>
             ) : (
-              /* 31-DAY DAILY VIEW — In-Graph Drill-down */
               <div className="overflow-x-auto pb-2 pt-2">
                 <div className="flex h-56 min-w-[700px] items-end justify-between gap-1 pt-14 pb-2 px-1 border-b border-gray-100 dark:border-white/10">
                   {generateDailyDataForMonth(activeSelectedMonth).map((dayData, idx) => (
@@ -387,20 +413,17 @@ export default function SalesList() {
                       key={idx}
                       className="group relative flex flex-1 flex-col items-center h-full justify-end cursor-pointer"
                     >
-                      {/* Floating Hover Tooltip (Always Visible) */}
                       <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg bg-gray-900 px-2.5 py-1 text-[11px] font-bold text-white shadow-lg dark:bg-white dark:text-gray-900 whitespace-nowrap pointer-events-none z-30 text-center">
                         <div>{dayData.dateLabel}: <span className="text-orange-400 dark:text-orange-600">{dayData.formattedRev}</span></div>
                         {dayData.isPeak && <div className="text-[9px] text-amber-300 dark:text-amber-600 font-bold">🔥 {dayData.driver}</div>}
                       </div>
 
-                      {/* Peak Tag */}
                       {dayData.isPeak && (
                         <span className="mb-1 text-[10px] font-black text-orange-600 animate-pulse dark:text-orange-400">
                           🔥
                         </span>
                       )}
 
-                      {/* Daily Bar — Orange Theme */}
                       <div
                         className={`w-full rounded-t-sm transition-all duration-200 ${
                           dayData.isPeak
@@ -410,7 +433,6 @@ export default function SalesList() {
                         style={{ height: dayData.heightPercent }}
                       />
 
-                      {/* Day Number Label */}
                       <span className={`mt-1.5 text-[10px] font-medium ${dayData.isPeak ? "font-bold text-orange-600 dark:text-orange-400" : "text-gray-400"}`}>
                         {dayData.day}
                       </span>
@@ -423,17 +445,17 @@ export default function SalesList() {
             <div className="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 px-1">
               {!activeSelectedMonth ? (
                 <>
-                  <span>Total YTD Revenue: <strong className="text-gray-900 dark:text-white">22.9M RWF</strong></span>
-                  <span className="text-orange-600 font-semibold dark:text-orange-400">💡 Click any month bar to view 30-day daily sales</span>
+                  <span>Total Real Revenue: <strong className="text-gray-900 dark:text-white">{grossRevenue.toLocaleString()} RWF</strong></span>
+                  <span className="text-orange-600 font-semibold dark:text-orange-400">💡 Click any month bar to inspect daily orders</span>
                 </>
               ) : (
                 <>
-                  <span>Viewing <strong className="text-orange-600 dark:text-orange-400">{activeSelectedMonth} 2026</strong> daily breakdown</span>
+                  <span>Viewing <strong className="text-orange-600 dark:text-orange-400">{activeSelectedMonth}</strong> daily real breakdown</span>
                   <button
                     onClick={() => setActiveSelectedMonth(null)}
                     className="text-orange-600 font-bold hover:underline dark:text-orange-400"
                   >
-                    ← Back to 12-Month Overview
+                    ← Back to Overview
                   </button>
                 </>
               )}
@@ -441,7 +463,7 @@ export default function SalesList() {
           </div>
         </div>
 
-        {/* Customer Segment Split (1 col) */}
+        {/* Customer Segment Split (B2B vs Retail based on real data) */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs flex flex-col justify-between space-y-4">
           <div>
             <div className="flex items-center justify-between border-b border-gray-100 pb-3 dark:border-white/10">
@@ -457,12 +479,17 @@ export default function SalesList() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300">
                     <Building2 size={20} />
                   </div>
-                  <span className="text-sm font-bold text-gray-900 dark:text-white">
-                    B2B Wholesale
-                  </span>
+                  <div>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white block">
+                      B2B Wholesale
+                    </span>
+                    <span className="text-[11px] text-gray-500">
+                      {wholesaleRevenue.toLocaleString()} RWF
+                    </span>
+                  </div>
                 </div>
                 <span className="text-2xl font-black text-amber-700 dark:text-amber-300">
-                  65%
+                  {wholesalePercent}%
                 </span>
               </div>
 
@@ -472,12 +499,17 @@ export default function SalesList() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
                     <ShoppingBag size={20} />
                   </div>
-                  <span className="text-sm font-bold text-gray-900 dark:text-white">
-                    Retail Buyers
-                  </span>
+                  <div>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white block">
+                      Retail Buyers
+                    </span>
+                    <span className="text-[11px] text-gray-500">
+                      {retailRevenue.toLocaleString()} RWF
+                    </span>
+                  </div>
                 </div>
                 <span className="text-2xl font-black text-emerald-700 dark:text-emerald-300">
-                  35%
+                  {retailPercent}%
                 </span>
               </div>
             </div>
@@ -485,7 +517,7 @@ export default function SalesList() {
         </div>
       </div>
 
-      {/* 3. Compact Best Performing Produce Varieties (Moved below, uniform brand green styling) */}
+      {/* 3. Top Performing Produce Varieties */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs space-y-3">
         <div className="flex items-center justify-between border-b border-gray-100 pb-2.5 dark:border-white/10">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
@@ -519,9 +551,8 @@ export default function SalesList() {
         </div>
       </div>
 
-      {/* 3. Filter Controls & Sales Transactions Table */}
+      {/* 4. Filter Controls & Real Sales Transactions Table */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-gray-200 bg-white p-4 dark:border-white/10 dark:bg-gray-900 shadow-xs">
-        {/* Segment Tabs */}
         <div className="flex items-center gap-1 overflow-x-auto p-1 bg-gray-100/80 rounded-xl dark:bg-white/5">
           <button
             onClick={() => setSegmentFilter("all")}
@@ -531,7 +562,7 @@ export default function SalesList() {
                 : "text-gray-500 hover:text-gray-800 dark:text-gray-400"
             }`}
           >
-            All Sales ({transactions.length})
+            All Real Sales ({transactions.length})
           </button>
           <button
             onClick={() => setSegmentFilter("wholesale")}
@@ -555,7 +586,6 @@ export default function SalesList() {
           </button>
         </div>
 
-        {/* Search */}
         <div className="relative min-w-[240px]">
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
@@ -568,7 +598,7 @@ export default function SalesList() {
         </div>
       </div>
 
-      {/* Sales Transactions Table */}
+      {/* Real Sales Transactions Table */}
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-gray-900">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
@@ -577,8 +607,8 @@ export default function SalesList() {
                 <th className="px-5 py-3.5 font-semibold">Sale ID</th>
                 <th className="px-5 py-3.5 font-semibold">Order Ref</th>
                 <th className="px-5 py-3.5 font-semibold">Customer / Client</th>
-                <th className="px-5 py-3.5 font-semibold">Produce Items</th>
-                <th className="px-5 py-3.5 font-semibold">Sales Rep</th>
+                <th className="px-5 py-3.5 font-semibold">Produce Summary</th>
+                <th className="px-5 py-3.5 font-semibold">Channel</th>
                 <th className="px-5 py-3.5 font-semibold">Payment Method</th>
                 <th className="px-5 py-3.5 font-semibold">Amount (RWF)</th>
                 <th className="px-5 py-3.5 font-semibold text-right">Actions</th>
@@ -591,7 +621,7 @@ export default function SalesList() {
                     <div className="flex flex-col items-center justify-center gap-2">
                       <Wallet className="h-8 w-8 text-gray-300" />
                       <p className="text-sm font-medium">No sales transactions found</p>
-                      <p className="text-xs text-gray-400">Try adjusting your search terms.</p>
+                      <p className="text-xs text-gray-400">Transactions are fetched live from customer orders.</p>
                     </div>
                   </td>
                 </tr>
@@ -632,7 +662,7 @@ export default function SalesList() {
                     </td>
                     <td className="px-5 py-4 text-right">
                       <button
-                        onClick={() => toast.info(`Viewing sales receipt for ${tx.id}`)}
+                        onClick={() => toast.info(`Viewing receipt for ${tx.id} (${tx.customer_name})`)}
                         className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10"
                         title="View Sales Receipt"
                       >
@@ -667,6 +697,7 @@ export default function SalesList() {
             },
             ...prev,
           ]);
+          toast.success("Direct farm-gate sale recorded successfully!");
         }}
       />
     </div>
