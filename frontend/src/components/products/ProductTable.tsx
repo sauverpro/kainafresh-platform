@@ -8,7 +8,8 @@ import {
   Pencil,
   Package,
   CheckCircle,
-  Layers,
+  Coins,
+  Clock,
   RefreshCw,
   XCircle,
 } from "lucide-react";
@@ -22,8 +23,6 @@ interface ProductTableProps {
   onEdit: (product: Product) => void;
   onView: (id: number | string) => void;
 }
-
-
 
 export default function ProductTable({
   onAdd,
@@ -61,12 +60,15 @@ export default function ProductTable({
   const imageSrc = (p: { product_image?: string | null }) =>
     p.product_image ?? null;
 
-  // Bento Card Statistics
+  // Metric Card Statistics
   const totalProducts = products.length;
   const activeProducts = products.filter((p) => p.status === "active").length;
-  const uniqueUnitsCount = new Set(
-    products.map((p) => p.unit_name ?? p.unit_code ?? "—"),
-  ).size;
+  const wholesaleCount = products.filter(
+    (p) => Number(p.wholesale_price) > 0,
+  ).length;
+  const perishableCount = products.filter(
+    (p) => Number(p.shelf_life) > 0 && Number(p.shelf_life) <= 5,
+  ).length;
 
   // Filtered Products List
   const filteredProducts = products.filter((p) => {
@@ -112,7 +114,7 @@ export default function ProductTable({
         </div>
       </div>
 
-      {/* 1. Bento Summary Grid — 100% Homogeneous with StatCard.tsx */}
+      {/* 1. Metric Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1: Total Products */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
@@ -145,43 +147,43 @@ export default function ProductTable({
               </p>
             </div>
             <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300">
-              Live in Shop
+              Live in Store
             </span>
           </div>
         </div>
 
-        {/* Card 3: Avg Unit Price */}
-        {/* <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
+        {/* Card 3: Wholesale Eligible */}
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400">
-            <Tag className="h-5.5 w-5.5" />
+            <Coins className="h-5.5 w-5.5" />
           </div>
           <div className="mt-5 flex items-end justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Avg Base Price</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Wholesale Eligible</p>
               <p className="mt-1.5 text-2xl font-semibold text-gray-800 dark:text-white">
-                {avgPrice} <span className="text-xs font-normal text-gray-400">RWF</span>
+                {wholesaleCount}
               </p>
             </div>
             <span className="flex items-center gap-0.5 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-600 dark:bg-amber-500/15 dark:text-amber-300">
-              Catalog Avg
+              B2B Pricing
             </span>
           </div>
-        </div> */}
+        </div>
 
-        {/* Card 4: Unit Types */}
+        {/* Card 4: Short Shelf Life / Perishables */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-gray-900 shadow-xs">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-500/15 dark:text-purple-400">
-            <Layers className="h-5.5 w-5.5" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-orange-600 dark:bg-orange-500/15 dark:text-orange-400">
+            <Clock className="h-5.5 w-5.5" />
           </div>
           <div className="mt-5 flex items-end justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Unit Categories</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Perishables (≤ 5 Days)</p>
               <p className="mt-1.5 text-2xl font-semibold text-gray-800 dark:text-white">
-                {uniqueUnitsCount}
+                {perishableCount}
               </p>
             </div>
-            <span className="flex items-center gap-0.5 rounded-full bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-600 dark:bg-purple-500/15 dark:text-purple-300">
-              Measurement Units
+            <span className="flex items-center gap-0.5 rounded-full bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-600 dark:bg-orange-500/15 dark:text-orange-300">
+              Fast Turnover
             </span>
           </div>
         </div>
